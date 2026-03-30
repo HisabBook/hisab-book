@@ -1,13 +1,12 @@
-
-import './App.css'
+import MainLayout from './components/layout/MainLayout';
 
 function App() {
-
   return (
-    <>
-<h1>Hisab Book</h1>
-    </>
-  )
+    <MainLayout>
+      <h2 style={{ color: '#05192D' }}>Hisab Book</h2>
+      <p>Here is Main content.</p>
+    </MainLayout>
+  );
 }
 
-export default App
+export default App;
