@@ -13,3 +13,6 @@ export const posSlice = createSlice({
         },
     },
 });
+
+export const { addCash } = posSlice.actions;
+export default posSlice.reducer;
