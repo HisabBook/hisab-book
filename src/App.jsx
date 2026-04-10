@@ -1,10 +1,11 @@
 import MainLayout from './components/layout/MainLayout';
+import AppRouter from './routes/AppRouter';
+import './App.css';
 
 function App() {
   return (
     <MainLayout>
-      <h2 className='text-darkNavy'>Hisab Book</h2>
-      <p>Here is Main content.</p>
+      <AppRouter />
     </MainLayout>
   );
 }
