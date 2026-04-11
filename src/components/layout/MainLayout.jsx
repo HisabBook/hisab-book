@@ -21,14 +21,17 @@ import {
   Brightness4,
 } from "@mui/icons-material";
 
+import { useTranslation } from 'react-i18next';
+
 const drawerWidth = 240;
 
 const MainLayout = ({ children }) => {
+  const { t } = useTranslation();
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard /> },
-    { text: "POS", icon: <PointOfSale /> },
-    { text: "Inventory", icon: <Inventory /> },
-    { text: "Khata", icon: <LibraryBooks /> },
+    { text: t('layout.sidebar.dashboard'), icon: <Dashboard /> },
+    { text: t('layout.sidebar.pos'), icon: <PointOfSale /> },
+    { text: t('layout.sidebar.inventory'), icon: <Inventory /> },
+    { text: t('layout.sidebar.khata'), icon: <LibraryBooks /> },
   ];
 
   return (
@@ -36,18 +39,17 @@ const MainLayout = ({ children }) => {
       <AppBar
         position="fixed"
         sx={{
-          width: `calc(100% - ${drawerWidth}px)`,
-          ml: `${drawerWidth}px`,
-          bgcolor: "white",
-          color: "#05192D",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          bgcolor: "background.paper",
+          color: "text.primary",
           boxShadow: 1,
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Typography variant="h6" noWrap sx={{ fontWeight: "bold" }}>
-            Hisab Book Shop
-          </Typography>
-          <IconButton color="inherit">
+        <Typography variant="h5" sx={{ color: "secondary.main", fontWeight: "bold" }}>
+  {t('layout.navbar.title')}
+</Typography>
+          <IconButton color="inherit" disabled>
             <Brightness4 />
           </IconButton>
         </Toolbar>
@@ -61,7 +63,7 @@ const MainLayout = ({ children }) => {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            bgcolor: "#05192D",
+            bgcolor: "primary.main",
             color: "white",
           },
         }}
@@ -70,9 +72,9 @@ const MainLayout = ({ children }) => {
         <Toolbar>
           <Typography
             variant="h5"
-            sx={{ color: "#05D67D", fontWeight: "bold" }}
+            sx={{ color: "secondary.main", fontWeight: "bold" }}
           >
-            Hisab Book
+           {t('layout.navbar.title')}
           </Typography>
         </Toolbar>
         <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
@@ -80,7 +82,7 @@ const MainLayout = ({ children }) => {
           {menuItems.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton>
-                <ListItemIcon sx={{ color: "#05D67D" }}>
+                <ListItemIcon sx={{ color: "secondary.main" }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText primary={item.text} />
