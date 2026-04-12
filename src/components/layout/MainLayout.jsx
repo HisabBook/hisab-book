@@ -27,12 +27,12 @@ const drawerWidth = 240;
 
 const MainLayout = ({ children }) => {
   const { t } = useTranslation();
-  const menuItems = [
-    { text: t('layout.sidebar.dashboard'), icon: <Dashboard /> },
-    { text: t('layout.sidebar.pos'), icon: <PointOfSale /> },
-    { text: t('layout.sidebar.inventory'), icon: <Inventory /> },
-    { text: t('layout.sidebar.khata'), icon: <LibraryBooks /> },
-  ];
+const menuItems = [
+  { text: t('layout.sidebar.dashboard'), icon: <Dashboard />, path: '/dashboard' },
+  { text: t('layout.sidebar.pos'), icon: <PointOfSale />, path: '/pos' },
+  { text: t('layout.sidebar.inventory'), icon: <Inventory />, path: '/inventory' },
+  { text: t('layout.sidebar.khata'), icon: <LibraryBooks />, path: '/khata' },
+];
 
   return (
     <Box sx={{ display: "flex" }}>
