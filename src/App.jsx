@@ -4,9 +4,9 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 
 import { store, persistor } from './redux/store';
-import MainLayout from './components/layout/MainLayout';
+
 import AppRouter from './routes/AppRouter';
-import './index.css'; // Using the more general index.css for global styles
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -17,9 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         }
         persistor={persistor}
       >
-        <MainLayout>
-          <AppRouter />
-        </MainLayout>
+        <AppRouter />
       </PersistGate>
     </Provider>
   </React.StrictMode>
