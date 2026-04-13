@@ -1,12 +1,12 @@
-import AppRouter from './routes/AppRouter'
-import './App.css'
+import MainLayout from './components/layout/MainLayout';
+import AppRouter from './routes/AppRouter';
+import './App.css';
 
 function App() {
   return (
-    <>
-
-<AppRouter />
-    </>
+    <MainLayout>
+      <AppRouter />
+    </MainLayout>
   );
 }
 
