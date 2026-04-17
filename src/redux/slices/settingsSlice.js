@@ -1,28 +1,76 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
-// The initialState now ONLY includes what was in the task description.
 const initialState = {
-  theme: "light",
-  exchangeRate: 70,
+  theme: 'light',
+  exchangeRate: 70, // 1 USD = 70 AFN
+  primaryCurrency: 'USD', 
+  language: 'en',
+  shopName: 'HisabBook Store',
+  shopAddress: 'Herat, Afghanistan',
+  shopPhone: '+93 700 000 000',
+  shopLogo: null,
 };
 
-// Create the slice
 const settingsSlice = createSlice({
-  name: "settings",
+  name: 'settings',
   initialState,
   reducers: {
-    toggleTheme: (state) => {
-      state.theme = state.theme === "light" ? "dark" : "light";
+    toggleTheme(state) {
+      state.theme = state.theme === 'light' ? 'dark' : 'light';
     },
-    setExchangeRate: (state, action) => {
-      // Updates the global USD to AFN rate used in the POS and Dashboard
-      state.exchangeRate = action.payload;
+
+    setTheme(state, action) {
+      state.theme = action.payload;
     },
-    // The setLanguage reducer has been removed.
+
+    setExchangeRate(state, action) {
+      const rate = parseFloat(action.payload);
+      if (!isNaN(rate) && rate > 0) {
+        state.exchangeRate = rate;
+      }
+    },
+
+    setPrimaryCurrency(state, action) {
+      state.primaryCurrency = action.payload;
+    },
+
+    // ── Language: also syncs i18n in ThemeProviderWrapper ──
+    setLanguage(state, action) {
+      const validLangs = ['en', 'fa', 'ps'];
+      if (validLangs.includes(action.payload)) {
+        state.language = action.payload;
+      }
+    },
+
+    updateShopProfile(state, action) {
+      const { shopName, shopAddress, shopPhone, shopLogo } = action.payload;
+      if (shopName !== undefined) state.shopName = shopName;
+      if (shopAddress !== undefined) state.shopAddress = shopAddress;
+      if (shopPhone !== undefined) state.shopPhone = shopPhone;
+      if (shopLogo !== undefined) state.shopLogo = shopLogo;
+    },
   },
 });
 
-// The setLanguage action has been removed from the export.
-export const { toggleTheme, setExchangeRate } = settingsSlice.actions;
+export const {
+  toggleTheme,
+  setTheme,
+  setExchangeRate,
+  setPrimaryCurrency,
+  setLanguage,
+  updateShopProfile,
+} = settingsSlice.actions;
+
+// ── Selectors
+export const selectTheme = (state) => state.settings.theme;
+export const selectExchangeRate = (state) => state.settings.exchangeRate;
+export const selectLanguage = (state) => state.settings.language;
+export const selectPrimaryCurrency = (state) => state.settings.primaryCurrency;
+export const selectShopProfile = (state) => ({
+  shopName: state.settings.shopName,
+  shopAddress: state.settings.shopAddress,
+  shopPhone: state.settings.shopPhone,
+  shopLogo: state.settings.shopLogo,
+});
 
 export default settingsSlice.reducer;

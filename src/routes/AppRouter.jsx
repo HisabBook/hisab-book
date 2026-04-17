@@ -1,30 +1,33 @@
-import React from "react"
-import { BrowserRouter, Routes, Route, Navigate} from "react-router-dom"
+import { Routes, Route, Navigate } from 'react-router-dom';
 
-// IMPORT PAGES 
-import Dashboard from "../pages/Dashboard/Dashboard"
-import Inventory from "../pages/Inventory/Inventory"
-import Pos from "../pages/POS/POS"
-import Khata from "../pages/Khata/Khata"
-import Roznamcha from "../pages/Roznamcha/Roznamcha"
-import Reports from "../pages/Reports/Reports"
-import Settings from "../pages/Settings/Settings"
-
+// ── Layout Wrapper
+import MainLayout from '../components/layout/MainLayout.jsx';
+import DashboardPage from '../pages/dashboard/DashboardPage.jsx';
+import InventoryPage from '../pages/inventory/InventoryPage.jsx';
+import POSPage from '../pages/pos/POSPage.jsx';
+import KhataPage from '../pages/khata/KhataPage.jsx';
+import RoznamchaPage from '../pages/roznamcha/RoznamchaPage.jsx';
+import ReportsPage from '../pages/reports/ReportsPage.jsx';
+import SettingsPage from '../pages/settings/SettingsPage.jsx';
 const AppRouter = () => {
-    return (
-        <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
-            <Route path="/dashboard" element={<Dashboard/>}/>
-            <Route path="/inventory" element={<Inventory/>}/>
-            <Route path="/pos" element={<Pos/>}/>
-            <Route path="/khata" element={<Khata/>}/>
-            <Route path="/roznamcha" element={<Roznamcha/>}/>
-            <Route path="/reports" element={<Reports/>}/>
-            <Route path="/settings" element={<Settings/>}/>
-        </Routes>
-        </BrowserRouter>
-    );
+  return (
+    <Routes>
+      <Route path='/' element={<MainLayout />}>
+        <Route index element={<Navigate to='/dashboard' replace />} />
+
+        {/* ── Main Pages */}
+        <Route path='dashboard' element={<DashboardPage />} />
+        <Route path='pos' element={<POSPage />} />
+        <Route path='inventory' element={<InventoryPage />} />
+        <Route path='khata' element={<KhataPage />} />
+        <Route path='roznamcha' element={<RoznamchaPage />} />
+        <Route path='reports' element={<ReportsPage />} />
+        <Route path='settings' element={<SettingsPage />} />
+        {/* ── 404 Fallback: any unknown route → Dashboard ── */}
+        <Route path='*' element={<Navigate to='/dashboard' replace />} />
+      </Route>
+    </Routes>
+  );
 };
 
 export default AppRouter;

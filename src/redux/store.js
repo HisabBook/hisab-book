@@ -1,4 +1,4 @@
-import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import { configureStore } from '@reduxjs/toolkit';
 import {
   persistStore,
   persistReducer,
@@ -8,33 +8,46 @@ import {
   PERSIST,
   PURGE,
   REGISTER,
-} from "redux-persist";
-import storage from "redux-persist/lib/storage"; // Uses browser's LocalStorage
+} from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import { combineReducers } from 'redux';
 
-import settingsReducer from "./slices/settingsSlice";
+// ── Slice Reducers
+import settingsReducer from './slices/settingsSlice';
+import inventoryReducer from './slices/inventorySlice';
+import salesReducer from './slices/salesSlice';
+import khataReducer from './slices/khataSlice';
+import roznamchaReducer from './slices/roznamchaSlice';
+import posReducer from './slices/posSlice';
 
 const rootReducer = combineReducers({
   settings: settingsReducer,
+  inventory: inventoryReducer,
+  sales: salesReducer,
+  khata: khataReducer,
+  roznamcha: roznamchaReducer,
+  pos: posReducer,
 });
 
-// Configure Redux Persist
 const persistConfig = {
-  key: "hisabbook-root",
-  storage,
+  key: 'hisabbook-root', // Key visible in DevTools → localStorage
+  storage, // Browser localStorage
+  version: 1,
+  blacklist: ['pos'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-
-// Create the Redux Store
+//  STORE
 export const store = configureStore({
   reducer: persistedReducer,
+
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these specific redux-persist actions to prevent console warnings
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
+  // ── Enable Redux DevTools in development only 
+  devTools: import.meta.env.MODE !== 'production',
 });
-
 export const persistor = persistStore(store);
