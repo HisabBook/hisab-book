@@ -1,6 +1,7 @@
 ﻿import { Box, Button, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
+// 404 fallback page
 const NotFoundPage = () => {
   return (
     <Box
@@ -24,6 +25,7 @@ const NotFoundPage = () => {
       <Typography variant='body2' color='text.secondary'>
         The page you requested does not exist or has been moved.
       </Typography>
+      {/* Quick recovery path */}
       <Button component={RouterLink} to='/dashboard' variant='contained'>
         Back to Dashboard
       </Button>

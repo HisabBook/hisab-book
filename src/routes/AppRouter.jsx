@@ -1,9 +1,11 @@
 ﻿import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
+// ── Layout Wrapper
 import MainLayout from '../components/layout/MainLayout.jsx';
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
+// Route-level code splitting for faster initial load
 const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage.jsx'));
 const InventoryPage = lazy(() => import('../pages/inventory/InventoryPage.jsx'));
 const POSPage = lazy(() => import('../pages/pos/POSPage.jsx'));
@@ -15,11 +17,12 @@ const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
 
 const AppRouter = () => {
   return (
+    // Global fallback while lazy pages are loading
     <Suspense fallback={<LoadingSpinner fullScreen label='Loading page...' />}>
       <Routes>
         <Route path='/' element={<MainLayout />}>
           <Route index element={<Navigate to='/dashboard' replace />} />
-
+          {/* Main app routes */}
           <Route path='dashboard' element={<DashboardPage />} />
           <Route path='pos' element={<POSPage />} />
           <Route path='inventory' element={<InventoryPage />} />
@@ -27,6 +30,7 @@ const AppRouter = () => {
           <Route path='roznamcha' element={<RoznamchaPage />} />
           <Route path='reports' element={<ReportsPage />} />
           <Route path='settings' element={<SettingsPage />} />
+          {/* Catch-all route */}
           <Route path='*' element={<NotFoundPage />} />
         </Route>
       </Routes>
