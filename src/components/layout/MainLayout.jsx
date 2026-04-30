@@ -106,6 +106,9 @@ const Sidebar = () => {
   const shopProfile = useSelector(selectShopProfile);
   const language = useSelector(selectLanguage);
   const isRtl = language === 'fa' || language === 'ps';
+  const navActiveColor = '#05D67D';
+  const navInactiveIconColor = 'rgba(230, 237, 245, 0.82)';
+  const navInactiveTextColor = 'rgba(242, 247, 252, 0.95)';
 
   // ── Build nav items with translated labels
   const mainNavItems = useMemo(() => buildNavItems(t), [t]);
@@ -129,11 +132,12 @@ const Sidebar = () => {
             px: 2,
             py: 1.2,
             transition: 'all 0.2s ease',
+            color: active ? navActiveColor : navInactiveTextColor,
             backgroundColor: active ? 'rgba(5, 214, 125, 0.15)' : 'transparent',
             '&:hover': {
               backgroundColor: active
                 ? 'rgba(5, 214, 125, 0.22)'
-                : 'rgba(255, 255, 255, 0.06)',
+                : 'rgba(255, 255, 255, 0.12)',
             },
           }}
         >
@@ -141,7 +145,7 @@ const Sidebar = () => {
           <ListItemIcon
             sx={{
               minWidth: 38,
-              color: active ? '#05D67D' : 'rgba(255,255,255,0.55)',
+              color: active ? navActiveColor : navInactiveIconColor,
             }}
           >
             {badgeCount > 0 ? (
@@ -170,7 +174,7 @@ const Sidebar = () => {
             primaryTypographyProps={{
               fontSize: '0.9rem',
               fontWeight: active ? 700 : 500,
-              color: active ? '#05D67D' : 'rgba(255,255,255,0.82)',
+              color: active ? navActiveColor : navInactiveTextColor,
               fontFamily: isRtl
                 ? '"Vazirmatn", "Tahoma", sans-serif'
                 : 'inherit',
@@ -184,7 +188,7 @@ const Sidebar = () => {
                 width: 4,
                 height: 22,
                 borderRadius: 2,
-                backgroundColor: '#05D67D',
+                backgroundColor: navActiveColor,
                 flexShrink: 0,
                 ml: isRtl ? 0 : 1,
                 mr: isRtl ? 1 : 0,
