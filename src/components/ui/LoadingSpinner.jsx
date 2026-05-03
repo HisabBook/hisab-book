@@ -1,30 +1,45 @@
 ﻿import { Box, CircularProgress, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
 
-const LoadingSpinner = ({
-  fullScreen = true,
-  label = 'Loading...',
-  size = 40,
-}) => {
+const LoadingSpinner = ({ fullScreen = true, label = 'Loading...', size = 40 }) => {
   return (
     <Box
-      role='status'
-      aria-live='polite'
+      role="status"
+      aria-live="polite"
+      aria-label={label}
       sx={{
-        minHeight: fullScreen ? '100vh' : 160,
-        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 1.25,
+        gap: 2,
+        minHeight: fullScreen ? '100vh' : 160,
+        width: '100%',
+        p: 4,
+        ...(fullScreen && {
+          position: 'fixed',
+          inset: 0,
+          zIndex: (theme) => theme.zIndex.modal + 1,
+          bgcolor: 'background.default',
+        }),
       }}
     >
-      <CircularProgress size={size} color='primary' />
-      <Typography variant='body2' color='text.secondary'>
+      <CircularProgress
+        size={size}
+        thickness={3.6}
+        sx={{ color: 'primary.main', opacity: 0.8 }}
+      />
+      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
         {label}
       </Typography>
     </Box>
   );
+};
+
+LoadingSpinner.propTypes = {
+  fullScreen: PropTypes.bool,
+  label: PropTypes.string,
+  size: PropTypes.number,
 };
 
 export default LoadingSpinner;
