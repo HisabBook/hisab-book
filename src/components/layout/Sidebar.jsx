@@ -139,10 +139,14 @@ const NavItem = ({ item, isActive, t, isRtl }) => {
         </ListItemIcon>
         <ListItemText
           primary={t(item.labelKey)}
-          primaryTypographyProps={{
-            fontSize: '0.9rem',
-            fontWeight: active ? 700 : 500,
-            fontFamily: isRtl ? '"Vazirmatn", "Tahoma", sans-serif' : 'inherit',
+          slotProps={{
+            primary: {
+              fontSize: '0.9rem',
+              fontWeight: active ? 700 : 500,
+              fontFamily: isRtl
+                ? '"Vazirmatn", "Tahoma", sans-serif'
+                : 'inherit',
+            },
           }}
         />
         {active && (
