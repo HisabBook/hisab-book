@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 const initialState = {
   theme: 'light',
@@ -66,11 +66,12 @@ export const selectTheme = (state) => state.settings.theme;
 export const selectExchangeRate = (state) => state.settings.exchangeRate;
 export const selectLanguage = (state) => state.settings.language;
 export const selectPrimaryCurrency = (state) => state.settings.primaryCurrency;
-export const selectShopProfile = (state) => ({
-  shopName: state.settings.shopName,
-  shopAddress: state.settings.shopAddress,
-  shopPhone: state.settings.shopPhone,
-  shopLogo: state.settings.shopLogo,
-});
+const selectSettings = (state) => state.settings;
+export const selectShopProfile = createSelector([selectSettings], (settings) => ({
+  shopName: settings.shopName,
+  shopAddress: settings.shopAddress,
+  shopPhone: settings.shopPhone,
+  shopLogo: settings.shopLogo,
+}));
 
 export default settingsSlice.reducer;

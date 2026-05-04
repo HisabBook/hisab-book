@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 import {
   mockPhones,
   mockLaptops,
@@ -86,7 +86,10 @@ export const selectAvailablePhones = (state) =>
   state.inventory.phones.filter((p) => p.stockStatus === 'Available');
 export const selectAllLaptops = (state) => state.inventory.laptops;
 export const selectAllAccessories = (state) => state.inventory.accessories;
-export const selectLowStockAccessories = (state) =>
-  state.inventory.accessories.filter((a) => a.quantity <= a.lowStockThreshold);
+export const selectLowStockAccessories = createSelector(
+  [selectAllAccessories],
+  (accessories) =>
+    accessories.filter((a) => a.quantity <= a.lowStockThreshold)
+);
 
 export default inventorySlice.reducer;

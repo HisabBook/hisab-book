@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { mockCustomers } from '../../mockData/initialData';
 
 const khataSlice = createSlice({
@@ -43,7 +43,8 @@ export const {
 } = khataSlice.actions;
 
 export const selectAllCustomers = (state) => state.khata.customers;
-export const selectDebtors = (state) =>
-  state.khata.customers.filter((c) => c.debtAmount > 0);
+export const selectDebtors = createSelector([selectAllCustomers], (customers) =>
+  customers.filter((c) => c.debtAmount > 0)
+);
 
 export default khataSlice.reducer;
