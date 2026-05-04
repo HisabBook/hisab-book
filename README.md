@@ -61,6 +61,7 @@ The system is built to ensure that every sale:
 
 ---
 ## Project Directory Structure
+
 ```text
 HISAB-BOOK/
 ├── config.js                   # Global environment config (App Version, API Endpoints)
@@ -162,7 +163,7 @@ HISAB-BOOK/
 │   │   │   │   ├── LanguageSettings.jsx # Switcher for En/Fa/Ps
 │   │   │   │   ├── ShopProfileForm.jsx  # Edit Name, Logo, and Address for PDFs
 │   │   │   │   └── ThemeSettings.jsx    # UI customization (Dark/Light)
-            ├── utils/          # Settings-specific logic
+│   │       ├── utils/          # Settings-specific logic
 │   │       │   └── generateInvoicePDF.js # Engine to build and download receipts
 │   │   │   └── SettingsPage.jsx
 │   │   └── NotFoundPage.jsx    # Custom 404 UI for incorrect routes
@@ -197,8 +198,10 @@ HISAB-BOOK/
 ├── .gitignore                  # Files excluded from version control
 ├── package.json                # Project dependencies and script shortcuts
 ├── vite.config.js              # Vite bundler and RTL compiler settings
-└── README.md                   # Project documentation and team details 
+└── README.md                   # Project documentation and team details
 ```
+--- 
+
 ## Getting Started / Installation
 
 git clone [https://github.com/HisabBook/hisab-book.git]
