@@ -299,7 +299,11 @@ const InventoryPage = () => {
 
   return (
     <Stack spacing={2.5}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent='space-between' spacing={1.5}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.5}
+        sx={{ justifyContent: 'space-between' }}
+      >
         <Box>
           <Typography variant='h5' sx={{ fontWeight: 800 }}>
             Inventory Management
