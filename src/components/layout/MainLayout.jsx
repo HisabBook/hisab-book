@@ -1,12 +1,14 @@
 import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
 import { selectTheme, selectLanguage } from '../../redux/slices/settingsSlice';
 
 import Sidebar, { TOPBAR_HEIGHT } from './Sidebar';
 import Topbar from './Topbar';
 
 const MainLayout = () => {
+  const muiTheme = useTheme();
   const language = useSelector(selectLanguage);
   const isRtl = language === 'fa' || language === 'ps';
   const theme = useSelector(selectTheme);
@@ -18,7 +20,9 @@ const MainLayout = () => {
         display: 'flex',
         minHeight: '100vh',
         flexDirection: isRtl ? 'row-reverse' : 'row',
-        backgroundColor: isDark ? '#05192D' : '#F4F6F9',
+        backgroundColor: isDark
+          ? muiTheme.palette.background.default
+          : '#F4F6F9',
       }}
     >
       <Sidebar />

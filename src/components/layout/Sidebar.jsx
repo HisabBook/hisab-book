@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
 
 import {
   Box,
@@ -24,7 +25,6 @@ import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceW
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
 import {
   selectLanguage,
@@ -167,6 +167,7 @@ const NavItem = ({ item, isActive, t, isRtl }) => {
 };
 
 const Sidebar = () => {
+  const theme = useTheme();
   const location = useLocation();
   const { t } = useTranslation();
   const shopProfile = useSelector(selectShopProfile);
@@ -186,7 +187,8 @@ const Sidebar = () => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: SIDEBAR_WIDTH,
-          backgroundColor: '#05192D',
+          backgroundColor:
+            theme.palette.mode === 'dark' ? '#031427' : '#05192D',
           border: 'none',
           boxShadow: isRtl
             ? '-4px 0 20px rgba(5,25,45,0.25)'
@@ -201,7 +203,7 @@ const Sidebar = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1.5,
+          gap: 1.25,
           px: 2.5,
           height: TOPBAR_HEIGHT,
           borderBottom: '1px solid rgba(255,255,255,0.07)',
@@ -209,19 +211,16 @@ const Sidebar = () => {
         }}
       >
         <Box
+          component='img'
+          src='/favicon.svg'
+          alt='HisabBook logo'
           sx={{
-            width: 38,
-            height: 38,
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #05D67D 0%, #04B569 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(5,214,125,0.35)',
+            width: 30,
+            height: 30,
+            borderRadius: '8px',
+            objectFit: 'contain',
           }}
-        >
-          <StorefrontRoundedIcon sx={{ color: '#fff', fontSize: 20 }} />
-        </Box>
+        />
         <Box>
           <Typography
             sx={{
@@ -232,11 +231,6 @@ const Sidebar = () => {
             }}
           >
             HisabBook
-          </Typography>
-          <Typography
-            sx={{ color: '#05D67D', fontSize: '0.68rem', fontWeight: 500 }}
-          >
-            Smart POS & Inventory
           </Typography>
         </Box>
       </Box>
@@ -319,11 +313,6 @@ const Sidebar = () => {
             }}
           >
             {shopProfile.shopName || 'HisabBook Store'}
-          </Typography>
-          <Typography
-            sx={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.68rem' }}
-          >
-            Administrator
           </Typography>
         </Box>
       </Box>
