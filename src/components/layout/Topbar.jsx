@@ -1,6 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import {
   AppBar,
   Toolbar,
@@ -10,40 +8,20 @@ import {
   IconButton,
   Badge,
 } from '@mui/material';
-
 import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 
-import {
-  toggleTheme,
-  selectTheme,
-  selectLanguage,
-} from '../../redux/slices/settingsSlice';
+import { useAppStatus } from '../../hooks/useAppStatus';
+import { useRouteTitle } from '../../hooks/useRouteTitle';
+import { toggleTheme } from '../../redux/slices/settingsSlice';
 import LanguageSwitcher from '../shared/LanguageSwitcher.jsx';
 import { SIDEBAR_WIDTH, TOPBAR_HEIGHT } from './Sidebar';
 
 const Topbar = () => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
-  const theme = useSelector(selectTheme);
-  const language = useSelector(selectLanguage);
-  const location = useLocation();
-  const isRtl = language === 'fa' || language === 'ps';
-  const isDark = theme === 'dark';
-
-  const getPageTitle = () => {
-    const routeTitleMap = {
-      '/dashboard': t('nav.dashboard'),
-      '/pos': t('nav.pos'),
-      '/inventory': t('nav.inventory'),
-      '/khata': t('nav.khata'),
-      '/roznamcha': t('nav.roznamcha'),
-      '/reports': t('nav.reports'),
-      '/settings': t('nav.settings'),
-    };
-    return routeTitleMap[location.pathname] || 'HisabBook';
-  };
+  const { isRtl, isDark } = useAppStatus();
+  const pageTitle = useRouteTitle();
 
   const appBarSx = isRtl
     ? { right: SIDEBAR_WIDTH, left: 0 }
@@ -82,7 +60,7 @@ const Topbar = () => {
               : '"Inter", sans-serif',
           }}
         >
-          {getPageTitle()}
+          {pageTitle}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

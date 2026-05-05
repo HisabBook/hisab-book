@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-
 import {
   Box,
   Drawer,
@@ -16,7 +15,6 @@ import {
   Divider,
   Badge,
 } from '@mui/material';
-
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
 import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded';
@@ -26,69 +24,27 @@ import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
-import {
-  selectLanguage,
-  selectShopProfile,
-} from '../../redux/slices/settingsSlice';
+import { useAppStatus } from '../../hooks/useAppStatus';
+import { selectShopProfile } from '../../redux/slices/settingsSlice';
 import { selectLowStockAccessories } from '../../redux/slices/inventorySlice';
 import { selectDebtors } from '../../redux/slices/khataSlice';
 
 export const SIDEBAR_WIDTH = 260;
 export const TOPBAR_HEIGHT = 64;
 
-const buildNavItems = () => [
-  {
-    labelKey: 'nav.dashboard',
-    path: '/dashboard',
-    icon: <DashboardRoundedIcon />,
-    badgeSelector: null,
-  },
-  {
-    labelKey: 'nav.pos',
-    path: '/pos',
-    icon: <PointOfSaleRoundedIcon />,
-    badgeSelector: null,
-  },
-  {
-    labelKey: 'nav.inventory',
-    path: '/inventory',
-    icon: <InventoryRoundedIcon />,
-    badgeSelector: selectLowStockAccessories,
-  },
-  {
-    labelKey: 'nav.khata',
-    path: '/khata',
-    icon: <AccountBalanceWalletRoundedIcon />,
-    badgeSelector: selectDebtors,
-  },
-  {
-    labelKey: 'nav.roznamcha',
-    path: '/roznamcha',
-    icon: <ReceiptLongRoundedIcon />,
-    badgeSelector: null,
-  },
-  {
-    labelKey: 'nav.reports',
-    path: '/reports',
-    icon: <BarChartRoundedIcon />,
-    badgeSelector: null,
-  },
-];
+// FIX #2: Define a stable empty array reference to prevent re-renders
+const EMPTY_ARRAY = [];
 
-const buildBottomNavItems = () => [
-  {
-    labelKey: 'nav.settings',
-    path: '/settings',
-    icon: <SettingsRoundedIcon />,
-    badgeSelector: null,
-  },
-];
+// NavItem component is now self-sufficient and defined internally
+const NavItem = ({ item, isActive }) => {
+  const { t } = useTranslation();
+  const { isRtl } = useAppStatus();
+  const navigate = useNavigate();
 
-const NavItem = ({ item, isActive, t, isRtl }) => {
-  const badgeItems = useSelector(item.badgeSelector ?? (() => null));
+  // FIX #2: Use the stable EMPTY_ARRAY as the default for the selector
+  const badgeItems = useSelector(item.badgeSelector ?? (() => EMPTY_ARRAY));
   const badgeCount = Array.isArray(badgeItems) ? badgeItems.length : 0;
   const active = isActive(item.path);
-  const navigate = useNavigate();
 
   const navActiveColor = '#05D67D';
   const navInactiveIconColor = 'rgba(230, 237, 245, 0.82)';
@@ -139,14 +95,10 @@ const NavItem = ({ item, isActive, t, isRtl }) => {
         </ListItemIcon>
         <ListItemText
           primary={t(item.labelKey)}
-          slotProps={{
-            primary: {
-              fontSize: '0.9rem',
-              fontWeight: active ? 700 : 500,
-              fontFamily: isRtl
-                ? '"Vazirmatn", "Tahoma", sans-serif'
-                : 'inherit',
-            },
+          primarytypographyprops={{
+            fontSize: '0.9rem',
+            fontWeight: active ? 700 : 500,
+            fontFamily: isRtl ? '"Vazirmatn", "Tahoma", sans-serif' : 'inherit',
           }}
         />
         {active && (
@@ -166,12 +118,58 @@ const NavItem = ({ item, isActive, t, isRtl }) => {
   );
 };
 
+const buildNavItems = () => [
+  {
+    labelKey: 'nav.dashboard',
+    path: '/dashboard',
+    icon: <DashboardRoundedIcon />,
+    badgeSelector: null,
+  },
+  {
+    labelKey: 'nav.pos',
+    path: '/pos',
+    icon: <PointOfSaleRoundedIcon />,
+    badgeSelector: null,
+  },
+  {
+    labelKey: 'nav.inventory',
+    path: '/inventory',
+    icon: <InventoryRoundedIcon />,
+    badgeSelector: selectLowStockAccessories,
+  },
+  {
+    labelKey: 'nav.khata',
+    path: '/khata',
+    icon: <AccountBalanceWalletRoundedIcon />,
+    badgeSelector: selectDebtors,
+  },
+  {
+    labelKey: 'nav.roznamcha',
+    path: '/roznamcha',
+    icon: <ReceiptLongRoundedIcon />,
+    badgeSelector: null,
+  },
+  {
+    labelKey: 'nav.reports',
+    path: '/reports',
+    icon: <BarChartRoundedIcon />,
+    badgeSelector: null,
+  },
+];
+
+const buildBottomNavItems = () => [
+  {
+    labelKey: 'nav.settings',
+    path: '/settings',
+    icon: <SettingsRoundedIcon />,
+    badgeSelector: null,
+  },
+];
+
 const Sidebar = () => {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { isRtl } = useAppStatus();
   const shopProfile = useSelector(selectShopProfile);
-  const language = useSelector(selectLanguage);
-  const isRtl = language === 'fa' || language === 'ps';
 
   const mainNavItems = useMemo(() => buildNavItems(), []);
   const bottomNavItems = useMemo(() => buildBottomNavItems(), []);
@@ -259,13 +257,7 @@ const Sidebar = () => {
         </Typography>
         <List>
           {mainNavItems.map((item) => (
-            <NavItem
-              key={item.path}
-              item={item}
-              isActive={isActive}
-              t={t}
-              isRtl={isRtl}
-            />
+            <NavItem key={item.path} item={item} isActive={isActive} />
           ))}
         </List>
       </Box>
@@ -274,13 +266,7 @@ const Sidebar = () => {
       <Box sx={{ py: 1 }}>
         <List>
           {bottomNavItems.map((item) => (
-            <NavItem
-              key={item.path}
-              item={item}
-              isActive={isActive}
-              t={t}
-              isRtl={isRtl}
-            />
+            <NavItem key={item.path} item={item} isActive={isActive} />
           ))}
         </List>
       </Box>
