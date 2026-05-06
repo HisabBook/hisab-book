@@ -26,15 +26,15 @@ import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
-import {
-  selectLanguage,
-  selectShopProfile,
-} from '../../redux/slices/settingsSlice';
+import { useAppStatus } from '../../hooks/useAppStatus';
+import { selectShopProfile } from '../../redux/slices/settingsSlice';
 import { selectLowStockAccessories } from '../../redux/slices/inventorySlice';
 import { selectDebtors } from '../../redux/slices/khataSlice';
 
 export const SIDEBAR_WIDTH = 260;
 export const TOPBAR_HEIGHT = 64;
+
+const EMPTY_ARRAY = [];
 
 const buildNavItems = () => [
   {
@@ -83,12 +83,15 @@ const buildBottomNavItems = () => [
     badgeSelector: null,
   },
 ];
+// NavItem component is now self-sufficient and defined internally
+const NavItem = ({ item, isActive }) => {
+  const { t } = useTranslation();
+  const { isRtl } = useAppStatus();
+  const navigate = useNavigate();
 
-const NavItem = ({ item, isActive, t, isRtl }) => {
-  const badgeItems = useSelector(item.badgeSelector ?? (() => null));
+  const badgeItems = useSelector(item.badgeSelector ?? (() => EMPTY_ARRAY));
   const badgeCount = Array.isArray(badgeItems) ? badgeItems.length : 0;
   const active = isActive(item.path);
-  const navigate = useNavigate();
 
   const navActiveColor = '#05D67D';
   const navInactiveIconColor = 'rgba(230, 237, 245, 0.82)';
@@ -139,14 +142,10 @@ const NavItem = ({ item, isActive, t, isRtl }) => {
         </ListItemIcon>
         <ListItemText
           primary={t(item.labelKey)}
-          slotProps={{
-            primary: {
-              fontSize: '0.9rem',
-              fontWeight: active ? 700 : 500,
-              fontFamily: isRtl
-                ? '"Vazirmatn", "Tahoma", sans-serif'
-                : 'inherit',
-            },
+          primarytypographyprops={{
+            fontSize: '0.9rem',
+            fontWeight: active ? 700 : 500,
+            fontFamily: isRtl ? '"Vazirmatn", "Tahoma", sans-serif' : 'inherit',
           }}
         />
         {active && (
@@ -168,10 +167,8 @@ const NavItem = ({ item, isActive, t, isRtl }) => {
 
 const Sidebar = () => {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { isRtl } = useAppStatus();
   const shopProfile = useSelector(selectShopProfile);
-  const language = useSelector(selectLanguage);
-  const isRtl = language === 'fa' || language === 'ps';
 
   const mainNavItems = useMemo(() => buildNavItems(), []);
   const bottomNavItems = useMemo(() => buildBottomNavItems(), []);
@@ -259,13 +256,7 @@ const Sidebar = () => {
         </Typography>
         <List>
           {mainNavItems.map((item) => (
-            <NavItem
-              key={item.path}
-              item={item}
-              isActive={isActive}
-              t={t}
-              isRtl={isRtl}
-            />
+            <NavItem key={item.path} item={item} isActive={isActive} />
           ))}
         </List>
       </Box>
@@ -274,13 +265,7 @@ const Sidebar = () => {
       <Box sx={{ py: 1 }}>
         <List>
           {bottomNavItems.map((item) => (
-            <NavItem
-              key={item.path}
-              item={item}
-              isActive={isActive}
-              t={t}
-              isRtl={isRtl}
-            />
+            <NavItem key={item.path} item={item} isActive={isActive} />
           ))}
         </List>
       </Box>
