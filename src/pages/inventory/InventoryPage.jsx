@@ -42,6 +42,7 @@ import {
   updateLaptop,
   updatePhone,
 } from '../../redux/slices/inventorySlice';
+import InventoryFilters from './components/InventoryFilters';
 
 const createNextId = (items, prefix) => {
   const maxNum = items.reduce((maxValue, item) => {
@@ -60,6 +61,48 @@ const InventoryPage = () => {
   const phones = useSelector(selectAllPhones);
   const laptops = useSelector(selectAllLaptops);
   const accessories = useSelector(selectAllAccessories);
+
+  const [filters, setFilters] = useState({
+    itemType: 'all',
+    category: 'all',
+    brand: 'all',
+    status: 'all',
+  });
+
+  const filteredPhones = useMemo(() => {
+    return phones.filter(p => 
+      (filters.brand === 'all' || p.brand === filters.brand) &&
+      (filters.status === 'all' || p.stockStatus === filters.status) &&
+      (filters.itemType === 'all' || filters.itemType === 'Phone')
+    );
+  }, [phones, filters]);
+
+  const categories = useMemo(() => [...new Set(accessories.map(a => a.category))], [accessories]);
+  const brands = useMemo(() => {
+    const allBrands = [...phones.map(p => p.brand), ...laptops.map(l => l.brand)];
+    return [...new Set(allBrands)];
+  }, [phones, laptops]);
+  const statuses = ['Available', 'Sold'];
+  const types = ['Phone', 'Laptop', 'Accessory'];
+
+  const filteredLaptops = useMemo(() => {
+    return laptops.filter(l => 
+      (filters.brand === 'all' || l.brand === filters.brand) &&
+      (filters.status === 'all' || l.stockStatus === filters.status) &&
+      (filters.itemType === 'all' || filters.itemType === 'Laptop')
+    );
+  }, [laptops, filters]);
+
+  const filteredAccessories = useMemo(() => {
+    return accessories.filter(acc => 
+      (filters.category === 'all' || acc.category === filters.category) &&
+      (filters.itemType === 'all' || filters.itemType === 'Accessory')
+    );
+  }, [accessories, filters]);
+
+  const handleClearFilters = () => {
+    setFilters({ itemType: 'all', category: 'all', brand: 'all', status: 'all' });
+  };
 
   const [activeTab, setActiveTab] = useState('phones');
   const [formState, setFormState] = useState({ open: false, type: null, mode: 'create', item: null });
@@ -163,7 +206,7 @@ const InventoryPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {phones.map((item) => (
+          {filteredPhones.map((item) => (
             <TableRow key={item.id} hover>
               <TableCell>{item.imei}</TableCell>
               <TableCell>{`${item.brand} ${item.model}`}</TableCell>
@@ -212,7 +255,7 @@ const InventoryPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {laptops.map((item) => (
+          {filteredLaptops.map((item) => (
             <TableRow key={item.id} hover>
               <TableCell>{item.serialNumber}</TableCell>
               <TableCell>{`${item.brand} ${item.model}`}</TableCell>
@@ -261,7 +304,7 @@ const InventoryPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {accessories.map((item) => (
+          {filteredAccessories.map((item) => (
             <TableRow key={item.id} hover>
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.category}</TableCell>
@@ -344,6 +387,16 @@ const InventoryPage = () => {
           </Stack>
 
           <Divider sx={{ mb: 2 }} />
+
+          <InventoryFilters 
+  filters={filters} 
+  setFilters={setFilters} 
+  categories={categories} 
+  brands={brands} 
+  statuses={statuses} 
+  types={types}
+  onClear={handleClearFilters}
+/>
 
           <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} sx={{ mb: 2 }}>
             <Tab value='phones' label='Phones' />
