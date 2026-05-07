@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-import { useDispatch } from 'react-redux';
-=======
-﻿import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
->>>>>>> origin/main
+﻿import { useDispatch } from 'react-redux';
 import {
   AppBar,
   Toolbar,
@@ -28,30 +22,8 @@ import { ROUTE_PATHS } from '../../constants/routePaths';
 
 const Topbar = () => {
   const dispatch = useDispatch();
-<<<<<<< HEAD
   const { isRtl, isDark } = useAppStatus();
   const pageTitle = useRouteTitle();
-=======
-  const { t } = useTranslation();
-  const theme = useSelector(selectTheme);
-  const language = useSelector(selectLanguage);
-  const location = useLocation();
-  const isRtl = language === 'fa' || language === 'ps';
-  const isDark = theme === 'dark';
-
-  const getPageTitle = () => {
-    const routeTitleMap = {
-      [ROUTE_PATHS.DASHBOARD]: t('nav.dashboard'),
-      [ROUTE_PATHS.POS]: t('nav.pos'),
-      [ROUTE_PATHS.INVENTORY]: t('nav.inventory'),
-      [ROUTE_PATHS.KHATA]: t('nav.khata'),
-      [ROUTE_PATHS.ROZNAMCHA]: t('nav.roznamcha'),
-      [ROUTE_PATHS.REPORTS]: t('nav.reports'),
-      [ROUTE_PATHS.SETTINGS]: t('nav.settings'),
-    };
-    return routeTitleMap[location.pathname] || 'HisabBook';
-  };
->>>>>>> origin/main
 
   const appBarSx = isRtl
     ? { right: SIDEBAR_WIDTH, left: 0 }
@@ -135,4 +107,3 @@ const Topbar = () => {
 };
 
 export default Topbar;
-
