@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
+﻿import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -22,6 +22,7 @@ import {
 } from '../../redux/slices/settingsSlice';
 import LanguageSwitcher from '../shared/LanguageSwitcher.jsx';
 import { SIDEBAR_WIDTH, TOPBAR_HEIGHT } from './Sidebar';
+import { ROUTE_PATHS } from '../../constants/routePaths';
 
 const Topbar = () => {
   const dispatch = useDispatch();
@@ -34,13 +35,13 @@ const Topbar = () => {
 
   const getPageTitle = () => {
     const routeTitleMap = {
-      '/dashboard': t('nav.dashboard'),
-      '/pos': t('nav.pos'),
-      '/inventory': t('nav.inventory'),
-      '/khata': t('nav.khata'),
-      '/roznamcha': t('nav.roznamcha'),
-      '/reports': t('nav.reports'),
-      '/settings': t('nav.settings'),
+      [ROUTE_PATHS.DASHBOARD]: t('nav.dashboard'),
+      [ROUTE_PATHS.POS]: t('nav.pos'),
+      [ROUTE_PATHS.INVENTORY]: t('nav.inventory'),
+      [ROUTE_PATHS.KHATA]: t('nav.khata'),
+      [ROUTE_PATHS.ROZNAMCHA]: t('nav.roznamcha'),
+      [ROUTE_PATHS.REPORTS]: t('nav.reports'),
+      [ROUTE_PATHS.SETTINGS]: t('nav.settings'),
     };
     return routeTitleMap[location.pathname] || 'HisabBook';
   };
@@ -127,3 +128,4 @@ const Topbar = () => {
 };
 
 export default Topbar;
+
