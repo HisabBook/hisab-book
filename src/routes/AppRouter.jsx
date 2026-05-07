@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 ﻿﻿import { Suspense, lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom'; // Import createBrowserRouter
+=======
+﻿import { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ROUTE_PATHS } from '../constants/routePaths';
+>>>>>>> origin/main
 
 // ── Layout Wrapper
 import MainLayout from '../components/layout/MainLayout.jsx';
@@ -21,6 +27,7 @@ const ReportsPage = lazy(() => import('../pages/reports/ReportsPage.jsx'));
 const SettingsPage = lazy(() => import('../pages/settings/SettingsPage.jsx'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
 
+<<<<<<< HEAD
 // Create the router using the new data router API
 export const router = createBrowserRouter([
   {
@@ -103,3 +110,30 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+=======
+const AppRouter = () => {
+  return (
+    // Global fallback while lazy pages are loading
+    <Suspense fallback={<LoadingSpinner fullScreen label='Loading page...' />}>
+      <Routes>
+        <Route path={ROUTE_PATHS.ROOT} element={<MainLayout />}>
+          <Route index element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
+          {/* Main app routes */}
+          <Route path={ROUTE_PATHS.DASHBOARD} element={<DashboardPage />} />
+          <Route path={ROUTE_PATHS.POS} element={<POSPage />} />
+          <Route path={ROUTE_PATHS.INVENTORY} element={<InventoryPage />} />
+          <Route path={ROUTE_PATHS.KHATA} element={<KhataPage />} />
+          <Route path={ROUTE_PATHS.ROZNAMCHA} element={<RoznamchaPage />} />
+          <Route path={ROUTE_PATHS.REPORTS} element={<ReportsPage />} />
+          <Route path={ROUTE_PATHS.SETTINGS} element={<SettingsPage />} />
+          {/* Catch-all route */}
+          <Route path='*' element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </Suspense>
+  );
+};
+
+export default AppRouter;
+
+>>>>>>> origin/main

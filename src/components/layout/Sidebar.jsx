@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
 
 import {
   Box,
@@ -24,11 +25,11 @@ import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceW
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 
 import { useAppStatus } from '../../hooks/useAppStatus';
 import { selectShopProfile } from '../../redux/slices/settingsSlice';
 import { selectLowStockAccessories } from '../../redux/slices/inventorySlice';
+import { ROUTE_PATHS } from '../../constants/routePaths';
 import { selectDebtors } from '../../redux/slices/khataSlice';
 
 export const SIDEBAR_WIDTH = 260;
@@ -39,37 +40,37 @@ const EMPTY_ARRAY = [];
 const buildNavItems = () => [
   {
     labelKey: 'nav.dashboard',
-    path: '/dashboard',
+    path: ROUTE_PATHS.DASHBOARD,
     icon: <DashboardRoundedIcon />,
     badgeSelector: null,
   },
   {
     labelKey: 'nav.pos',
-    path: '/pos',
+    path: ROUTE_PATHS.POS,
     icon: <PointOfSaleRoundedIcon />,
     badgeSelector: null,
   },
   {
     labelKey: 'nav.inventory',
-    path: '/inventory',
+    path: ROUTE_PATHS.INVENTORY,
     icon: <InventoryRoundedIcon />,
     badgeSelector: selectLowStockAccessories,
   },
   {
     labelKey: 'nav.khata',
-    path: '/khata',
+    path: ROUTE_PATHS.KHATA,
     icon: <AccountBalanceWalletRoundedIcon />,
     badgeSelector: selectDebtors,
   },
   {
     labelKey: 'nav.roznamcha',
-    path: '/roznamcha',
+    path: ROUTE_PATHS.ROZNAMCHA,
     icon: <ReceiptLongRoundedIcon />,
     badgeSelector: null,
   },
   {
     labelKey: 'nav.reports',
-    path: '/reports',
+    path: ROUTE_PATHS.REPORTS,
     icon: <BarChartRoundedIcon />,
     badgeSelector: null,
   },
@@ -78,7 +79,7 @@ const buildNavItems = () => [
 const buildBottomNavItems = () => [
   {
     labelKey: 'nav.settings',
-    path: '/settings',
+    path: ROUTE_PATHS.SETTINGS,
     icon: <SettingsRoundedIcon />,
     badgeSelector: null,
   },
@@ -166,6 +167,7 @@ const NavItem = ({ item, isActive }) => {
 };
 
 const Sidebar = () => {
+  const theme = useTheme();
   const location = useLocation();
   const { isRtl } = useAppStatus();
   const shopProfile = useSelector(selectShopProfile);
@@ -183,7 +185,8 @@ const Sidebar = () => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: SIDEBAR_WIDTH,
-          backgroundColor: '#05192D',
+          backgroundColor:
+            theme.palette.mode === 'dark' ? '#031427' : '#05192D',
           border: 'none',
           boxShadow: isRtl
             ? '-4px 0 20px rgba(5,25,45,0.25)'
@@ -198,7 +201,7 @@ const Sidebar = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1.5,
+          gap: 1.25,
           px: 2.5,
           height: TOPBAR_HEIGHT,
           borderBottom: '1px solid rgba(255,255,255,0.07)',
@@ -206,19 +209,16 @@ const Sidebar = () => {
         }}
       >
         <Box
+          component='img'
+          src='/favicon.svg'
+          alt='HisabBook logo'
           sx={{
-            width: 38,
-            height: 38,
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #05D67D 0%, #04B569 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(5,214,125,0.35)',
+            width: 30,
+            height: 30,
+            borderRadius: '8px',
+            objectFit: 'contain',
           }}
-        >
-          <StorefrontRoundedIcon sx={{ color: '#fff', fontSize: 20 }} />
-        </Box>
+        />
         <Box>
           <Typography
             sx={{
@@ -229,11 +229,6 @@ const Sidebar = () => {
             }}
           >
             HisabBook
-          </Typography>
-          <Typography
-            sx={{ color: '#05D67D', fontSize: '0.68rem', fontWeight: 500 }}
-          >
-            Smart POS & Inventory
           </Typography>
         </Box>
       </Box>
@@ -305,11 +300,6 @@ const Sidebar = () => {
           >
             {shopProfile.shopName || 'HisabBook Store'}
           </Typography>
-          <Typography
-            sx={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.68rem' }}
-          >
-            Administrator
-          </Typography>
         </Box>
       </Box>
     </Drawer>
@@ -317,3 +307,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+

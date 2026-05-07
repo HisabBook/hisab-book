@@ -1,4 +1,4 @@
-
+﻿
 // Added category to ALL accessories
 // Added createdAt, updatedAt timestamps everywhere
 //Added edge-case phones (zero battery, duplicate brand)
@@ -9,9 +9,9 @@
 //Added more expense entries for Roznamcha testing
 
 
-// PHONES  (Unique Items — IMEI tracked)
+// PHONES  (Unique Items â€” IMEI tracked)
 export const mockPhones = [
-  // ── Standard available phone 
+  //  Standard available phone 
   {
     id: 'ph_001',
     imei: '352099001761481',
@@ -32,7 +32,7 @@ export const mockPhones = [
     notes: '',
   },
 
-  // ── Open Box 
+  //  Open Box 
   {
     id: 'ph_002',
     imei: '490154203237518',
@@ -53,7 +53,7 @@ export const mockPhones = [
     notes: 'Box opened for display only',
   },
 
-  // ── Used phone with low battery 
+  //  Used phone with low battery 
   {
     id: 'ph_003',
     imei: '011020002955751',
@@ -74,7 +74,7 @@ export const mockPhones = [
     notes: 'Minor scratch on back cover',
   },
 
-  // ── Already sold phone (for Inventory table filtering) ────
+  //  Already sold phone (for Inventory table filtering) 
   {
     id: 'ph_004',
     imei: '356093046235857',
@@ -95,7 +95,7 @@ export const mockPhones = [
     notes: '',
   },
 
-  // ── Standard available
+  //  Standard available
   {
     id: 'ph_005',
     imei: '867143040490089',
@@ -116,7 +116,7 @@ export const mockPhones = [
     notes: '',
   },
 
-  // ── EDGE CASE: Very old phone (Stock Aging test) 
+  //  EDGE CASE: Very old phone (Stock Aging test) 
   {
     id: 'ph_006',
     imei: '123456789012347',
@@ -131,13 +131,13 @@ export const mockPhones = [
     sellPrice: 130,
     currency: 'USD',
     stockStatus: 'Available',
-    dateAdded: '2025-10-01', // ← Over 90 days ago
+    dateAdded: '2025-10-01', // â† Over 90 days ago
     createdAt: '2025-10-01T09:00:00Z',
     updatedAt: '2025-10-01T09:00:00Z',
     notes: 'Sitting in stock for a long time',
   },
 
-  // ── EDGE CASE: Critical battery (Used phone) 
+  //  EDGE CASE: Critical battery (Used phone) 
   {
     id: 'ph_007',
     imei: '356938035643809',
@@ -147,7 +147,7 @@ export const mockPhones = [
     ram: '4GB',
     rom: '64GB',
     condition: 'Used',
-    batteryHealth: 71, // ← Low battery health
+    batteryHealth: 71, // â† Low battery health
     purchasePrice: 200,
     sellPrice: 270,
     currency: 'USD',
@@ -158,7 +158,7 @@ export const mockPhones = [
     notes: 'Battery needs replacement soon',
   },
 
-  // ── EDGE CASE: Sold phone with trade-in origin
+  //  EDGE CASE: Sold phone with trade-in origin
   {
     id: 'ph_008',
     imei: '990000862471854',
@@ -169,7 +169,7 @@ export const mockPhones = [
     rom: '256GB',
     condition: 'Used',
     batteryHealth: 83,
-    purchasePrice: 0, // ← Came in via trade-in
+    purchasePrice: 0, // â† Came in via trade-in
     sellPrice: 180,
     currency: 'USD',
     stockStatus: 'Available',
@@ -179,7 +179,7 @@ export const mockPhones = [
     notes: 'Received as trade-in from customer',
   },
 
-  // ── EDGE CASE: Extremely high-value phone 
+  //  EDGE CASE: Extremely high-value phone 
   {
     id: 'ph_009',
     imei: '357192090678932',
@@ -197,10 +197,10 @@ export const mockPhones = [
     dateAdded: '2026-02-05',
     createdAt: '2026-02-05T09:00:00Z',
     updatedAt: '2026-02-05T09:00:00Z',
-    notes: 'Top of the line — high-value item',
+    notes: 'Top of the line â€” high-value item',
   },
 ];
-// LAPTOPS  (Unique Items — Serial tracked)
+// LAPTOPS  (Unique Items â€” Serial tracked)
 
 export const mockLaptops = [
   {
@@ -246,7 +246,7 @@ export const mockLaptops = [
     notes: 'Comes with original charger',
   },
 
-  // ── EDGE CASE: Already sold laptop 
+  //  EDGE CASE: Already sold laptop 
   {
     id: 'lp_003',
     serialNumber: 'SN-HP-2022-015',
@@ -270,10 +270,10 @@ export const mockLaptops = [
   },
 ];
 
-//   ACCESSORIES  (Bulk Items — Qty tracked)
+//   ACCESSORIES  (Bulk Items â€” Qty tracked)
 //  All accessories now have a 'category' field
 export const mockAccessories = [
-  // ── Normal stock 
+  //  Normal stock 
   {
     id: 'acc_001',
     name: 'iPhone 15 Silicone Case',
@@ -320,14 +320,14 @@ export const mockAccessories = [
     updatedAt: '2026-01-16T10:00:00Z',
   },
 
-  // ── EDGE CASE: Below threshold (triggers low stock alert) ─
+  //  EDGE CASE: Below threshold (triggers low stock alert) â”€
   {
     id: 'acc_004',
     name: 'USB-C to USB-C Cable (1m)',
     category: 'Cable',
     brand: 'Anker',
     compatibleWith: 'Universal USB-C',
-    quantity: 4, // ← BELOW threshold of 10
+    quantity: 4, // â† BELOW threshold of 10
     lowStockThreshold: 10,
     purchasePrice: 4,
     sellPrice: 9,
@@ -352,14 +352,14 @@ export const mockAccessories = [
     updatedAt: '2026-02-03T12:00:00Z',
   },
 
-  // ── EDGE CASE: Quantity = 0 (out of stock) 
+  //  EDGE CASE: Quantity = 0 (out of stock) 
   {
     id: 'acc_006',
     name: 'Lightning to USB-A Cable (1m)',
     category: 'Cable',
     brand: 'Apple',
     compatibleWith: 'iPhone, iPad (Lightning)',
-    quantity: 0, // ← OUT OF STOCK
+    quantity: 0, // â† OUT OF STOCK
     lowStockThreshold: 10,
     purchasePrice: 5,
     sellPrice: 12,
@@ -369,14 +369,14 @@ export const mockAccessories = [
     updatedAt: '2026-02-06T08:00:00Z',
   },
 
-  // ── EDGE CASE: Exactly AT threshold 
+  //  EDGE CASE: Exactly AT threshold 
   {
     id: 'acc_007',
     name: 'Samsung Galaxy Buds 2',
     category: 'Audio',
     brand: 'Samsung',
     compatibleWith: 'Universal Bluetooth',
-    quantity: 5, // ← EXACTLY at threshold
+    quantity: 5, // â† EXACTLY at threshold
     lowStockThreshold: 5,
     purchasePrice: 55,
     sellPrice: 80,
@@ -386,7 +386,7 @@ export const mockAccessories = [
     updatedAt: '2026-02-01T09:00:00Z',
   },
 
-  // ── High-value accessory
+  //  High-value accessory
   {
     id: 'acc_008',
     name: 'MagSafe Charger 15W',
@@ -403,7 +403,7 @@ export const mockAccessories = [
     updatedAt: '2026-01-30T10:00:00Z',
   },
 
-  // ── AFN-priced accessory 
+  //  AFN-priced accessory 
   {
     id: 'acc_009',
     name: 'Phone Cleaning Kit',
@@ -424,7 +424,7 @@ export const mockAccessories = [
 //   CUSTOMERS
 //   Edge cases: zero debt, very high debt, AFN debt, over-paid
 export const mockCustomers = [
-  // ── Normal customer with USD debt 
+  //  Normal customer with USD debt 
   {
     id: 'cust_001',
     name: 'Ahmad Karimi',
@@ -434,23 +434,23 @@ export const mockCustomers = [
     currency: 'USD',
     createdAt: '2026-01-20T10:00:00Z',
     updatedAt: '2026-02-01T14:00:00Z',
-    notes: 'Regular customer — pays on time',
+    notes: 'Regular customer â€” pays on time',
   },
 
-  // ── Fully settled customer 
+  //  Fully settled customer 
   {
     id: 'cust_002',
     name: 'Fatima Noori',
     phone: '+93 799 654 321',
     email: '',
-    debtAmount: 0, // ← SETTLED
+    debtAmount: 0, // â† SETTLED
     currency: 'USD',
     createdAt: '2026-01-22T11:00:00Z',
     updatedAt: '2026-02-05T14:30:00Z',
     notes: '',
   },
 
-  // ── AFN debt customer 
+  // AFN debt customer 
   {
     id: 'cust_003',
     name: 'Reza Ahmadi',
@@ -463,20 +463,20 @@ export const mockCustomers = [
     notes: 'Owes from iPhone 13 purchase',
   },
 
-  // ── EDGE CASE: Very high debt
+  //  EDGE CASE: Very high debt
   {
     id: 'cust_004',
     name: 'Wahid Sultani',
     phone: '+93 702 111 222',
     email: '',
-    debtAmount: 2800, // ← VERY HIGH — MacBook Pro purchase
+    debtAmount: 2800, // â† VERY HIGH â€” MacBook Pro purchase
     currency: 'USD',
     createdAt: '2026-01-25T13:00:00Z',
     updatedAt: '2026-01-25T13:00:00Z',
-    notes: 'Bought MacBook Pro — installment agreement',
+    notes: 'Bought MacBook Pro â€” installment agreement',
   },
 
-  // ── EDGE CASE: New customer, no purchase yet 
+  //  EDGE CASE: New customer, no purchase yet 
   {
     id: 'cust_005',
     name: 'Mariam Hussaini',
@@ -486,20 +486,20 @@ export const mockCustomers = [
     currency: 'USD',
     createdAt: '2026-02-05T10:00:00Z',
     updatedAt: '2026-02-05T10:00:00Z',
-    notes: 'Walk-in customer — first visit',
+    notes: 'Walk-in customer â€” first visit',
   },
 
-  // ── EDGE CASE: Customer with very small remaining debt 
+  //  EDGE CASE: Customer with very small remaining debt 
   {
     id: 'cust_006',
     name: 'Sayed Khalid',
     phone: '+93 704 555 666',
     email: '',
-    debtAmount: 5, // ← only $5 remaining
+    debtAmount: 5, // â† only $5 remaining
     currency: 'USD',
     createdAt: '2026-01-30T09:00:00Z',
     updatedAt: '2026-02-04T16:00:00Z',
-    notes: 'Almost paid off — $5 remaining',
+    notes: 'Almost paid off â€” $5 remaining',
   },
 ];
 //  SALES HISTORY
@@ -513,7 +513,7 @@ export const mockSales = [
       {
         itemId: 'ph_004',
         type: 'phone',
-        name: 'iPhone 13 — Midnight 128GB',
+        name: 'iPhone 13 â€” Midnight 128GB',
         imei: '356093046235857',
         sellPrice: 520,
         quantity: 1,
@@ -529,7 +529,7 @@ export const mockSales = [
     invoiceNumber: 'INV-2026-0001',
   },
 
-  // ── Sale with partial payment (Khata)
+  //  Sale with partial payment (Khata)
   {
     id: 'sale_002',
     customerId: 'cust_001',
@@ -538,7 +538,7 @@ export const mockSales = [
       {
         itemId: 'ph_002',
         type: 'phone',
-        name: 'Galaxy S23 Ultra — Phantom Black',
+        name: 'Galaxy S23 Ultra â€” Phantom Black',
         imei: '490154203237518',
         sellPrice: 880,
         quantity: 1,
@@ -546,7 +546,7 @@ export const mockSales = [
     ],
     totalAmount: 880,
     amountPaid: 730,
-    dueAmount: 150, // ← Goes to Khata
+    dueAmount: 150, // â† Goes to Khata
     currency: 'USD',
     saleType: 'Standard',
     saleDate: '2026-02-06',
@@ -554,7 +554,7 @@ export const mockSales = [
     invoiceNumber: 'INV-2026-0002',
   },
 
-  // ── Exchange / Trade-in sale 
+  //  Exchange / Trade-in sale 
   {
     id: 'sale_003',
     customerId: 'cust_003',
@@ -563,7 +563,7 @@ export const mockSales = [
       {
         itemId: 'ph_001',
         type: 'phone',
-        name: 'iPhone 14 Pro — Deep Purple 256GB',
+        name: 'iPhone 14 Pro â€” Deep Purple 256GB',
         imei: '352099001761481',
         sellPrice: 950,
         quantity: 1,
@@ -586,7 +586,7 @@ export const mockSales = [
     invoiceNumber: 'INV-2026-0003',
   },
 
-  // ── Accessory-only sale 
+  //  Accessory-only sale 
   {
     id: 'sale_004',
     customerId: 'cust_005',
@@ -625,7 +625,7 @@ export const mockExpenses = [
   {
     id: 'exp_001',
     category: 'Rent',
-    description: 'Monthly shop rent — February',
+    description: 'Monthly shop rent â€” February',
     amount: 200,
     currency: 'USD',
     date: '2026-02-01',
@@ -634,7 +634,7 @@ export const mockExpenses = [
   {
     id: 'exp_002',
     category: 'Electricity',
-    description: 'Electricity bill — February',
+    description: 'Electricity bill â€” February',
     amount: 1500,
     currency: 'AFN',
     date: '2026-02-03',
@@ -659,18 +659,18 @@ export const mockExpenses = [
     createdAt: '2026-02-01T08:30:00Z',
   },
 
-  // ── EDGE CASE: Very large expense 
+  //  EDGE CASE: Very large expense 
   {
     id: 'exp_005',
     category: 'Other',
-    description: 'Shop renovation — paint & fixtures',
+    description: 'Shop renovation â€” paint & fixtures',
     amount: 450,
     currency: 'USD',
     date: '2026-01-28',
     createdAt: '2026-01-28T16:00:00Z',
   },
 
-  // ── EDGE CASE: Small daily expense 
+  //  EDGE CASE: Small daily expense 
   {
     id: 'exp_006',
     category: 'Staff Lunch',
@@ -682,60 +682,3 @@ export const mockExpenses = [
   },
 ];
 
-//  CATEGORIES  (for Accessory dropdowns)
-
-export const ACCESSORY_CATEGORIES = [
-  'Case',
-  'Screen Protector',
-  'Charger',
-  'Cable',
-  'Audio',
-  'Care',
-  'Power Bank',
-  'Holder / Stand',
-  'Memory Card',
-  'Other',
-];
-
-//  BRANDS
-export const PHONE_BRANDS = [
-  'Apple',
-  'Samsung',
-  'Xiaomi',
-  'OnePlus',
-  'Huawei',
-  'Oppo',
-  'Vivo',
-  'Realme',
-  'Nokia',
-  'Sony',
-  'Motorola',
-  'Other',
-];
-
-export const LAPTOP_BRANDS = [
-  'Apple',
-  'Dell',
-  'HP',
-  'Lenovo',
-  'Asus',
-  'Acer',
-  'Microsoft',
-  'MSI',
-  'Other',
-];
-
-//  CONDITIONS
-export const CONDITIONS = ['Brand New', 'Open Box', 'Used'];
-
-//  EXPENSE CATEGORIES
-
-export const EXPENSE_CATEGORIES = [
-  'Rent',
-  'Electricity',
-  'Internet',
-  'Staff Lunch',
-  'Staff Salary',
-  'Transport',
-  'Other',
-];
