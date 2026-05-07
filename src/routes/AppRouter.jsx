@@ -1,47 +1,34 @@
-<<<<<<< HEAD
-﻿﻿import { Suspense, lazy } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom'; // Import createBrowserRouter
-=======
-﻿import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ROUTE_PATHS } from '../constants/routePaths';
->>>>>>> origin/main
 
 // ── Layout Wrapper
 import MainLayout from '../components/layout/MainLayout.jsx';
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
 // Route-level code splitting
-const DashboardPage = lazy(
-  () => import('../pages/dashboard/DashboardPage.jsx')
-);
-const InventoryPage = lazy(
-  () => import('../pages/inventory/InventoryPage.jsx')
-);
+const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage.jsx'));
+const InventoryPage = lazy(() => import('../pages/inventory/InventoryPage.jsx'));
 const POSPage = lazy(() => import('../pages/pos/POSPage.jsx'));
 const KhataPage = lazy(() => import('../pages/khata/KhataPage.jsx'));
-const RoznamchaPage = lazy(
-  () => import('../pages/roznamcha/RoznamchaPage.jsx')
-);
+const RoznamchaPage = lazy(() => import('../pages/roznamcha/RoznamchaPage.jsx'));
 const ReportsPage = lazy(() => import('../pages/reports/ReportsPage.jsx'));
 const SettingsPage = lazy(() => import('../pages/settings/SettingsPage.jsx'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
 
-<<<<<<< HEAD
 // Create the router using the new data router API
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: ROUTE_PATHS.ROOT,
     element: <MainLayout />,
-    // Add a suspense fallback for the entire layout
-    errorElement: <NotFoundPage />, // Optional: A top-level error page
+    errorElement: <NotFoundPage />, // A top-level error page
     children: [
       {
         index: true,
-        element: <Navigate to='/dashboard' replace />,
+        element: <Navigate to={ROUTE_PATHS.DASHBOARD} replace />,
       },
       {
-        path: 'dashboard',
+        path: ROUTE_PATHS.DASHBOARD,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <DashboardPage />
@@ -50,7 +37,7 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'nav.dashboard' },
       },
       {
-        path: 'pos',
+        path: ROUTE_PATHS.POS,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <POSPage />
@@ -59,7 +46,7 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'nav.pos' },
       },
       {
-        path: 'inventory',
+        path: ROUTE_PATHS.INVENTORY,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <InventoryPage />
@@ -68,7 +55,7 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'nav.inventory' },
       },
       {
-        path: 'khata',
+        path: ROUTE_PATHS.KHATA,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <KhataPage />
@@ -77,7 +64,7 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'nav.khata' },
       },
       {
-        path: 'roznamcha',
+        path: ROUTE_PATHS.ROZNAMCHA,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <RoznamchaPage />
@@ -86,7 +73,7 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'nav.roznamcha' },
       },
       {
-        path: 'reports',
+        path: ROUTE_PATHS.REPORTS,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <ReportsPage />
@@ -95,7 +82,7 @@ export const router = createBrowserRouter([
         handle: { titleKey: 'nav.reports' },
       },
       {
-        path: 'settings',
+        path: ROUTE_PATHS.SETTINGS,
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <SettingsPage />
@@ -110,30 +97,3 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
-=======
-const AppRouter = () => {
-  return (
-    // Global fallback while lazy pages are loading
-    <Suspense fallback={<LoadingSpinner fullScreen label='Loading page...' />}>
-      <Routes>
-        <Route path={ROUTE_PATHS.ROOT} element={<MainLayout />}>
-          <Route index element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
-          {/* Main app routes */}
-          <Route path={ROUTE_PATHS.DASHBOARD} element={<DashboardPage />} />
-          <Route path={ROUTE_PATHS.POS} element={<POSPage />} />
-          <Route path={ROUTE_PATHS.INVENTORY} element={<InventoryPage />} />
-          <Route path={ROUTE_PATHS.KHATA} element={<KhataPage />} />
-          <Route path={ROUTE_PATHS.ROZNAMCHA} element={<RoznamchaPage />} />
-          <Route path={ROUTE_PATHS.REPORTS} element={<ReportsPage />} />
-          <Route path={ROUTE_PATHS.SETTINGS} element={<SettingsPage />} />
-          {/* Catch-all route */}
-          <Route path='*' element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </Suspense>
-  );
-};
-
-export default AppRouter;
-
->>>>>>> origin/main
