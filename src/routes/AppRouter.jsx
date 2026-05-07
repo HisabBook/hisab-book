@@ -1,12 +1,12 @@
-﻿import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ROUTE_PATHS } from '../constants/routePaths';
 
 // ── Layout Wrapper
 import MainLayout from '../components/layout/MainLayout.jsx';
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
-// Route-level code splitting for faster initial load
+// Route-level code splitting
 const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage.jsx'));
 const InventoryPage = lazy(() => import('../pages/inventory/InventoryPage.jsx'));
 const POSPage = lazy(() => import('../pages/pos/POSPage.jsx'));
@@ -16,28 +16,84 @@ const ReportsPage = lazy(() => import('../pages/reports/ReportsPage.jsx'));
 const SettingsPage = lazy(() => import('../pages/settings/SettingsPage.jsx'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
 
-const AppRouter = () => {
-  return (
-    // Global fallback while lazy pages are loading
-    <Suspense fallback={<LoadingSpinner fullScreen label='Loading page...' />}>
-      <Routes>
-        <Route path={ROUTE_PATHS.ROOT} element={<MainLayout />}>
-          <Route index element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
-          {/* Main app routes */}
-          <Route path={ROUTE_PATHS.DASHBOARD} element={<DashboardPage />} />
-          <Route path={ROUTE_PATHS.POS} element={<POSPage />} />
-          <Route path={ROUTE_PATHS.INVENTORY} element={<InventoryPage />} />
-          <Route path={ROUTE_PATHS.KHATA} element={<KhataPage />} />
-          <Route path={ROUTE_PATHS.ROZNAMCHA} element={<RoznamchaPage />} />
-          <Route path={ROUTE_PATHS.REPORTS} element={<ReportsPage />} />
-          <Route path={ROUTE_PATHS.SETTINGS} element={<SettingsPage />} />
-          {/* Catch-all route */}
-          <Route path='*' element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </Suspense>
-  );
-};
-
-export default AppRouter;
-
+// Create the router using the new data router API
+export const router = createBrowserRouter([
+  {
+    path: ROUTE_PATHS.ROOT,
+    element: <MainLayout />,
+    errorElement: <NotFoundPage />, // A top-level error page
+    children: [
+      {
+        index: true,
+        element: <Navigate to={ROUTE_PATHS.DASHBOARD} replace />,
+      },
+      {
+        path: ROUTE_PATHS.DASHBOARD,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <DashboardPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.dashboard' },
+      },
+      {
+        path: ROUTE_PATHS.POS,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <POSPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.pos' },
+      },
+      {
+        path: ROUTE_PATHS.INVENTORY,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <InventoryPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.inventory' },
+      },
+      {
+        path: ROUTE_PATHS.KHATA,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <KhataPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.khata' },
+      },
+      {
+        path: ROUTE_PATHS.ROZNAMCHA,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <RoznamchaPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.roznamcha' },
+      },
+      {
+        path: ROUTE_PATHS.REPORTS,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ReportsPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.reports' },
+      },
+      {
+        path: ROUTE_PATHS.SETTINGS,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SettingsPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.settings' },
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
+      },
+    ],
+  },
+]);

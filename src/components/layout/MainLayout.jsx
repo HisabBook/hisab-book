@@ -1,18 +1,14 @@
 import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
-import { selectTheme, selectLanguage } from '../../redux/slices/settingsSlice';
 
+import { useAppStatus } from '../../hooks/useAppStatus';
 import Sidebar, { TOPBAR_HEIGHT } from './Sidebar';
 import Topbar from './Topbar';
 
 const MainLayout = () => {
+  const { isRtl, isDark } = useAppStatus();
   const muiTheme = useTheme();
-  const language = useSelector(selectLanguage);
-  const isRtl = language === 'fa' || language === 'ps';
-  const theme = useSelector(selectTheme);
-  const isDark = theme === 'dark';
 
   return (
     <Box
