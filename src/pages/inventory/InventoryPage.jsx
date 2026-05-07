@@ -205,38 +205,49 @@ const InventoryPage = () => {
             <TableCell align='right'>Actions</TableCell>
           </TableRow>
         </TableHead>
+
         <TableBody>
-          {filteredPhones.map((item) => (
-            <TableRow key={item.id} hover>
-              <TableCell>{item.imei}</TableCell>
-              <TableCell>{`${item.brand} ${item.model}`}</TableCell>
-              <TableCell>{item.condition}</TableCell>
-              <TableCell>
-                <Chip
-                  size='small'
-                  label={item.stockStatus}
-                  color={item.stockStatus === 'Sold' ? 'default' : 'success'}
-                />
-              </TableCell>
-              <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
-              <TableCell align='right'>
-                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                  <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('phone', item)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size='small'
-                    color='error'
-                    startIcon={<DeleteOutlineRoundedIcon />}
-                    onClick={() => openDeleteConfirm('phone', item)}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
+  {filteredPhones.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+        <Typography variant="body1" color="text.secondary">
+          No matching items found
+        </Typography>
+      </TableCell>
+    </TableRow>
+  ) : (
+    filteredPhones.map((item) => (
+      <TableRow key={item.id} hover>
+        <TableCell>{item.imei}</TableCell>
+        <TableCell>{`${item.brand} ${item.model}`}</TableCell>
+        <TableCell>{item.condition}</TableCell>
+        <TableCell>
+          <Chip
+            size='small'
+            label={item.stockStatus}
+            color={item.stockStatus === 'Sold' ? 'default' : 'success'}
+          />
+        </TableCell>
+        <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
+        <TableCell align='right'>
+          <Stack direction='row' spacing={1} justifyContent='flex-end'>
+            <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('phone', item)}>
+              Edit
+            </Button>
+            <Button
+              size='small'
+              color='error'
+              startIcon={<DeleteOutlineRoundedIcon />}
+              onClick={() => openDeleteConfirm('phone', item)}
+            >
+              Delete
+            </Button>
+          </Stack>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
       </Table>
     </TableContainer>
   );
@@ -254,38 +265,48 @@ const InventoryPage = () => {
             <TableCell align='right'>Actions</TableCell>
           </TableRow>
         </TableHead>
-        <TableBody>
-          {filteredLaptops.map((item) => (
-            <TableRow key={item.id} hover>
-              <TableCell>{item.serialNumber}</TableCell>
-              <TableCell>{`${item.brand} ${item.model}`}</TableCell>
-              <TableCell>{item.condition}</TableCell>
-              <TableCell>
-                <Chip
-                  size='small'
-                  label={item.stockStatus}
-                  color={item.stockStatus === 'Sold' ? 'default' : 'success'}
-                />
-              </TableCell>
-              <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
-              <TableCell align='right'>
-                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                  <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('laptop', item)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size='small'
-                    color='error'
-                    startIcon={<DeleteOutlineRoundedIcon />}
-                    onClick={() => openDeleteConfirm('laptop', item)}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
+       <TableBody>
+  {filteredLaptops.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+        <Typography variant="body1" color="text.secondary">
+          No matching items found
+        </Typography>
+      </TableCell>
+    </TableRow>
+  ) : (
+    filteredLaptops.map((item) => (
+      <TableRow key={item.id} hover>
+        <TableCell>{item.serialNumber}</TableCell>
+        <TableCell>{`${item.brand} ${item.model}`}</TableCell>
+        <TableCell>{item.condition}</TableCell>
+        <TableCell>
+          <Chip
+            size='small'
+            label={item.stockStatus}
+            color={item.stockStatus === 'Sold' ? 'default' : 'success'}
+          />
+        </TableCell>
+        <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
+        <TableCell align='right'>
+          <Stack direction='row' spacing={1} justifyContent='flex-end'>
+            <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('laptop', item)}>
+              Edit
+            </Button>
+            <Button
+              size='small'
+              color='error'
+              startIcon={<DeleteOutlineRoundedIcon />}
+              onClick={() => openDeleteConfirm('laptop', item)}
+            >
+              Delete
+            </Button>
+          </Stack>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
       </Table>
     </TableContainer>
   );
@@ -304,35 +325,41 @@ const InventoryPage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {filteredAccessories.map((item) => (
-            <TableRow key={item.id} hover>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.category}</TableCell>
-              <TableCell>{item.quantity}</TableCell>
-              <TableCell>{item.lowStockThreshold}</TableCell>
-              <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
-              <TableCell align='right'>
-                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                  <Button
-                    size='small'
-                    startIcon={<EditRoundedIcon />}
-                    onClick={() => openEditModal('accessory', item)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size='small'
-                    color='error'
-                    startIcon={<DeleteOutlineRoundedIcon />}
-                    onClick={() => openDeleteConfirm('accessory', item)}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
+  {filteredAccessories.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+        <Typography variant="body1" color="text.secondary">
+          No matching items found
+        </Typography>
+      </TableCell>
+    </TableRow>
+  ) : (
+    filteredAccessories.map((item) => (
+      <TableRow key={item.id} hover>
+        <TableCell>{item.name}</TableCell>
+        <TableCell>{item.category}</TableCell>
+        <TableCell>{item.quantity}</TableCell>
+        <TableCell>{item.lowStockThreshold}</TableCell>
+        <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
+        <TableCell align='right'>
+          <Stack direction='row' spacing={1} justifyContent='flex-end'>
+            <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('accessory', item)}>
+              Edit
+            </Button>
+            <Button
+              size='small'
+              color='error'
+              startIcon={<DeleteOutlineRoundedIcon />}
+              onClick={() => openDeleteConfirm('accessory', item)}
+            >
+              Delete
+            </Button>
+          </Stack>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
       </Table>
     </TableContainer>
   );
