@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useMemo } from 'react';
 import {
   Box,
   Button,
@@ -10,7 +10,12 @@ import {
   TextField,
 } from '@mui/material';
 import { PHONE_BRANDS } from '../../../constants/brands';
-import { CONDITIONS, CURRENCIES, STOCK_STATUSES } from '../../../constants/conditions';
+import {
+  CONDITIONS,
+  CURRENCIES,
+  STOCK_STATUSES,
+} from '../../../constants/conditions';
+import useInventoryForm from '../hooks/useInventoryForm';
 
 const defaultValues = {
   imei: '',
@@ -20,7 +25,7 @@ const defaultValues = {
   ram: '',
   rom: '',
   condition: 'Brand New',
-  batteryHealth: 100,
+  batteryHealth: '100',
   purchasePrice: '',
   sellPrice: '',
   currency: 'USD',
@@ -37,7 +42,7 @@ const AddPhoneForm = ({
   onSubmit,
   onCancel,
 }) => {
-  const [values, setValues] = useState(() => ({
+  const formInitialValues = {
     ...defaultValues,
     ...(initialValues ?? {}),
     purchasePrice:
@@ -52,21 +57,14 @@ const AddPhoneForm = ({
       initialValues?.batteryHealth !== undefined
         ? String(initialValues.batteryHealth)
         : '100',
-  }));
-
-  const [errors, setErrors] = useState({});
-
-  const existingImeiSet = useMemo(() => {
-    return new Set(existingPhones.map((p) => normalize(p.imei)));
-  }, [existingPhones]);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  const validate = () => {
+  const existingImeiSet = useMemo(
+    () => new Set(existingPhones.map((p) => normalize(p.imei))),
+    [existingPhones]
+  );
+
+  const validate = (values) => {
     const nextErrors = {};
     const imei = values.imei.trim();
 
@@ -89,56 +87,66 @@ const AddPhoneForm = ({
     const sellPrice = Number(values.sellPrice);
     const batteryHealth = Number(values.batteryHealth);
 
-    if (values.purchasePrice === '' || Number.isNaN(purchasePrice) || purchasePrice < 0) {
-      nextErrors.purchasePrice = 'Purchase price must be a non-negative number.';
+    if (
+      values.purchasePrice === '' ||
+      Number.isNaN(purchasePrice) ||
+      purchasePrice < 0
+    ) {
+      nextErrors.purchasePrice =
+        'Purchase price must be a non-negative number.';
     }
 
     if (values.sellPrice === '' || Number.isNaN(sellPrice) || sellPrice < 0) {
       nextErrors.sellPrice = 'Sell price must be a non-negative number.';
     }
 
-    if (values.batteryHealth === '' || Number.isNaN(batteryHealth) || batteryHealth < 0 || batteryHealth > 100) {
+    if (
+      values.batteryHealth === '' ||
+      Number.isNaN(batteryHealth) ||
+      batteryHealth < 0 ||
+      batteryHealth > 100
+    ) {
       nextErrors.batteryHealth = 'Battery health must be between 0 and 100.';
     }
 
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    return nextErrors;
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!validate()) return;
+  const { values, errors, handleChange, handleSubmit } = useInventoryForm({
+    initialValues: formInitialValues,
+    validate,
+    onValidSubmit: (values) => {
+      const nowIso = new Date().toISOString();
+      const today = nowIso.slice(0, 10);
 
-    const nowIso = new Date().toISOString();
-    const today = nowIso.slice(0, 10);
-
-    onSubmit({
-      ...(initialValues ?? {}),
-      imei: values.imei.trim(),
-      brand: values.brand.trim(),
-      model: values.model.trim(),
-      color: values.color.trim(),
-      ram: values.ram.trim(),
-      rom: values.rom.trim(),
-      condition: values.condition,
-      batteryHealth: Number(values.batteryHealth),
-      purchasePrice: Number(values.purchasePrice),
-      sellPrice: Number(values.sellPrice),
-      currency: values.currency,
-      stockStatus: values.stockStatus,
-      notes: values.notes.trim(),
-      dateAdded: initialValues?.dateAdded ?? today,
-      createdAt: initialValues?.createdAt ?? nowIso,
-      updatedAt: nowIso,
-    });
-  };
+      onSubmit({
+        ...(initialValues ?? {}),
+        imei: values.imei.trim(),
+        brand: values.brand.trim(),
+        model: values.model.trim(),
+        color: values.color.trim(),
+        ram: values.ram.trim(),
+        rom: values.rom.trim(),
+        condition: values.condition,
+        batteryHealth: Number(values.batteryHealth),
+        purchasePrice: Number(values.purchasePrice),
+        sellPrice: Number(values.sellPrice),
+        currency: values.currency,
+        stockStatus: values.stockStatus,
+        notes: values.notes.trim(),
+        dateAdded: initialValues?.dateAdded ?? today,
+        createdAt: initialValues?.createdAt ?? nowIso,
+        updatedAt: nowIso,
+      });
+    },
+  });
 
   return (
     <Box component='form' onSubmit={handleSubmit} noValidate>
       <DialogTitle>{mode === 'edit' ? 'Edit Phone' : 'Add Phone'}</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mt: 0 }}>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label='IMEI'
               name='imei'
@@ -150,7 +158,7 @@ const AddPhoneForm = ({
               helperText={errors.imei}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               select
               label='Brand'
@@ -170,20 +178,20 @@ const AddPhoneForm = ({
             </TextField>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label='Model' name='model' value={values.model} onChange={handleChange} fullWidth required error={Boolean(errors.model)} helperText={errors.model} />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label='Color' name='color' value={values.color} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label='RAM' name='ram' value={values.ram} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField label='ROM' name='rom' value={values.rom} onChange={handleChange} fullWidth />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               select
               label='Condition'
@@ -199,7 +207,7 @@ const AddPhoneForm = ({
               ))}
             </TextField>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label='Battery Health %'
               name='batteryHealth'
@@ -212,7 +220,7 @@ const AddPhoneForm = ({
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label='Purchase Price'
               name='purchasePrice'
@@ -225,7 +233,7 @@ const AddPhoneForm = ({
               helperText={errors.purchasePrice}
             />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label='Sell Price'
               name='sellPrice'
@@ -239,7 +247,7 @@ const AddPhoneForm = ({
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField select label='Currency' name='currency' value={values.currency} onChange={handleChange} fullWidth>
               {CURRENCIES.map((item) => (
                 <MenuItem key={item} value={item}>
@@ -248,7 +256,7 @@ const AddPhoneForm = ({
               ))}
             </TextField>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <TextField
               select
               label='Stock Status'
@@ -265,7 +273,7 @@ const AddPhoneForm = ({
             </TextField>
           </Grid>
 
-          <Grid size={{ xs: 12 }}>
+          <Grid item xs={12}>
             <TextField
               label='Notes'
               name='notes'
