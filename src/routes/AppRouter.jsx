@@ -1,5 +1,6 @@
 ﻿import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ROUTE_PATHS } from '../constants/routePaths';
 
 // ── Layout Wrapper
 import MainLayout from '../components/layout/MainLayout.jsx';
@@ -20,16 +21,16 @@ const AppRouter = () => {
     // Global fallback while lazy pages are loading
     <Suspense fallback={<LoadingSpinner fullScreen label='Loading page...' />}>
       <Routes>
-        <Route path='/' element={<MainLayout />}>
-          <Route index element={<Navigate to='/dashboard' replace />} />
+        <Route path={ROUTE_PATHS.ROOT} element={<MainLayout />}>
+          <Route index element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
           {/* Main app routes */}
-          <Route path='dashboard' element={<DashboardPage />} />
-          <Route path='pos' element={<POSPage />} />
-          <Route path='inventory' element={<InventoryPage />} />
-          <Route path='khata' element={<KhataPage />} />
-          <Route path='roznamcha' element={<RoznamchaPage />} />
-          <Route path='reports' element={<ReportsPage />} />
-          <Route path='settings' element={<SettingsPage />} />
+          <Route path={ROUTE_PATHS.DASHBOARD} element={<DashboardPage />} />
+          <Route path={ROUTE_PATHS.POS} element={<POSPage />} />
+          <Route path={ROUTE_PATHS.INVENTORY} element={<InventoryPage />} />
+          <Route path={ROUTE_PATHS.KHATA} element={<KhataPage />} />
+          <Route path={ROUTE_PATHS.ROZNAMCHA} element={<RoznamchaPage />} />
+          <Route path={ROUTE_PATHS.REPORTS} element={<ReportsPage />} />
+          <Route path={ROUTE_PATHS.SETTINGS} element={<SettingsPage />} />
           {/* Catch-all route */}
           <Route path='*' element={<NotFoundPage />} />
         </Route>
@@ -39,3 +40,4 @@ const AppRouter = () => {
 };
 
 export default AppRouter;
+

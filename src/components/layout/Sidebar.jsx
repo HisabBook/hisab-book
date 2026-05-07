@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +31,7 @@ import {
   selectShopProfile,
 } from '../../redux/slices/settingsSlice';
 import { selectLowStockAccessories } from '../../redux/slices/inventorySlice';
+import { ROUTE_PATHS } from '../../constants/routePaths';
 import { selectDebtors } from '../../redux/slices/khataSlice';
 
 export const SIDEBAR_WIDTH = 260;
@@ -39,37 +40,37 @@ export const TOPBAR_HEIGHT = 64;
 const buildNavItems = () => [
   {
     labelKey: 'nav.dashboard',
-    path: '/dashboard',
+    path: ROUTE_PATHS.DASHBOARD,
     icon: <DashboardRoundedIcon />,
     badgeSelector: null,
   },
   {
     labelKey: 'nav.pos',
-    path: '/pos',
+    path: ROUTE_PATHS.POS,
     icon: <PointOfSaleRoundedIcon />,
     badgeSelector: null,
   },
   {
     labelKey: 'nav.inventory',
-    path: '/inventory',
+    path: ROUTE_PATHS.INVENTORY,
     icon: <InventoryRoundedIcon />,
     badgeSelector: selectLowStockAccessories,
   },
   {
     labelKey: 'nav.khata',
-    path: '/khata',
+    path: ROUTE_PATHS.KHATA,
     icon: <AccountBalanceWalletRoundedIcon />,
     badgeSelector: selectDebtors,
   },
   {
     labelKey: 'nav.roznamcha',
-    path: '/roznamcha',
+    path: ROUTE_PATHS.ROZNAMCHA,
     icon: <ReceiptLongRoundedIcon />,
     badgeSelector: null,
   },
   {
     labelKey: 'nav.reports',
-    path: '/reports',
+    path: ROUTE_PATHS.REPORTS,
     icon: <BarChartRoundedIcon />,
     badgeSelector: null,
   },
@@ -78,7 +79,7 @@ const buildNavItems = () => [
 const buildBottomNavItems = () => [
   {
     labelKey: 'nav.settings',
-    path: '/settings',
+    path: ROUTE_PATHS.SETTINGS,
     icon: <SettingsRoundedIcon />,
     badgeSelector: null,
   },
@@ -321,3 +322,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
