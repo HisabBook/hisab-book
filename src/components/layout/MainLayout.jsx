@@ -1,6 +1,5 @@
 import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
 
 import { useAppStatus } from '../../hooks/useAppStatus';
 import Sidebar, { TOPBAR_HEIGHT } from './Sidebar';
@@ -8,7 +7,6 @@ import Topbar from './Topbar';
 
 const MainLayout = () => {
   const { isRtl, isDark } = useAppStatus();
-  const muiTheme = useTheme();
 
   return (
     <Box
@@ -16,9 +14,8 @@ const MainLayout = () => {
         display: 'flex',
         minHeight: '100vh',
         flexDirection: isRtl ? 'row-reverse' : 'row',
-        backgroundColor: isDark
-          ? muiTheme.palette.background.default
-          : '#F4F6F9',
+        // Use theme token for consistency
+        bgcolor: 'background.default',
       }}
     >
       <Sidebar />

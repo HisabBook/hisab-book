@@ -1,400 +1,336 @@
 ﻿import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
   Dialog,
-  Divider,
-  Stack,
   Tab,
   Tabs,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Alert,
+  Stack,
+  IconButton,
+  Tooltip,
   Typography,
+  Card, // THE FIX IS HERE
 } from '@mui/material';
+import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 
+// --- (All other imports remain the same) ---
+import PageHeader from '../../components/ui/PageHeader';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import EmptyState from '../../components/ui/EmptyState';
+import StatusBadge from '../../components/ui/StatusBadge';
+import { useAppStatus } from '../../hooks/useAppStatus';
 import AddPhoneForm from './components/AddPhoneForm.jsx';
 import AddLaptopForm from './components/AddLaptopForm.jsx';
 import AddAccessoryForm from './components/AddAccessoryForm.jsx';
-import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import {
-  addAccessory,
-  addLaptop,
-  addPhone,
-  deleteAccessory,
-  deleteLaptop,
-  deletePhone,
-  selectAllAccessories,
-  selectAllLaptops,
   selectAllPhones,
-  updateAccessory,
-  updateLaptop,
+  selectAllLaptops,
+  selectAllAccessories,
+  addPhone,
   updatePhone,
+  deletePhone,
+  addLaptop,
+  updateLaptop,
+  deleteLaptop,
+  addAccessory,
+  updateAccessory,
+  deleteAccessory,
 } from '../../redux/slices/inventorySlice';
 
+// --- (Helper functions like createNextId and itemTypeConfig remain the same) ---
 const createNextId = (items, prefix) => {
-  const maxNum = items.reduce((maxValue, item) => {
-    const itemId = String(item.id ?? '');
-    if (!itemId.startsWith(prefix)) return maxValue;
-    const num = Number(itemId.replace(`${prefix}_`, ''));
-    if (!Number.isNaN(num)) return Math.max(maxValue, num);
-    return maxValue;
-  }, 0);
-
+  const maxNum = items.reduce(
+    (max, item) =>
+      Math.max(
+        max,
+        Number(String(item.id ?? '').replace(`${prefix}_`, '')) || 0
+      ),
+    0
+  );
   return `${prefix}_${String(maxNum + 1).padStart(3, '0')}`;
 };
 
+const itemTypeConfig = {
+  phones: {
+    prefix: 'ph',
+    add: addPhone,
+    update: updatePhone,
+    delete: deletePhone,
+    dataSelector: selectAllPhones,
+    FormComponent: AddPhoneForm,
+  },
+  laptops: {
+    prefix: 'lp',
+    add: addLaptop,
+    update: updateLaptop,
+    delete: deleteLaptop,
+    dataSelector: selectAllLaptops,
+    FormComponent: AddLaptopForm,
+  },
+  accessories: {
+    prefix: 'acc',
+    add: addAccessory,
+    update: updateAccessory,
+    delete: deleteAccessory,
+    dataSelector: selectAllAccessories,
+    FormComponent: AddAccessoryForm,
+  },
+};
+
+const CustomNoRowsOverlay = () => (
+  <EmptyState
+    message='No Items Found'
+    details='Select a different category or add a new item.'
+  />
+);
+
+// --- MAIN COMPONENT ---
 const InventoryPage = () => {
   const dispatch = useDispatch();
+  const { isRtl, isDark } = useAppStatus();
+
+  // --- (All state management and handlers remain the same) ---
+  const [activeTab, setActiveTab] = useState('phones');
+  const [formMeta, setFormMeta] = useState({ open: false, item: null });
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [feedback, setFeedback] = useState('');
+
   const phones = useSelector(selectAllPhones);
   const laptops = useSelector(selectAllLaptops);
   const accessories = useSelector(selectAllAccessories);
 
-  const [activeTab, setActiveTab] = useState('phones');
-  const [formState, setFormState] = useState({ open: false, type: null, mode: 'create', item: null });
-  const [deleteState, setDeleteState] = useState({ open: false, type: null, item: null });
-  const [feedback, setFeedback] = useState({ type: 'success', text: '' });
+  const currentData = useMemo(() => {
+    if (activeTab === 'laptops') return laptops;
+    if (activeTab === 'accessories') return accessories;
+    return phones;
+  }, [activeTab, phones, laptops, accessories]);
 
-  const counts = useMemo(
-    () => ({
-      phones: phones.length,
-      laptops: laptops.length,
-      accessories: accessories.length,
-    }),
-    [phones.length, laptops.length, accessories.length]
-  );
+  const handleOpenForm = (item = null) => setFormMeta({ open: true, item });
+  const handleCloseForm = () => setFormMeta({ open: false, item: null });
 
-  const openCreateModal = (type) => {
-    setFormState({ open: true, type, mode: 'create', item: null });
+  const handleSubmit = (formData) => {
+    const config = itemTypeConfig[activeTab];
+    const isEditMode = !!formMeta.item;
+    const action = isEditMode ? config.update : config.add;
+    const payload = isEditMode
+      ? formData
+      : { ...formData, id: createNextId(currentData, config.prefix) };
+
+    dispatch(action(payload));
+    setFeedback(`Item ${isEditMode ? 'updated' : 'added'} successfully.`);
+    handleCloseForm();
   };
 
-  const openEditModal = (type, item) => {
-    setFormState({ open: true, type, mode: 'edit', item });
+  const handleDeleteConfirm = () => {
+    if (!itemToDelete) return;
+    const config = itemTypeConfig[itemToDelete.type];
+    dispatch(config.delete(itemToDelete.id));
+    setFeedback(`Item deleted successfully.`);
+    setItemToDelete(null);
   };
 
-  const closeFormModal = () => {
-    setFormState({ open: false, type: null, mode: 'create', item: null });
-  };
+  const columns = useMemo(() => {
+    const baseActionColumn = {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      filterable: false,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: ({ row }) => (
+        <Box>
+          <Tooltip title='Edit'>
+            <IconButton size='small' onClick={() => handleOpenForm(row)}>
+              <EditRoundedIcon fontSize='small' />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title='Delete'>
+            <IconButton
+              size='small'
+              color='error'
+              onClick={() => setItemToDelete({ ...row, type: activeTab })}
+            >
+              <DeleteOutlineRoundedIcon fontSize='small' />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    };
 
-  const showSuccess = (text) => {
-    setFeedback({ type: 'success', text });
-  };
+    const commonColumns = [
+      { field: 'brand', headerName: 'Brand', width: 140 },
+      {
+        field: 'sellPrice',
+        headerName: 'Sell Price',
+        width: 140,
+        renderCell: ({ value, row }) => (
+          <Typography variant='body2' sx={{ fontWeight: 600 }}>
+            {row.currency === 'AFN' ? 'AFN ' : '$'}
+            {Number(value).toLocaleString()}
+          </Typography>
+        ),
+      },
+    ];
 
-  const handlePhoneSubmit = (data) => {
-    if (formState.mode === 'create') {
-      dispatch(addPhone({ ...data, id: createNextId(phones, 'ph') }));
-      showSuccess('Phone added successfully.');
-    } else {
-      dispatch(updatePhone(data));
-      showSuccess('Phone updated successfully.');
+    switch (activeTab) {
+      case 'phones':
+        return [
+          { field: 'imei', headerName: 'IMEI', width: 160 },
+          { field: 'model', headerName: 'Model', flex: 1, minWidth: 200 },
+          ...commonColumns,
+          {
+            field: 'stockStatus',
+            headerName: 'Status',
+            width: 120,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: ({ value }) => <StatusBadge status={value} />,
+          },
+          baseActionColumn,
+        ];
+      case 'laptops':
+        return [
+          { field: 'serialNumber', headerName: 'Serial No.', width: 180 },
+          { field: 'model', headerName: 'Model', flex: 1, minWidth: 200 },
+          ...commonColumns,
+          {
+            field: 'stockStatus',
+            headerName: 'Status',
+            width: 120,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: ({ value }) => <StatusBadge status={value} />,
+          },
+          baseActionColumn,
+        ];
+      case 'accessories':
+        return [
+          { field: 'name', headerName: 'Name', flex: 1, minWidth: 250 },
+          { field: 'category', headerName: 'Category', width: 150 },
+          {
+            field: 'quantity',
+            headerName: 'Qty',
+            width: 80,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: ({ value }) => (
+              <Typography sx={{ fontWeight: 600 }}>{value}</Typography>
+            ),
+          },
+          ...commonColumns,
+          baseActionColumn,
+        ];
+      default:
+        return [];
     }
-    closeFormModal();
-  };
+  }, [activeTab]);
 
-  const handleLaptopSubmit = (data) => {
-    if (formState.mode === 'create') {
-      dispatch(addLaptop({ ...data, id: createNextId(laptops, 'lp') }));
-      showSuccess('Laptop added successfully.');
-    } else {
-      dispatch(updateLaptop(data));
-      showSuccess('Laptop updated successfully.');
-    }
-    closeFormModal();
-  };
-
-  const handleAccessorySubmit = (data) => {
-    if (formState.mode === 'create') {
-      dispatch(addAccessory({ ...data, id: createNextId(accessories, 'acc') }));
-      showSuccess('Accessory added successfully.');
-    } else {
-      dispatch(updateAccessory(data));
-      showSuccess('Accessory updated successfully.');
-    }
-    closeFormModal();
-  };
-
-  const openDeleteConfirm = (type, item) => {
-    setDeleteState({ open: true, type, item });
-  };
-
-  const closeDeleteConfirm = () => {
-    setDeleteState({ open: false, type: null, item: null });
-  };
-
-  const handleDelete = () => {
-    if (!deleteState.item) return;
-
-    if (deleteState.type === 'phone') {
-      dispatch(deletePhone(deleteState.item.id));
-      showSuccess('Phone deleted successfully.');
-    } else if (deleteState.type === 'laptop') {
-      dispatch(deleteLaptop(deleteState.item.id));
-      showSuccess('Laptop deleted successfully.');
-    } else if (deleteState.type === 'accessory') {
-      dispatch(deleteAccessory(deleteState.item.id));
-      showSuccess('Accessory deleted successfully.');
-    }
-
-    closeDeleteConfirm();
-  };
-
-  const renderPhonesTable = () => (
-    <TableContainer>
-      <Table size='small'>
-        <TableHead>
-          <TableRow>
-            <TableCell>IMEI</TableCell>
-            <TableCell>Brand / Model</TableCell>
-            <TableCell>Condition</TableCell>
-            <TableCell>Stock</TableCell>
-            <TableCell align='right'>Sell Price</TableCell>
-            <TableCell align='right'>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {phones.map((item) => (
-            <TableRow key={item.id} hover>
-              <TableCell>{item.imei}</TableCell>
-              <TableCell>{`${item.brand} ${item.model}`}</TableCell>
-              <TableCell>{item.condition}</TableCell>
-              <TableCell>
-                <Chip
-                  size='small'
-                  label={item.stockStatus}
-                  color={item.stockStatus === 'Sold' ? 'default' : 'success'}
-                />
-              </TableCell>
-              <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
-              <TableCell align='right'>
-                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                  <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('phone', item)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size='small'
-                    color='error'
-                    startIcon={<DeleteOutlineRoundedIcon />}
-                    onClick={() => openDeleteConfirm('phone', item)}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-
-  const renderLaptopsTable = () => (
-    <TableContainer>
-      <Table size='small'>
-        <TableHead>
-          <TableRow>
-            <TableCell>Serial Number</TableCell>
-            <TableCell>Brand / Model</TableCell>
-            <TableCell>Condition</TableCell>
-            <TableCell>Stock</TableCell>
-            <TableCell align='right'>Sell Price</TableCell>
-            <TableCell align='right'>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {laptops.map((item) => (
-            <TableRow key={item.id} hover>
-              <TableCell>{item.serialNumber}</TableCell>
-              <TableCell>{`${item.brand} ${item.model}`}</TableCell>
-              <TableCell>{item.condition}</TableCell>
-              <TableCell>
-                <Chip
-                  size='small'
-                  label={item.stockStatus}
-                  color={item.stockStatus === 'Sold' ? 'default' : 'success'}
-                />
-              </TableCell>
-              <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
-              <TableCell align='right'>
-                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                  <Button size='small' startIcon={<EditRoundedIcon />} onClick={() => openEditModal('laptop', item)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size='small'
-                    color='error'
-                    startIcon={<DeleteOutlineRoundedIcon />}
-                    onClick={() => openDeleteConfirm('laptop', item)}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-
-  const renderAccessoriesTable = () => (
-    <TableContainer>
-      <Table size='small'>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Category</TableCell>
-            <TableCell>Qty</TableCell>
-            <TableCell>Low Stock Threshold</TableCell>
-            <TableCell align='right'>Sell Price</TableCell>
-            <TableCell align='right'>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {accessories.map((item) => (
-            <TableRow key={item.id} hover>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.category}</TableCell>
-              <TableCell>{item.quantity}</TableCell>
-              <TableCell>{item.lowStockThreshold}</TableCell>
-              <TableCell align='right'>{`${item.sellPrice} ${item.currency}`}</TableCell>
-              <TableCell align='right'>
-                <Stack direction='row' spacing={1} justifyContent='flex-end'>
-                  <Button
-                    size='small'
-                    startIcon={<EditRoundedIcon />}
-                    onClick={() => openEditModal('accessory', item)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size='small'
-                    color='error'
-                    startIcon={<DeleteOutlineRoundedIcon />}
-                    onClick={() => openDeleteConfirm('accessory', item)}
-                  >
-                    Delete
-                  </Button>
-                </Stack>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-
-  const currentCreateType =
-    activeTab === 'phones' ? 'phone' : activeTab === 'laptops' ? 'laptop' : 'accessory';
+  const CurrentFormComponent = itemTypeConfig[activeTab].FormComponent;
 
   return (
     <Stack spacing={2.5}>
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={1.5}
-        sx={{ justifyContent: 'space-between' }}
-      >
-        <Box>
-          <Typography variant='h5' sx={{ fontWeight: 800 }}>
-            Inventory Management
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            Manage unique and bulk stock with safe CRUD operations.
-          </Typography>
+      <PageHeader title='Inventory'>
+        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+          <Tabs
+            value={activeTab}
+            onChange={(_, value) => setActiveTab(value)}
+            sx={{
+              '& .MuiTabs-indicator': {
+                height: 4,
+                borderRadius: '4px 4px 0 0',
+              },
+            }}
+          >
+            <Tab value='phones' label={`Phones (${phones.length})`} />
+            <Tab value='laptops' label={`Laptops (${laptops.length})`} />
+            <Tab
+              value='accessories'
+              label={`Accessories (${accessories.length})`}
+            />
+          </Tabs>
         </Box>
         <Button
           variant='contained'
           startIcon={<AddRoundedIcon />}
-          onClick={() => openCreateModal(currentCreateType)}
+          onClick={() => handleOpenForm()}
         >
-          {currentCreateType === 'phone'
-            ? 'Add Phone'
-            : currentCreateType === 'laptop'
-              ? 'Add Laptop'
-              : 'Add Accessory'}
+          Add {activeTab.slice(0, -1)}
         </Button>
-      </Stack>
+      </PageHeader>
 
-      {feedback.text && (
-        <Alert severity={feedback.type} onClose={() => setFeedback({ type: 'success', text: '' })}>
-          {feedback.text}
+      {feedback && (
+        <Alert
+          severity='success'
+          onClose={() => setFeedback('')}
+          sx={{ mb: 2 }}
+        >
+          {feedback}
         </Alert>
       )}
 
-      <Card>
-        <CardContent>
-          <Stack direction='row' spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
-            <Chip label={`Phones: ${counts.phones}`} color='primary' variant='outlined' />
-            <Chip label={`Laptops: ${counts.laptops}`} color='primary' variant='outlined' />
-            <Chip
-              label={`Accessories: ${counts.accessories}`}
-              color='primary'
-              variant='outlined'
-            />
-          </Stack>
-
-          <Divider sx={{ mb: 2 }} />
-
-          <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} sx={{ mb: 2 }}>
-            <Tab value='phones' label='Phones' />
-            <Tab value='laptops' label='Laptops' />
-            <Tab value='accessories' label='Accessories' />
-          </Tabs>
-
-          {activeTab === 'phones' && renderPhonesTable()}
-          {activeTab === 'laptops' && renderLaptopsTable()}
-          {activeTab === 'accessories' && renderAccessoriesTable()}
-        </CardContent>
+      <Card
+        sx={{ height: 'calc(100vh - 260px)', width: '100%', borderRadius: 3 }}
+      >
+        <DataGrid
+          rows={currentData}
+          columns={columns}
+          getRowId={(row) => row.id}
+          initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+          pageSizeOptions={[10, 25, 50, 100]}
+          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+          disableRowSelectionOnClick
+          sx={{
+            border: 'none',
+            [`& .${gridClasses.columnHeaders}`]: {
+              backgroundColor: isDark ? '#1A3F5C' : '#F4F6F9',
+              fontWeight: 'bold',
+            },
+            [`& .${gridClasses.cell}`]: {
+              borderBottom: `1px solid ${isDark ? '#1A3F5C' : '#E8EDF2'}`,
+            },
+            [`& .${gridClasses.row}`]: {
+              '&:hover': {
+                backgroundColor: isDark ? '#0D2137' : '#F8FAFC',
+              },
+            },
+            '& .MuiDataGrid-footerContainer': {
+              borderTop: `1px solid ${isDark ? '#1A3F5C' : '#E8EDF2'}`,
+            },
+            '--DataGrid-overlayHeight': '300px',
+            direction: isRtl ? 'rtl' : 'ltr',
+          }}
+        />
       </Card>
 
-      <Dialog open={formState.open} onClose={closeFormModal} fullWidth maxWidth='md'>
-        {formState.type === 'phone' && (
-          <AddPhoneForm
-            mode={formState.mode}
-            initialValues={formState.item}
-            existingPhones={phones}
-            onSubmit={handlePhoneSubmit}
-            onCancel={closeFormModal}
-          />
-        )}
-        {formState.type === 'laptop' && (
-          <AddLaptopForm
-            mode={formState.mode}
-            initialValues={formState.item}
-            existingLaptops={laptops}
-            onSubmit={handleLaptopSubmit}
-            onCancel={closeFormModal}
-          />
-        )}
-        {formState.type === 'accessory' && (
-          <AddAccessoryForm
-            mode={formState.mode}
-            initialValues={formState.item}
-            onSubmit={handleAccessorySubmit}
-            onCancel={closeFormModal}
-          />
-        )}
+      <Dialog
+        open={formMeta.open}
+        onClose={handleCloseForm}
+        fullWidth
+        maxWidth='md'
+      >
+        <CurrentFormComponent
+          mode={formMeta.item ? 'edit' : 'create'}
+          initialValues={formMeta.item}
+          existingPhones={phones}
+          existingLaptops={laptops}
+          onSubmit={handleSubmit}
+          onCancel={handleCloseForm}
+        />
       </Dialog>
 
       <ConfirmDialog
-        open={deleteState.open}
-        title='Delete Item'
-        message='This action cannot be undone. Do you want to continue?'
-        confirmText='Delete'
-        cancelText='Cancel'
+        open={!!itemToDelete}
+        title='Confirm Deletion'
+        message={`Are you sure you want to permanently delete this item? This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setItemToDelete(null)}
         danger
-        onConfirm={handleDelete}
-        onCancel={closeDeleteConfirm}
       />
     </Stack>
   );

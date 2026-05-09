@@ -2,8 +2,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '@mui/material/styles';
-
 import {
   Box,
   Drawer,
@@ -84,7 +82,7 @@ const buildBottomNavItems = () => [
     badgeSelector: null,
   },
 ];
-// NavItem component is now self-sufficient and defined internally
+
 const NavItem = ({ item, isActive }) => {
   const { t } = useTranslation();
   const { isRtl } = useAppStatus();
@@ -143,7 +141,7 @@ const NavItem = ({ item, isActive }) => {
         </ListItemIcon>
         <ListItemText
           primary={t(item.labelKey)}
-          primarytypographyprops={{
+          primaryTypographyProps={{
             fontSize: '0.9rem',
             fontWeight: active ? 700 : 500,
             fontFamily: isRtl ? '"Vazirmatn", "Tahoma", sans-serif' : 'inherit',
@@ -167,7 +165,6 @@ const NavItem = ({ item, isActive }) => {
 };
 
 const Sidebar = () => {
-  const theme = useTheme();
   const location = useLocation();
   const { isRtl } = useAppStatus();
   const shopProfile = useSelector(selectShopProfile);
@@ -185,8 +182,7 @@ const Sidebar = () => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: SIDEBAR_WIDTH,
-          backgroundColor:
-            theme.palette.mode === 'dark' ? '#031427' : '#05192D',
+          backgroundColor: '#05192D', // Using the consistent dark color
           border: 'none',
           boxShadow: isRtl
             ? '-4px 0 20px rgba(5,25,45,0.25)'
