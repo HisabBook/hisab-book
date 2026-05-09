@@ -1,3 +1,4 @@
+// Displays a generic "empty" message when there is no content to show.
 import { Box, Typography } from '@mui/material';
 import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
 import PropTypes from 'prop-types';
