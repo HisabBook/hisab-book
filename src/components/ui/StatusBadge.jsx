@@ -1,3 +1,4 @@
+// A small, colored chip to visually represent a status.
 import { Chip } from '@mui/material';
 import PropTypes from 'prop-types';
 
