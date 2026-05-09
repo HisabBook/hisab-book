@@ -1,3 +1,4 @@
+// A reusable header component for pages, displaying a title and action buttons.
 import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useAppStatus } from '../../hooks/useAppStatus';
