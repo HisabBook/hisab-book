@@ -98,6 +98,8 @@ HISAB-BOOK/
 │   │   ├── useCurrencyConverter.js # Hook to calculate prices based on Daily Rate
 │   │   ├── useLanguageDirection.js # Hook to detect and apply RTL/LTR styling
 │   │   └── useLocalStorage.js  # Wrapper for browser persistence logic
+│   │   └── useAppStatus.js  # Global app status (online/offline, maintenance, loading, notifications)
+│   │   └── useRouteTitle.js  # Manage document.title per route with optional prefix/suffix
 │   ├── locales/                # Internationalization (i18n) dictionaries
 │   │   ├── en.json             # English (LTR) translation keys
 │   │   ├── fa.json             # Persian/Dari (RTL) translation keys
