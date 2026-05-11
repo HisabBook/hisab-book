@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+﻿import { Suspense, lazy } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ROUTE_PATHS } from '../constants/routePaths';
 
@@ -7,11 +7,17 @@ import MainLayout from '../components/layout/MainLayout.jsx';
 import LoadingSpinner from '../components/ui/LoadingSpinner.jsx';
 
 // Route-level code splitting
-const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage.jsx'));
-const InventoryPage = lazy(() => import('../pages/inventory/InventoryPage.jsx'));
+const DashboardPage = lazy(
+  () => import('../pages/dashboard/DashboardPage.jsx')
+);
+const InventoryPage = lazy(
+  () => import('../pages/inventory/InventoryPage.jsx')
+);
 const POSPage = lazy(() => import('../pages/pos/POSPage.jsx'));
 const KhataPage = lazy(() => import('../pages/khata/KhataPage.jsx'));
-const RoznamchaPage = lazy(() => import('../pages/roznamcha/RoznamchaPage.jsx'));
+const RoznamchaPage = lazy(
+  () => import('../pages/roznamcha/RoznamchaPage.jsx')
+);
 const ReportsPage = lazy(() => import('../pages/reports/ReportsPage.jsx'));
 const SettingsPage = lazy(() => import('../pages/settings/SettingsPage.jsx'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage.jsx'));
@@ -21,7 +27,6 @@ export const router = createBrowserRouter([
   {
     path: ROUTE_PATHS.ROOT,
     element: <MainLayout />,
-    errorElement: <NotFoundPage />, // A top-level error page
     children: [
       {
         index: true,
