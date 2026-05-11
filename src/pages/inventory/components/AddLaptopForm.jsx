@@ -135,7 +135,7 @@ const AddLaptopForm = ({
       <DialogTitle>{mode === 'edit' ? 'Edit Laptop' : 'Add Laptop'}</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mt: 0 }}>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               label='Serial Number'
               name='serialNumber'
@@ -147,7 +147,7 @@ const AddLaptopForm = ({
               helperText={errors.serialNumber}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               label='Brand'
@@ -166,55 +166,55 @@ const AddLaptopForm = ({
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Model' name='model' value={values.model} onChange={handleChange} fullWidth required error={Boolean(errors.model)} helperText={errors.model} />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='CPU' name='cpu' value={values.cpu} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='GPU' name='gpu' value={values.gpu} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='RAM' name='ram' value={values.ram} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Storage' name='storage' value={values.storage} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Storage Type' name='storageType' value={values.storageType} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Screen Size' name='screenSize' value={values.screenSize} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField select label='Condition' name='condition' value={values.condition} onChange={handleChange} fullWidth>
               {CONDITIONS.map((item) => (
                 <MenuItem key={item} value={item}>{item}</MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Purchase Price' name='purchasePrice' type='number' value={values.purchasePrice} onChange={handleChange} fullWidth required error={Boolean(errors.purchasePrice)} helperText={errors.purchasePrice} />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Sell Price' name='sellPrice' type='number' value={values.sellPrice} onChange={handleChange} fullWidth required error={Boolean(errors.sellPrice)} helperText={errors.sellPrice} />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField select label='Currency' name='currency' value={values.currency} onChange={handleChange} fullWidth>
               {CURRENCIES.map((item) => (
                 <MenuItem key={item} value={item}>{item}</MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField select label='Stock Status' name='stockStatus' value={values.stockStatus} onChange={handleChange} fullWidth>
               {STOCK_STATUSES.map((item) => (
                 <MenuItem key={item} value={item}>{item}</MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField label='Notes' name='notes' value={values.notes} onChange={handleChange} fullWidth multiline minRows={2} />
           </Grid>
         </Grid>
@@ -230,3 +230,4 @@ const AddLaptopForm = ({
 };
 
 export default AddLaptopForm;
+
