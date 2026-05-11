@@ -18,12 +18,12 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 
-// --- (All other imports remain the same) ---
 import PageHeader from '../../components/ui/PageHeader';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import EmptyState from '../../components/ui/EmptyState';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { useAppStatus } from '../../hooks/useAppStatus';
+import InventoryFilters from './components/InventoryFilters';
 import AddPhoneForm from './components/AddPhoneForm.jsx';
 import AddLaptopForm from './components/AddLaptopForm.jsx';
 import AddAccessoryForm from './components/AddAccessoryForm.jsx';
@@ -41,9 +41,7 @@ import {
   updateAccessory,
   deleteAccessory,
 } from '../../redux/slices/inventorySlice';
-import InventoryFilters from './components/InventoryFilters';
 
-// --- (Helper functions like createNextId and itemTypeConfig remain the same) ---
 const createNextId = (items, prefix) => {
   const maxNum = items.reduce(
     (max, item) =>
@@ -90,7 +88,6 @@ const CustomNoRowsOverlay = () => (
   />
 );
 
-// --- MAIN COMPONENT ---
 const InventoryPage = () => {
   const dispatch = useDispatch();
   const { isRtl, isDark } = useAppStatus();
@@ -99,70 +96,67 @@ const InventoryPage = () => {
   const [formMeta, setFormMeta] = useState({ open: false, item: null });
   const [itemToDelete, setItemToDelete] = useState(null);
   const [feedback, setFeedback] = useState('');
+
   const [filters, setFilters] = useState({
-    category: 'all',
-    brand: 'all',
-    status: 'all',
-    itemType: 'all', // Ensure itemType is part of the filter state
+    brand: '',
+    category: '',
+    status: '',
   });
 
   const phones = useSelector(selectAllPhones);
   const laptops = useSelector(selectAllLaptops);
   const accessories = useSelector(selectAllAccessories);
 
-  const categories = useMemo(
-    () => [...new Set(accessories.map((a) => a.category))],
-    [accessories]
+  const currentData = useMemo(() => {
+    if (activeTab === 'laptops') return laptops;
+    if (activeTab === 'accessories') return accessories;
+    return phones;
+  }, [activeTab, phones, laptops, accessories]);
+
+  const availableBrands = useMemo(
+    () =>
+      [
+        ...new Set(currentData.map((item) => item.brand).filter(Boolean)),
+      ].sort(),
+    [currentData]
   );
-  const brands = useMemo(() => {
-    const allBrands = [
-      ...phones.map((p) => p.brand),
-      ...laptops.map((l) => l.brand),
-    ];
-    return [...new Set(allBrands)];
-  }, [phones, laptops]);
-  const statuses = ['Available', 'Sold'];
-  const types = ['Phone', 'Laptop', 'Accessory'];
-
+  const availableCategories = useMemo(
+    () =>
+      activeTab === 'accessories'
+        ? [
+            ...new Set(
+              currentData.map((item) => item.category).filter(Boolean)
+            ),
+          ].sort()
+        : [],
+    [currentData, activeTab]
+  );
   const filteredData = useMemo(() => {
-    let sourceData;
-    if (activeTab === 'laptops') sourceData = laptops;
-    else if (activeTab === 'accessories') sourceData = accessories;
-    else sourceData = phones;
+    return currentData.filter((item) => {
+      const brandMatch = filters.brand ? item.brand === filters.brand : true;
+      const statusMatch = filters.status
+        ? item.stockStatus === filters.status
+        : true;
+      const categoryMatch = filters.category
+        ? item.category === filters.category
+        : true;
 
-    if (!sourceData) return [];
-
-    return sourceData.filter((item) => {
-      const brandMatch =
-        filters.brand === 'all' || !item.brand || item.brand === filters.brand;
-      const statusMatch =
-        filters.status === 'all' ||
-        !item.stockStatus ||
-        item.stockStatus === filters.status;
-      const categoryMatch =
-        filters.category === 'all' ||
-        !item.category ||
-        item.category === filters.category;
-
-      switch (activeTab) {
-        case 'phones':
-        case 'laptops':
-          return brandMatch && statusMatch;
-        case 'accessories':
-          return categoryMatch;
-        default:
-          return true;
-      }
+      // All conditions must be true
+      return brandMatch && statusMatch && categoryMatch;
     });
-  }, [activeTab, phones, laptops, accessories, filters]);
+  }, [currentData, filters]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleClearFilters = () => {
-    setFilters({
-      category: 'all',
-      brand: 'all',
-      status: 'all',
-      itemType: 'all',
-    });
+    setFilters({ brand: '', category: '', status: '' });
+  };
+
+  const handleTabChange = (_, value) => {
+    setActiveTab(value);
+    handleClearFilters(); // Also reset filters when changing tabs
   };
 
   const handleOpenForm = (item = null) => setFormMeta({ open: true, item });
@@ -172,15 +166,9 @@ const InventoryPage = () => {
     const config = itemTypeConfig[activeTab];
     const isEditMode = !!formMeta.item;
     const action = isEditMode ? config.update : config.add;
-
-    let fullDataSet;
-    if (activeTab === 'laptops') fullDataSet = laptops;
-    else if (activeTab === 'accessories') fullDataSet = accessories;
-    else fullDataSet = phones;
-
     const payload = isEditMode
       ? formData
-      : { ...formData, id: createNextId(fullDataSet, config.prefix) };
+      : { ...formData, id: createNextId(currentData, config.prefix) };
 
     dispatch(action(payload));
     setFeedback(`Item ${isEditMode ? 'updated' : 'added'} successfully.`);
@@ -196,6 +184,7 @@ const InventoryPage = () => {
   };
 
   const columns = useMemo(() => {
+    // This logic is good, no changes needed here.
     const baseActionColumn = {
       field: 'actions',
       headerName: 'Actions',
@@ -223,7 +212,6 @@ const InventoryPage = () => {
         </Box>
       ),
     };
-
     const commonColumns = [
       { field: 'brand', headerName: 'Brand', width: 140 },
       {
@@ -238,7 +226,6 @@ const InventoryPage = () => {
         ),
       },
     ];
-
     switch (activeTab) {
       case 'phones':
         return [
@@ -290,7 +277,7 @@ const InventoryPage = () => {
       default:
         return [];
     }
-  }, [activeTab, isRtl]);
+  }, [activeTab, isRtl]); // handleOpenForm should be added here as a dependency if not memoized
 
   const CurrentFormComponent = itemTypeConfig[activeTab].FormComponent;
 
@@ -300,7 +287,7 @@ const InventoryPage = () => {
         <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
           <Tabs
             value={activeTab}
-            onChange={(_, value) => setActiveTab(value)}
+            onChange={handleTabChange}
             sx={{
               '& .MuiTabs-indicator': {
                 height: 4,
@@ -337,17 +324,20 @@ const InventoryPage = () => {
 
       <InventoryFilters
         filters={filters}
-        setFilters={setFilters}
-        categories={categories}
-        brands={brands}
-        statuses={statuses}
-        types={types}
+        onFilterChange={handleFilterChange}
         onClear={handleClearFilters}
+        availableBrands={availableBrands}
+        availableCategories={availableCategories}
         activeTab={activeTab}
       />
 
       <Card
-        sx={{ height: 'calc(100vh - 340px)', width: '100%', borderRadius: 3 }}
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          borderRadius: 3,
+          height: 'calc(100vh - 320px)',
+        }}
       >
         <DataGrid
           rows={filteredData}
