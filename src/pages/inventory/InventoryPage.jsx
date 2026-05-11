@@ -103,6 +103,7 @@ const InventoryPage = () => {
     category: 'all',
     brand: 'all',
     status: 'all',
+    itemType: 'all', // Ensure itemType is part of the filter state
   });
 
   const phones = useSelector(selectAllPhones);
@@ -121,6 +122,7 @@ const InventoryPage = () => {
     return [...new Set(allBrands)];
   }, [phones, laptops]);
   const statuses = ['Available', 'Sold'];
+  const types = ['Phone', 'Laptop', 'Accessory'];
 
   const filteredData = useMemo(() => {
     let sourceData;
@@ -155,7 +157,12 @@ const InventoryPage = () => {
   }, [activeTab, phones, laptops, accessories, filters]);
 
   const handleClearFilters = () => {
-    setFilters({ category: 'all', brand: 'all', status: 'all' });
+    setFilters({
+      category: 'all',
+      brand: 'all',
+      status: 'all',
+      itemType: 'all',
+    });
   };
 
   const handleOpenForm = (item = null) => setFormMeta({ open: true, item });
@@ -334,6 +341,7 @@ const InventoryPage = () => {
         categories={categories}
         brands={brands}
         statuses={statuses}
+        types={types}
         onClear={handleClearFilters}
         activeTab={activeTab}
       />
