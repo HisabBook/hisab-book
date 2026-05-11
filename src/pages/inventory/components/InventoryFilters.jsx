@@ -1,6 +1,3 @@
-// src/pages/inventory/components/InventoryFilters.jsx
-// --- CORRECTED AND REFINED FOR LAYOUT ---
-
 import {
   Box,
   Button,

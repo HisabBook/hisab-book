@@ -1,7 +1,4 @@
-﻿// src/pages/inventory/InventoryPage.jsx
-// --- CORRECTED AND FINAL VERSION ---
-
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -100,7 +97,6 @@ const InventoryPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [feedback, setFeedback] = useState('');
 
-  // --- CORRECTED: Simplified filter state ---
   const [filters, setFilters] = useState({
     brand: '',
     category: '',
@@ -117,7 +113,6 @@ const InventoryPage = () => {
     return phones;
   }, [activeTab, phones, laptops, accessories]);
 
-  // --- CORRECTED: Dynamically generate filter options based on the CURRENT tab's data ---
   const availableBrands = useMemo(
     () =>
       [
@@ -136,8 +131,6 @@ const InventoryPage = () => {
         : [],
     [currentData, activeTab]
   );
-
-  // --- CORRECTED: Robust and accurate filtering logic ---
   const filteredData = useMemo(() => {
     return currentData.filter((item) => {
       const brandMatch = filters.brand ? item.brand === filters.brand : true;
@@ -153,7 +146,6 @@ const InventoryPage = () => {
     });
   }, [currentData, filters]);
 
-  // --- CORRECTED: Handlers for a controlled filter component ---
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
@@ -174,8 +166,6 @@ const InventoryPage = () => {
     const config = itemTypeConfig[activeTab];
     const isEditMode = !!formMeta.item;
     const action = isEditMode ? config.update : config.add;
-
-    // --- CORRECTED: Use 'currentData' to avoid bugs with creating new IDs ---
     const payload = isEditMode
       ? formData
       : { ...formData, id: createNextId(currentData, config.prefix) };
@@ -332,7 +322,6 @@ const InventoryPage = () => {
         </Alert>
       )}
 
-      {/* --- CORRECTED: Passing the right props to the refined filter component --- */}
       <InventoryFilters
         filters={filters}
         onFilterChange={handleFilterChange}
