@@ -11,7 +11,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  Card, // THE FIX IS HERE
+  Card,
 } from '@mui/material';
 import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -41,6 +41,7 @@ import {
   updateAccessory,
   deleteAccessory,
 } from '../../redux/slices/inventorySlice';
+import InventoryFilters from './components/InventoryFilters';
 
 // --- (Helper functions like createNextId and itemTypeConfig remain the same) ---
 const createNextId = (items, prefix) => {
@@ -85,7 +86,7 @@ const itemTypeConfig = {
 const CustomNoRowsOverlay = () => (
   <EmptyState
     message='No Items Found'
-    details='Select a different category or add a new item.'
+    details='Filter criteria may be too restrictive or no items have been added.'
   />
 );
 
@@ -94,21 +95,68 @@ const InventoryPage = () => {
   const dispatch = useDispatch();
   const { isRtl, isDark } = useAppStatus();
 
-  // --- (All state management and handlers remain the same) ---
   const [activeTab, setActiveTab] = useState('phones');
   const [formMeta, setFormMeta] = useState({ open: false, item: null });
   const [itemToDelete, setItemToDelete] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [filters, setFilters] = useState({
+    category: 'all',
+    brand: 'all',
+    status: 'all',
+  });
 
   const phones = useSelector(selectAllPhones);
   const laptops = useSelector(selectAllLaptops);
   const accessories = useSelector(selectAllAccessories);
 
-  const currentData = useMemo(() => {
-    if (activeTab === 'laptops') return laptops;
-    if (activeTab === 'accessories') return accessories;
-    return phones;
-  }, [activeTab, phones, laptops, accessories]);
+  const categories = useMemo(
+    () => [...new Set(accessories.map((a) => a.category))],
+    [accessories]
+  );
+  const brands = useMemo(() => {
+    const allBrands = [
+      ...phones.map((p) => p.brand),
+      ...laptops.map((l) => l.brand),
+    ];
+    return [...new Set(allBrands)];
+  }, [phones, laptops]);
+  const statuses = ['Available', 'Sold'];
+
+  const filteredData = useMemo(() => {
+    let sourceData;
+    if (activeTab === 'laptops') sourceData = laptops;
+    else if (activeTab === 'accessories') sourceData = accessories;
+    else sourceData = phones;
+
+    if (!sourceData) return [];
+
+    return sourceData.filter((item) => {
+      const brandMatch =
+        filters.brand === 'all' || !item.brand || item.brand === filters.brand;
+      const statusMatch =
+        filters.status === 'all' ||
+        !item.stockStatus ||
+        item.stockStatus === filters.status;
+      const categoryMatch =
+        filters.category === 'all' ||
+        !item.category ||
+        item.category === filters.category;
+
+      switch (activeTab) {
+        case 'phones':
+        case 'laptops':
+          return brandMatch && statusMatch;
+        case 'accessories':
+          return categoryMatch;
+        default:
+          return true;
+      }
+    });
+  }, [activeTab, phones, laptops, accessories, filters]);
+
+  const handleClearFilters = () => {
+    setFilters({ category: 'all', brand: 'all', status: 'all' });
+  };
 
   const handleOpenForm = (item = null) => setFormMeta({ open: true, item });
   const handleCloseForm = () => setFormMeta({ open: false, item: null });
@@ -117,9 +165,15 @@ const InventoryPage = () => {
     const config = itemTypeConfig[activeTab];
     const isEditMode = !!formMeta.item;
     const action = isEditMode ? config.update : config.add;
+
+    let fullDataSet;
+    if (activeTab === 'laptops') fullDataSet = laptops;
+    else if (activeTab === 'accessories') fullDataSet = accessories;
+    else fullDataSet = phones;
+
     const payload = isEditMode
       ? formData
-      : { ...formData, id: createNextId(currentData, config.prefix) };
+      : { ...formData, id: createNextId(fullDataSet, config.prefix) };
 
     dispatch(action(payload));
     setFeedback(`Item ${isEditMode ? 'updated' : 'added'} successfully.`);
@@ -229,7 +283,7 @@ const InventoryPage = () => {
       default:
         return [];
     }
-  }, [activeTab]);
+  }, [activeTab, isRtl]);
 
   const CurrentFormComponent = itemTypeConfig[activeTab].FormComponent;
 
@@ -274,11 +328,21 @@ const InventoryPage = () => {
         </Alert>
       )}
 
+      <InventoryFilters
+        filters={filters}
+        setFilters={setFilters}
+        categories={categories}
+        brands={brands}
+        statuses={statuses}
+        onClear={handleClearFilters}
+        activeTab={activeTab}
+      />
+
       <Card
-        sx={{ height: 'calc(100vh - 260px)', width: '100%', borderRadius: 3 }}
+        sx={{ height: 'calc(100vh - 340px)', width: '100%', borderRadius: 3 }}
       >
         <DataGrid
-          rows={currentData}
+          rows={filteredData}
           columns={columns}
           getRowId={(row) => row.id}
           initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
