@@ -146,7 +146,7 @@ const AddPhoneForm = ({
       <DialogTitle>{mode === 'edit' ? 'Edit Phone' : 'Add Phone'}</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mt: 0 }}>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               label='IMEI'
               name='imei'
@@ -158,7 +158,7 @@ const AddPhoneForm = ({
               helperText={errors.imei}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               label='Brand'
@@ -178,20 +178,20 @@ const AddPhoneForm = ({
             </TextField>
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Model' name='model' value={values.model} onChange={handleChange} fullWidth required error={Boolean(errors.model)} helperText={errors.model} />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='Color' name='color' value={values.color} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='RAM' name='ram' value={values.ram} onChange={handleChange} fullWidth />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField label='ROM' name='rom' value={values.rom} onChange={handleChange} fullWidth />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               label='Condition'
@@ -207,7 +207,7 @@ const AddPhoneForm = ({
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               label='Battery Health %'
               name='batteryHealth'
@@ -220,7 +220,7 @@ const AddPhoneForm = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               label='Purchase Price'
               name='purchasePrice'
@@ -233,7 +233,7 @@ const AddPhoneForm = ({
               helperText={errors.purchasePrice}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               label='Sell Price'
               name='sellPrice'
@@ -247,7 +247,7 @@ const AddPhoneForm = ({
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField select label='Currency' name='currency' value={values.currency} onChange={handleChange} fullWidth>
               {CURRENCIES.map((item) => (
                 <MenuItem key={item} value={item}>
@@ -256,7 +256,7 @@ const AddPhoneForm = ({
               ))}
             </TextField>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               select
               label='Stock Status'
@@ -273,7 +273,7 @@ const AddPhoneForm = ({
             </TextField>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               label='Notes'
               name='notes'
@@ -297,3 +297,4 @@ const AddPhoneForm = ({
 };
 
 export default AddPhoneForm;
+

@@ -35,14 +35,13 @@ const InventoryFilters = ({
       <Grid
         container
         spacing={2}
-        justifyContent='space-between'
-        alignItems='center'
+        sx={{ justifyContent: 'space-between', alignItems: 'center' }}
       >
         {/* Left side Grid Item containing all the filters */}
-        <Grid item xs>
+        <Grid size='grow'>
           <Grid container spacing={2}>
             {/* Brand Filter */}
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <TextField
                 select
                 fullWidth
@@ -69,7 +68,7 @@ const InventoryFilters = ({
 
             {/* Category Filter (Accessories only) */}
             {showCategoryFilter && (
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <TextField
                   select
                   fullWidth
@@ -96,7 +95,7 @@ const InventoryFilters = ({
 
             {/* Status Filter (Phones/Laptops only) */}
             {showStatusFilter && (
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <TextField
                   select
                   fullWidth
@@ -124,7 +123,7 @@ const InventoryFilters = ({
         </Grid>
 
         {/* Right side Grid Item for the clear button */}
-        <Grid item xs='auto'>
+        <Grid size='auto'>
           <Button
             variant='text'
             color='secondary'
@@ -146,3 +145,5 @@ const InventoryFilters = ({
 };
 
 export default InventoryFilters;
+
+

@@ -141,10 +141,13 @@ const NavItem = ({ item, isActive }) => {
         </ListItemIcon>
         <ListItemText
           primary={t(item.labelKey)}
-          primaryTypographyProps={{
-            fontSize: '0.9rem',
-            fontWeight: active ? 700 : 500,
-            fontFamily: isRtl ? '"Vazirmatn", "Tahoma", sans-serif' : 'inherit',
+          slotProps={{
+            primary: {
+              sx: {
+                fontWeight: active ? 700 : 500,
+                fontSize: '0.92rem',
+              },
+            },
           }}
         />
         {active && (
@@ -303,3 +306,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
