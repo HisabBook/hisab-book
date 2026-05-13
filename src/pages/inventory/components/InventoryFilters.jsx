@@ -149,13 +149,11 @@ const InventoryFilters = ({
             type='date'
             value={filters.startDate}
             onChange={handleInputChange}
-            InputLabelProps={{ shrink: true }} // Keep this for semantic correctness
+            InputLabelProps={{ shrink: true }} 
             sx={{
               minWidth: 150,
               // This targets the label of THIS specific text field
               '& .MuiInputLabel-root': {
-                // This is the transform for a shrunken "small" label.
-                // We add !important to ensure it overrides any other style.
                 transform: 'translate(14px, -9px) scale(0.75) !important',
               },
               '& .MuiInputBase-input': {
@@ -176,13 +174,10 @@ const InventoryFilters = ({
             type='date'
             value={filters.endDate}
             onChange={handleInputChange}
-            InputLabelProps={{ shrink: true }} // Keep this for semantic correctness
+            InputLabelProps={{ shrink: true }} 
             sx={{
               minWidth: 150,
-              // This targets the label of THIS specific text field
               '& .MuiInputLabel-root': {
-                // This is the transform for a shrunken "small" label.
-                // We add !important to ensure it overrides any other style.
                 transform: 'translate(14px, -9px) scale(0.75) !important',
               },
               '& .MuiInputBase-input': {
@@ -195,8 +190,6 @@ const InventoryFilters = ({
             }}
           />
         </Grid>
-        {/* --- END OF THE FORCEFUL FIX --- */}
-
         <Grid item xs md='auto' sx={{ ml: 'auto' }}>
           <Button
             variant='text'

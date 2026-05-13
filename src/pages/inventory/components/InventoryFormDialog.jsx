@@ -24,7 +24,6 @@ const InventoryFormDialog = ({
   const CurrentFormComponent =
     formComponents[itemType] || (() => <div>Unknown Type</div>);
 
-  // Don't render the dialog if the itemType is not valid
   if (!formComponents[itemType]) {
     return null;
   }
