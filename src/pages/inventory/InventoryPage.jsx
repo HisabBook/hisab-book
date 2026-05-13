@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from 'react';
+
+import { useMemo, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -12,6 +13,7 @@ import {
   Tooltip,
   Typography,
   Card,
+  Skeleton,
 } from '@mui/material';
 import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -23,6 +25,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import EmptyState from '../../components/ui/EmptyState';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { useAppStatus } from '../../hooks/useAppStatus';
+import { useDebounce } from '../../hooks/useDebounce';
 import InventoryFilters from './components/InventoryFilters';
 import AddPhoneForm from './components/AddPhoneForm.jsx';
 import AddLaptopForm from './components/AddLaptopForm.jsx';
@@ -84,7 +87,7 @@ const itemTypeConfig = {
 const CustomNoRowsOverlay = () => (
   <EmptyState
     message='No Items Found'
-    details='Filter criteria may be too restrictive or no items have been added.'
+    details='Try adjusting your search or filter criteria.'
   />
 );
 
@@ -92,16 +95,26 @@ const InventoryPage = () => {
   const dispatch = useDispatch();
   const { isRtl, isDark } = useAppStatus();
 
+  // --- UI & DATA STATES ---
   const [activeTab, setActiveTab] = useState('phones');
   const [formMeta, setFormMeta] = useState({ open: false, item: null });
   const [itemToDelete, setItemToDelete] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFiltering, setIsFiltering] = useState(false);
 
   const [filters, setFilters] = useState({
+    search: '',
     brand: '',
     category: '',
     status: '',
+    minPrice: '',
+    maxPrice: '',
+    startDate: '',
+    endDate: '',
   });
+
+  const debouncedFilters = useDebounce(filters, 300);
 
   const phones = useSelector(selectAllPhones);
   const laptops = useSelector(selectAllLaptops);
@@ -120,6 +133,7 @@ const InventoryPage = () => {
       ].sort(),
     [currentData]
   );
+
   const availableCategories = useMemo(
     () =>
       activeTab === 'accessories'
@@ -131,32 +145,85 @@ const InventoryPage = () => {
         : [],
     [currentData, activeTab]
   );
+
   const filteredData = useMemo(() => {
-    return currentData.filter((item) => {
-      const brandMatch = filters.brand ? item.brand === filters.brand : true;
-      const statusMatch = filters.status
-        ? item.stockStatus === filters.status
-        : true;
-      const categoryMatch = filters.category
-        ? item.category === filters.category
-        : true;
+    setIsFiltering(true);
+    const lowercasedSearch = debouncedFilters.search.toLowerCase();
 
-      // All conditions must be true
-      return brandMatch && statusMatch && categoryMatch;
+    const result = currentData.filter((item) => {
+      if (lowercasedSearch) {
+        const searchableContent = [
+          item.imei,
+          item.serialNumber,
+          item.model,
+          item.name,
+          item.brand,
+          item.color,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!searchableContent.includes(lowercasedSearch)) return false;
+      }
+
+      if (debouncedFilters.brand && item.brand !== debouncedFilters.brand)
+        return false;
+      if (
+        debouncedFilters.category &&
+        item.category !== debouncedFilters.category
+      )
+        return false;
+      if (
+        debouncedFilters.status &&
+        item.stockStatus !== debouncedFilters.status
+      )
+        return false;
+
+      const minPrice = parseFloat(debouncedFilters.minPrice);
+      const maxPrice = parseFloat(debouncedFilters.maxPrice);
+      if (!isNaN(minPrice) && item.sellPrice < minPrice) return false;
+      if (!isNaN(maxPrice) && item.sellPrice > maxPrice) return false;
+
+      const itemDate = new Date(item.dateAdded);
+      if (
+        debouncedFilters.startDate &&
+        itemDate < new Date(debouncedFilters.startDate)
+      )
+        return false;
+      if (
+        debouncedFilters.endDate &&
+        itemDate > new Date(debouncedFilters.endDate)
+      )
+        return false;
+
+      return true;
     });
-  }, [currentData, filters]);
 
+    setTimeout(() => setIsFiltering(false), 200);
+    return result;
+  }, [currentData, debouncedFilters]);
+
+  // --- HANDLERS ---
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleClearFilters = () => {
-    setFilters({ brand: '', category: '', status: '' });
+    setFilters({
+      search: '',
+      brand: '',
+      category: '',
+      status: '',
+      minPrice: '',
+      maxPrice: '',
+      startDate: '',
+      endDate: '',
+    });
   };
 
   const handleTabChange = (_, value) => {
     setActiveTab(value);
-    handleClearFilters(); // Also reset filters when changing tabs
+    handleClearFilters();
   };
 
   const handleOpenForm = (item = null) => setFormMeta({ open: true, item });
@@ -169,7 +236,6 @@ const InventoryPage = () => {
     const payload = isEditMode
       ? formData
       : { ...formData, id: createNextId(currentData, config.prefix) };
-
     dispatch(action(payload));
     setFeedback(`Item ${isEditMode ? 'updated' : 'added'} successfully.`);
     handleCloseForm();
@@ -183,8 +249,12 @@ const InventoryPage = () => {
     setItemToDelete(null);
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const columns = useMemo(() => {
-    // This logic is good, no changes needed here.
     const baseActionColumn = {
       field: 'actions',
       headerName: 'Actions',
@@ -277,9 +347,25 @@ const InventoryPage = () => {
       default:
         return [];
     }
-  }, [activeTab, isRtl]); // handleOpenForm should be added here as a dependency if not memoized
+  }, [activeTab, isRtl]);
 
   const CurrentFormComponent = itemTypeConfig[activeTab].FormComponent;
+
+  if (isLoading) {
+    return (
+      <Stack spacing={2.5} sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
+        <PageHeader title='Inventory'>
+          <Box sx={{ flexGrow: 1 }} />
+          <Skeleton variant='rectangular' width={120} height={40} />
+        </PageHeader>
+        <Skeleton variant='rounded' height={150} />
+        <Skeleton
+          variant='rounded'
+          sx={{ flexGrow: 1, height: 'calc(100vh - 380px)' }}
+        />
+      </Stack>
+    );
+  }
 
   return (
     <Stack spacing={2.5}>
@@ -336,13 +422,14 @@ const InventoryPage = () => {
           flexGrow: 1,
           display: 'flex',
           borderRadius: 3,
-          height: 'calc(100vh - 320px)',
+          height: 'calc(100vh - 420px)',
         }}
       >
         <DataGrid
           rows={filteredData}
           columns={columns}
           getRowId={(row) => row.id}
+          loading={isFiltering}
           initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
           pageSizeOptions={[10, 25, 50, 100]}
           slots={{ noRowsOverlay: CustomNoRowsOverlay }}
@@ -357,9 +444,7 @@ const InventoryPage = () => {
               borderBottom: `1px solid ${isDark ? '#1A3F5C' : '#E8EDF2'}`,
             },
             [`& .${gridClasses.row}`]: {
-              '&:hover': {
-                backgroundColor: isDark ? '#0D2137' : '#F8FAFC',
-              },
+              '&:hover': { backgroundColor: isDark ? '#0D2137' : '#F8FAFC' },
             },
             '& .MuiDataGrid-footerContainer': {
               borderTop: `1px solid ${isDark ? '#1A3F5C' : '#E8EDF2'}`,
