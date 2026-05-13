@@ -12,7 +12,6 @@ import {
   Tooltip,
   Typography,
   Card,
-  Skeleton,
 } from '@mui/material';
 import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
@@ -29,6 +28,7 @@ import InventoryFilters from './components/InventoryFilters';
 import AddPhoneForm from './components/AddPhoneForm.jsx';
 import AddLaptopForm from './components/AddLaptopForm.jsx';
 import AddAccessoryForm from './components/AddAccessoryForm.jsx';
+import InventoryPageSkeleton from './components/InventoryPageSkeleton';
 import {
   selectAllPhones,
   selectAllLaptops,
@@ -351,19 +351,7 @@ const InventoryPage = () => {
   const CurrentFormComponent = itemTypeConfig[activeTab].FormComponent;
 
   if (isLoading) {
-    return (
-      <Stack spacing={2.5} sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-        <PageHeader title='Inventory'>
-          <Box sx={{ flexGrow: 1 }} />
-          <Skeleton variant='rectangular' width={120} height={40} />
-        </PageHeader>
-        <Skeleton variant='rounded' height={150} />
-        <Skeleton
-          variant='rounded'
-          sx={{ flexGrow: 1, height: 'calc(100vh - 380px)' }}
-        />
-      </Stack>
-    );
+    return <InventoryPageSkeleton />;
   }
 
   return (
