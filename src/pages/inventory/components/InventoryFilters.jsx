@@ -4,8 +4,8 @@ import {
   Grid,
   MenuItem,
   TextField,
-  Typography,
   InputAdornment,
+  Typography,
 } from '@mui/material';
 import ClearAllRoundedIcon from '@mui/icons-material/ClearAllRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
@@ -39,8 +39,8 @@ const InventoryFilters = ({
   return (
     <Box sx={{ mb: 2.5 }}>
       <Grid container spacing={2} alignItems='center'>
-        {/* --- ROW 1: Search and Main Dropdowns --- */}
-        <Grid item xs={12} md={4}>
+        {/* Search, Brand, and other filters remain the same... */}
+        <Grid item xs={12} sm={6} md={3}>
           <TextField
             fullWidth
             size='small'
@@ -54,20 +54,35 @@ const InventoryFilters = ({
                   <SearchRoundedIcon fontSize='small' />
                 </InputAdornment>
               ),
+              sx: {
+                '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active':
+                  {
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: (theme) => theme.palette.text.primary,
+                    transition: 'background-color 5000s ease-in-out 0s',
+                    boxShadow: 'none',
+                  },
+              },
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md>
+
+        <Grid item xs={12} sm={4} md='auto'>
           <TextField
             select
-            fullWidth
             size='small'
             label='Brand'
             name='brand'
             value={filters.brand}
             onChange={handleInputChange}
+            sx={{ minWidth: 140 }}
+            displayEmpty
           >
-            <MenuItem value=''>All Brands</MenuItem>
+            <MenuItem value=''>
+              <Typography variant='body2' color='text.secondary'>
+                All Brands
+              </Typography>
+            </MenuItem>
             {availableBrands.map((brand) => (
               <MenuItem key={brand} value={brand}>
                 {brand}
@@ -75,38 +90,24 @@ const InventoryFilters = ({
             ))}
           </TextField>
         </Grid>
-        {showCategoryFilter && (
-          <Grid item xs={12} sm={6} md>
-            <TextField
-              select
-              fullWidth
-              size='small'
-              label='Category'
-              name='category'
-              value={filters.category}
-              onChange={handleInputChange}
-            >
-              <MenuItem value=''>All Categories</MenuItem>
-              {availableCategories.map((cat) => (
-                <MenuItem key={cat} value={cat}>
-                  {cat}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-        )}
+
         {showStatusFilter && (
-          <Grid item xs={12} sm={6} md>
+          <Grid item xs={12} sm={4} md='auto'>
             <TextField
               select
-              fullWidth
               size='small'
               label='Stock Status'
               name='status'
               value={filters.status}
               onChange={handleInputChange}
+              sx={{ minWidth: 140 }}
+              displayEmpty
             >
-              <MenuItem value=''>All Statuses</MenuItem>
+              <MenuItem value=''>
+                <Typography variant='body2' color='text.secondary'>
+                  All Statuses
+                </Typography>
+              </MenuItem>
               {STOCK_STATUSES.map((status) => (
                 <MenuItem key={status} value={status}>
                   {status}
@@ -116,61 +117,97 @@ const InventoryFilters = ({
           </Grid>
         )}
 
-        {/* --- ROW 2: Price and Date Ranges --- */}
-        <Grid item xs={6} sm={3} md>
+        <Grid item xs={6} sm='auto'>
           <TextField
-            fullWidth
             size='small'
             label='Min Price'
             name='minPrice'
             type='number'
             value={filters.minPrice}
             onChange={handleInputChange}
+            sx={{ width: 110 }}
           />
         </Grid>
-        <Grid item xs={6} sm={3} md>
+        <Grid item xs={6} sm='auto'>
           <TextField
-            fullWidth
             size='small'
             label='Max Price'
             name='maxPrice'
             type='number'
             value={filters.maxPrice}
             onChange={handleInputChange}
+            sx={{ width: 110 }}
           />
         </Grid>
-        <Grid item xs={6} sm={3} md>
+
+        {/* --- START OF THE FORCEFUL FIX --- */}
+        <Grid item xs={6} sm='auto'>
           <TextField
-            fullWidth
             size='small'
-            label='From Date'
+            label='From Date Added'
             name='startDate'
             type='date'
             value={filters.startDate}
             onChange={handleInputChange}
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{ shrink: true }} // Keep this for semantic correctness
+            sx={{
+              minWidth: 150,
+              // This targets the label of THIS specific text field
+              '& .MuiInputLabel-root': {
+                // This is the transform for a shrunken "small" label.
+                // We add !important to ensure it overrides any other style.
+                transform: 'translate(14px, -9px) scale(0.75) !important',
+              },
+              '& .MuiInputBase-input': {
+                colorScheme: (theme) => theme.palette.mode,
+                '&::-webkit-calendar-picker-indicator': {
+                  filter: (theme) =>
+                    theme.palette.mode === 'dark' ? 'invert(0.8)' : 'none',
+                },
+              },
+            }}
           />
         </Grid>
-        <Grid item xs={6} sm={3} md>
+        <Grid item xs={6} sm='auto'>
           <TextField
-            fullWidth
             size='small'
-            label='To Date'
+            label='To Date Added'
             name='endDate'
             type='date'
             value={filters.endDate}
             onChange={handleInputChange}
-            InputLabelProps={{ shrink: true }}
+            InputLabelProps={{ shrink: true }} // Keep this for semantic correctness
+            sx={{
+              minWidth: 150,
+              // This targets the label of THIS specific text field
+              '& .MuiInputLabel-root': {
+                // This is the transform for a shrunken "small" label.
+                // We add !important to ensure it overrides any other style.
+                transform: 'translate(14px, -9px) scale(0.75) !important',
+              },
+              '& .MuiInputBase-input': {
+                colorScheme: (theme) => theme.palette.mode,
+                '&::-webkit-calendar-picker-indicator': {
+                  filter: (theme) =>
+                    theme.palette.mode === 'dark' ? 'invert(0.8)' : 'none',
+                },
+              },
+            }}
           />
         </Grid>
+        {/* --- END OF THE FORCEFUL FIX --- */}
 
-        {/* --- Clear Button --- */}
-        <Grid item>
+        <Grid item xs md='auto' sx={{ ml: 'auto' }}>
           <Button
             variant='text'
+            color='secondary'
             disabled={!hasActiveFilters}
             onClick={onClear}
             startIcon={<ClearAllRoundedIcon />}
+            sx={{
+              color: 'text.secondary',
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
           >
             Clear
           </Button>

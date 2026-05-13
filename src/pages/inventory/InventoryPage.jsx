@@ -1,5 +1,4 @@
-
-import { useMemo, useState, useEffect } from 'react';
+﻿import { useMemo, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -421,8 +420,8 @@ const InventoryPage = () => {
         sx={{
           flexGrow: 1,
           display: 'flex',
-          borderRadius: 3,
-          height: 'calc(100vh - 420px)',
+          borderRadius: 1,
+          height: 'calc(150vh - 600px)',
         }}
       >
         <DataGrid
