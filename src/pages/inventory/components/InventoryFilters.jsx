@@ -4,9 +4,11 @@ import {
   Grid,
   MenuItem,
   TextField,
+  InputAdornment,
   Typography,
 } from '@mui/material';
 import ClearAllRoundedIcon from '@mui/icons-material/ClearAllRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { STOCK_STATUSES } from '../../../constants/conditions';
 
 const InventoryFilters = ({
@@ -22,112 +24,176 @@ const InventoryFilters = ({
     onFilterChange(name, value);
   };
 
-  // Conditionally render filters based on the active tab for better UX
   const showStatusFilter = activeTab === 'phones' || activeTab === 'laptops';
   const showCategoryFilter = activeTab === 'accessories';
   const hasActiveFilters =
-    !!filters.brand || !!filters.category || !!filters.status;
+    !!filters.search ||
+    !!filters.brand ||
+    !!filters.category ||
+    !!filters.status ||
+    !!filters.minPrice ||
+    !!filters.maxPrice ||
+    !!filters.startDate ||
+    !!filters.endDate;
 
   return (
-    // The main container for the filter bar
     <Box sx={{ mb: 2.5 }}>
-      {/* Outer Grid to separate filters from the clear button */}
-      <Grid
-        container
-        spacing={2}
-        sx={{ justifyContent: 'space-between', alignItems: 'center' }}
-      >
-        {/* Left side Grid Item containing all the filters */}
-        <Grid size='grow'>
-          <Grid container spacing={2}>
-            {/* Brand Filter */}
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <TextField
-                select
-                fullWidth
-                size='small'
-                label='Brand'
-                name='brand'
-                value={filters.brand}
-                onChange={handleInputChange}
-                // Add a minimum width to prevent squashing on resize
-                sx={{ minWidth: 160 }}
-              >
-                <MenuItem value=''>
-                  <Typography variant='body2' color='text.secondary'>
-                    All Brands
-                  </Typography>
-                </MenuItem>
-                {availableBrands.map((brand) => (
-                  <MenuItem key={brand} value={brand}>
-                    {brand}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            {/* Category Filter (Accessories only) */}
-            {showCategoryFilter && (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <TextField
-                  select
-                  fullWidth
-                  size='small'
-                  label='Category'
-                  name='category'
-                  value={filters.category}
-                  onChange={handleInputChange}
-                  sx={{ minWidth: 160 }}
-                >
-                  <MenuItem value=''>
-                    <Typography variant='body2' color='text.secondary'>
-                      All Categories
-                    </Typography>
-                  </MenuItem>
-                  {availableCategories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            )}
-
-            {/* Status Filter (Phones/Laptops only) */}
-            {showStatusFilter && (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <TextField
-                  select
-                  fullWidth
-                  size='small'
-                  label='Stock Status'
-                  name='status'
-                  value={filters.status}
-                  onChange={handleInputChange}
-                  sx={{ minWidth: 160 }}
-                >
-                  <MenuItem value=''>
-                    <Typography variant='body2' color='text.secondary'>
-                      All Statuses
-                    </Typography>
-                  </MenuItem>
-                  {STOCK_STATUSES.map((status) => (
-                    <MenuItem key={status} value={status}>
-                      {status}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            )}
-          </Grid>
+      <Grid container spacing={2} alignItems='center'>
+        {/* Search, Brand, and other filters remain the same... */}
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            fullWidth
+            size='small'
+            label='Search by IMEI, Model, Name...'
+            name='search'
+            value={filters.search}
+            onChange={handleInputChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position='start'>
+                  <SearchRoundedIcon fontSize='small' />
+                </InputAdornment>
+              ),
+              sx: {
+                '&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active':
+                  {
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: (theme) => theme.palette.text.primary,
+                    transition: 'background-color 5000s ease-in-out 0s',
+                    boxShadow: 'none',
+                  },
+              },
+            }}
+          />
         </Grid>
 
-        {/* Right side Grid Item for the clear button */}
-        <Grid size='auto'>
+        <Grid item xs={12} sm={4} md='auto'>
+          <TextField
+            select
+            size='small'
+            label='Brand'
+            name='brand'
+            value={filters.brand}
+            onChange={handleInputChange}
+            sx={{ minWidth: 140 }}
+            displayEmpty
+          >
+            <MenuItem value=''>
+              <Typography variant='body2' color='text.secondary'>
+                All Brands
+              </Typography>
+            </MenuItem>
+            {availableBrands.map((brand) => (
+              <MenuItem key={brand} value={brand}>
+                {brand}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+
+        {showStatusFilter && (
+          <Grid item xs={12} sm={4} md='auto'>
+            <TextField
+              select
+              size='small'
+              label='Stock Status'
+              name='status'
+              value={filters.status}
+              onChange={handleInputChange}
+              sx={{ minWidth: 140 }}
+              displayEmpty
+            >
+              <MenuItem value=''>
+                <Typography variant='body2' color='text.secondary'>
+                  All Statuses
+                </Typography>
+              </MenuItem>
+              {STOCK_STATUSES.map((status) => (
+                <MenuItem key={status} value={status}>
+                  {status}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+        )}
+
+        <Grid item xs={6} sm='auto'>
+          <TextField
+            size='small'
+            label='Min Price'
+            name='minPrice'
+            type='number'
+            value={filters.minPrice}
+            onChange={handleInputChange}
+            sx={{ width: 110 }}
+          />
+        </Grid>
+        <Grid item xs={6} sm='auto'>
+          <TextField
+            size='small'
+            label='Max Price'
+            name='maxPrice'
+            type='number'
+            value={filters.maxPrice}
+            onChange={handleInputChange}
+            sx={{ width: 110 }}
+          />
+        </Grid>
+
+        {/* --- START OF THE FORCEFUL FIX --- */}
+        <Grid item xs={6} sm='auto'>
+          <TextField
+            size='small'
+            label='From Date Added'
+            name='startDate'
+            type='date'
+            value={filters.startDate}
+            onChange={handleInputChange}
+            InputLabelProps={{ shrink: true }} 
+            sx={{
+              minWidth: 150,
+              // This targets the label of THIS specific text field
+              '& .MuiInputLabel-root': {
+                transform: 'translate(14px, -9px) scale(0.75) !important',
+              },
+              '& .MuiInputBase-input': {
+                colorScheme: (theme) => theme.palette.mode,
+                '&::-webkit-calendar-picker-indicator': {
+                  filter: (theme) =>
+                    theme.palette.mode === 'dark' ? 'invert(0.8)' : 'none',
+                },
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={6} sm='auto'>
+          <TextField
+            size='small'
+            label='To Date Added'
+            name='endDate'
+            type='date'
+            value={filters.endDate}
+            onChange={handleInputChange}
+            InputLabelProps={{ shrink: true }} 
+            sx={{
+              minWidth: 150,
+              '& .MuiInputLabel-root': {
+                transform: 'translate(14px, -9px) scale(0.75) !important',
+              },
+              '& .MuiInputBase-input': {
+                colorScheme: (theme) => theme.palette.mode,
+                '&::-webkit-calendar-picker-indicator': {
+                  filter: (theme) =>
+                    theme.palette.mode === 'dark' ? 'invert(0.8)' : 'none',
+                },
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs md='auto' sx={{ ml: 'auto' }}>
           <Button
             variant='text'
             color='secondary'
-            size='medium'
             disabled={!hasActiveFilters}
             onClick={onClear}
             startIcon={<ClearAllRoundedIcon />}
@@ -145,5 +211,3 @@ const InventoryFilters = ({
 };
 
 export default InventoryFilters;
-
-

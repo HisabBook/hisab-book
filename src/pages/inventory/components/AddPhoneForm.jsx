@@ -33,7 +33,10 @@ const defaultValues = {
   notes: '',
 };
 
-const normalize = (value) => String(value ?? '').trim().toLowerCase();
+const normalize = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
 
 const AddPhoneForm = ({
   mode = 'create',
@@ -179,16 +182,43 @@ const AddPhoneForm = ({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Model' name='model' value={values.model} onChange={handleChange} fullWidth required error={Boolean(errors.model)} helperText={errors.model} />
+            <TextField
+              label='Model'
+              name='model'
+              value={values.model}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.model)}
+              helperText={errors.model}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Color' name='color' value={values.color} onChange={handleChange} fullWidth />
+            <TextField
+              label='Color'
+              name='color'
+              value={values.color}
+              onChange={handleChange}
+              fullWidth
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='RAM' name='ram' value={values.ram} onChange={handleChange} fullWidth />
+            <TextField
+              label='RAM'
+              name='ram'
+              value={values.ram}
+              onChange={handleChange}
+              fullWidth
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='ROM' name='rom' value={values.rom} onChange={handleChange} fullWidth />
+            <TextField
+              label='ROM'
+              name='rom'
+              value={values.rom}
+              onChange={handleChange}
+              fullWidth
+            />
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
@@ -248,7 +278,14 @@ const AddPhoneForm = ({
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField select label='Currency' name='currency' value={values.currency} onChange={handleChange} fullWidth>
+            <TextField
+              select
+              label='Currency'
+              name='currency'
+              value={values.currency}
+              onChange={handleChange}
+              fullWidth
+            >
               {CURRENCIES.map((item) => (
                 <MenuItem key={item} value={item}>
                   {item}
@@ -297,4 +334,3 @@ const AddPhoneForm = ({
 };
 
 export default AddPhoneForm;
-
