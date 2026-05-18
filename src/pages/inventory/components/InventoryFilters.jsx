@@ -53,12 +53,14 @@ const InventoryFilters = ({
           value={filters.search}
           onChange={handleInputChange}
           sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position='start'>
-                <SearchRoundedIcon fontSize='small' />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position='start'>
+                  <SearchRoundedIcon fontSize='small' />
+                </InputAdornment>
+              ),
+            },
           }}
         />
 
@@ -71,6 +73,13 @@ const InventoryFilters = ({
           value={filters.brand}
           onChange={handleInputChange}
           sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}
+          slotProps={{
+            inputLabel: { shrink: true },
+            select: {
+              displayEmpty: true,
+              renderValue: (selected) => selected || 'All Brands',
+            },
+          }}
         >
           <MenuItem value=''>
             <Typography variant='body2' color='text.secondary'>
@@ -94,6 +103,13 @@ const InventoryFilters = ({
             value={filters.status}
             onChange={handleInputChange}
             sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}
+            slotProps={{
+              inputLabel: { shrink: true },
+              select: {
+                displayEmpty: true,
+                renderValue: (selected) => selected || 'All Statuses',
+              },
+            }}
           >
             <MenuItem value=''>
               <Typography variant='body2' color='text.secondary'>
@@ -118,6 +134,13 @@ const InventoryFilters = ({
             value={filters.category}
             onChange={handleInputChange}
             sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}
+            slotProps={{
+              inputLabel: { shrink: true },
+              select: {
+                displayEmpty: true,
+                renderValue: (selected) => selected || 'All Categories',
+              },
+            }}
           >
             <MenuItem value=''>
               <Typography variant='body2' color='text.secondary'>
@@ -162,7 +185,7 @@ const InventoryFilters = ({
           type='date'
           value={filters.startDate}
           onChange={handleInputChange}
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           sx={{
             gridColumn: { xs: '1 / -1', md: 'auto' },
             '& .MuiInputLabel-root': {
@@ -186,7 +209,7 @@ const InventoryFilters = ({
           type='date'
           value={filters.endDate}
           onChange={handleInputChange}
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           sx={{
             gridColumn: { xs: '1 / -1', md: 'auto' },
             '& .MuiInputLabel-root': {
