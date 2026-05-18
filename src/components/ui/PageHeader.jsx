@@ -10,7 +10,9 @@ const PageHeader = ({ title, children }) => {
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: { xs: 'stretch', sm: 'center' },
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 1.25, sm: 1.5 },
         justifyContent: 'space-between',
         mb: 3,
       }}
@@ -19,6 +21,7 @@ const PageHeader = ({ title, children }) => {
         variant='h4'
         sx={{
           fontWeight: 700,
+          fontSize: { xs: '1.35rem', sm: '1.7rem', md: '2rem' },
           fontFamily: isRtl
             ? '"Vazirmatn", "Tahoma", sans-serif'
             : '"Inter", sans-serif',
@@ -26,7 +29,7 @@ const PageHeader = ({ title, children }) => {
       >
         {title}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1 }}>{children}</Box>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>{children}</Box>
     </Box>
   );
 };

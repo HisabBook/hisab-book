@@ -11,7 +11,8 @@ const DataGridContainer = ({ sx, ...dataGridProps }) => {
       sx={{
         flexGrow: 1,
         display: 'flex',
-        height: 'calc(150vh - 600px)',
+        minHeight: { xs: 420, md: 500 },
+        overflow: 'hidden',
         ...sx,
       }}
     >

@@ -167,7 +167,7 @@ const NavItem = ({ item, isActive }) => {
   );
 };
 
-const Sidebar = () => {
+const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
   const location = useLocation();
   const { isRtl } = useAppStatus();
   const shopProfile = useSelector(selectShopProfile);
@@ -178,10 +178,13 @@ const Sidebar = () => {
 
   return (
     <Drawer
-      variant='permanent'
+      variant={isDesktop ? 'permanent' : 'temporary'}
+      open={isDesktop ? true : mobileOpen}
+      onClose={onMobileClose}
       anchor={isRtl ? 'right' : 'left'}
+      ModalProps={{ keepMounted: true }}
       sx={{
-        width: SIDEBAR_WIDTH,
+        width: isDesktop ? SIDEBAR_WIDTH : 0,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: SIDEBAR_WIDTH,
@@ -193,6 +196,7 @@ const Sidebar = () => {
           display: 'flex',
           flexDirection: 'column',
           overflowX: 'hidden',
+          boxSizing: 'border-box',
         },
       }}
     >

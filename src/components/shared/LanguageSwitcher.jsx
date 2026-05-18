@@ -1,6 +1,14 @@
 ﻿import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { MenuItem, Select, FormControl, Box, Typography } from '@mui/material';
+import {
+  MenuItem,
+  Select,
+  FormControl,
+  Box,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import LanguageRoundedIcon from '@mui/icons-material/LanguageRounded';
 
 import { setLanguage, selectLanguage } from '../../redux/slices/settingsSlice';
@@ -15,6 +23,8 @@ const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const dispatch = useDispatch();
   const currentLang = useSelector(selectLanguage);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleChange = (event) => {
     const newLang = event.target.value;
@@ -23,7 +33,14 @@ const LanguageSwitcher = () => {
   };
 
   return (
-    <FormControl size='small' variant='outlined'>
+    <FormControl
+      size='small'
+      variant='outlined'
+      sx={{
+        width: { xs: 30, sm: 'auto' },
+        minWidth: { xs: 30, sm: 90 },
+      }}
+    >
       <Select
         value={currentLang}
         onChange={handleChange}
@@ -38,6 +55,7 @@ const LanguageSwitcher = () => {
                   fontSize: '0.8rem',
                   fontWeight: 600,
                   color: 'text.primary',
+                  display: isSmallScreen ? 'none' : 'block',
                 }}
               >
                 {lang?.nativeLabel || 'EN'}
@@ -46,13 +64,23 @@ const LanguageSwitcher = () => {
           );
         }}
         sx={{
-          height: 34,
+          height: { xs: 30, sm: 34 },
           border: '1px solid',
           borderColor: 'divider',
           borderRadius: '8px',
-          backgroundColor: 'background.paper',
+          backgroundColor: { xs: 'rgba(5,25,45,0.06)', sm: 'background.paper' },
           '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-          '& .MuiSelect-select': { py: 0.5, pr: '28px !important', pl: 1 },
+          '& .MuiSelect-select': {
+            py: 0.5,
+            pr: isSmallScreen ? '0 !important' : '28px !important',
+            pl: isSmallScreen ? '0 !important' : 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          '& .MuiSelect-icon': {
+            display: isSmallScreen ? 'none' : 'block',
+          },
         }}
         MenuProps={{
           PaperProps: {

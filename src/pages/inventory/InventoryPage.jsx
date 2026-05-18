@@ -148,8 +148,21 @@ const InventoryPage = () => {
   return (
     <Stack spacing={2.5}>
       <PageHeader title='Inventory'>
-        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-          <Tabs value={activeTab} onChange={handleTabChange}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            justifyContent: { xs: 'flex-start', sm: 'center' },
+            width: { xs: '100%', sm: 'auto' },
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant='scrollable'
+            allowScrollButtonsMobile
+            sx={{ minHeight: 40 }}
+          >
             <Tab value='phones' label={`Phones (${phones.length})`} />
             <Tab value='laptops' label={`Laptops (${laptops.length})`} />
             <Tab
@@ -162,6 +175,7 @@ const InventoryPage = () => {
           variant='contained'
           startIcon={<AddRoundedIcon />}
           onClick={() => handleOpenForm()}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           Add {activeTab.slice(0, -1)}
         </Button>
