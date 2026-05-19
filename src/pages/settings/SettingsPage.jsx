@@ -1,9 +1,15 @@
-import React from 'react';
+import { Stack } from '@mui/material';
+import PageHeader from '../../components/ui/PageHeader';
 
-const Settings = () => {
-    return <div>
-        Settings Page
-    </div>
-}
+import ExchangeRateForm from './components/ExchangeRateForm';
 
-export default Settings;
+const SettingsPage = () => {
+  return (
+    <Stack spacing={3}>
+      <PageHeader title='Settings' />
+      <ExchangeRateForm />
+    </Stack>
+  );
+};
+
+export default SettingsPage;
