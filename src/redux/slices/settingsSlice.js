@@ -58,10 +58,8 @@ const settingsSlice = createSlice({
 export const {
   toggleTheme,
   setTheme,
-  // --- START: EXPORT NEW ACTIONS ---
   setExchangeRate,
   setPrimaryCurrency,
-  // --- END: EXPORT NEW ACTIONS ---
   setLanguage,
   updateShopProfile,
 } = settingsSlice.actions;
