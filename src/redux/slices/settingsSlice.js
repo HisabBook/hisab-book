@@ -25,13 +25,16 @@ const settingsSlice = createSlice({
 
     setExchangeRate(state, action) {
       const rate = parseFloat(action.payload);
-      if (!isNaN(rate) && rate > 0) {
+      if (Number.isFinite(rate) && rate > 0) {
         state.exchangeRate = rate;
       }
     },
 
     setPrimaryCurrency(state, action) {
-      state.primaryCurrency = action.payload;
+      const currency = action.payload;
+      if (currency === 'USD' || currency === 'AFN') {
+        state.primaryCurrency = currency;
+      }
     },
 
     // ── Language: also syncs i18n in ThemeProviderWrapper ──
@@ -55,23 +58,30 @@ const settingsSlice = createSlice({
 export const {
   toggleTheme,
   setTheme,
+  // --- START: EXPORT NEW ACTIONS ---
   setExchangeRate,
   setPrimaryCurrency,
+  // --- END: EXPORT NEW ACTIONS ---
   setLanguage,
   updateShopProfile,
 } = settingsSlice.actions;
 
 // ── Selectors
 export const selectTheme = (state) => state.settings.theme;
-export const selectExchangeRate = (state) => state.settings.exchangeRate;
 export const selectLanguage = (state) => state.settings.language;
-export const selectPrimaryCurrency = (state) => state.settings.primaryCurrency;
 const selectSettings = (state) => state.settings;
-export const selectShopProfile = createSelector([selectSettings], (settings) => ({
-  shopName: settings.shopName,
-  shopAddress: settings.shopAddress,
-  shopPhone: settings.shopPhone,
-  shopLogo: settings.shopLogo,
-}));
+
+export const selectExchangeRate = (state) => state.settings.exchangeRate;
+export const selectPrimaryCurrency = (state) => state.settings.primaryCurrency;
+
+export const selectShopProfile = createSelector(
+  [selectSettings],
+  (settings) => ({
+    shopName: settings.shopName,
+    shopAddress: settings.shopAddress,
+    shopPhone: settings.shopPhone,
+    shopLogo: settings.shopLogo,
+  })
+);
 
 export default settingsSlice.reducer;
