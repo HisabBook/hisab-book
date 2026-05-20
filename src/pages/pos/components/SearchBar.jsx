@@ -10,22 +10,24 @@ const SearchBar = ({ value, onChange, placeholder }) => {
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}
       autoComplete='off'
-      inputProps={{
-        'aria-label': 'POS inventory search input',
-      }}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position='start'>
-            <SearchRoundedIcon color='action' />
-          </InputAdornment>
-        ),
-        endAdornment: value ? (
-          <InputAdornment position='end'>
-            <IconButton size='small' onClick={() => onChange('')} aria-label='Clear search'>
-              <BackspaceRoundedIcon fontSize='small' />
-            </IconButton>
-          </InputAdornment>
-        ) : null,
+      slotProps={{
+        htmlInput: {
+          'aria-label': 'POS inventory search input',
+        },
+        input: {
+          startAdornment: (
+            <InputAdornment position='start'>
+              <SearchRoundedIcon color='action' />
+            </InputAdornment>
+          ),
+          endAdornment: value ? (
+            <InputAdornment position='end'>
+              <IconButton size='small' onClick={() => onChange('')} aria-label='Clear search'>
+                <BackspaceRoundedIcon fontSize='small' />
+              </IconButton>
+            </InputAdornment>
+          ) : null,
+        },
       }}
     />
   );

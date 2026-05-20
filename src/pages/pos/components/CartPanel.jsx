@@ -36,8 +36,8 @@ const CartPanel = ({ cartItems, transactionType }) => {
   const payable = Math.max(0, subtotal - (transactionType === 'Exchange' ? tradeInValue : 0));
 
   return (
-    <Card sx={{ height: '100%' }}>
-      <CardContent>
+    <Card sx={{ height: '100%', borderRadius: 2 }}>
+      <CardContent sx={{ p: 2 }}>
         <Stack spacing={2}>
           <Box>
             <Typography variant='h6' fontWeight={700}>
@@ -79,7 +79,14 @@ const CartPanel = ({ cartItems, transactionType }) => {
 
           <Divider />
 
-          <Stack spacing={1} sx={{ maxHeight: { xs: 280, md: 340 }, overflowY: 'auto', pr: 0.5 }}>
+          <Stack
+            spacing={1.25}
+            sx={{
+              maxHeight: { xs: 300, md: 360 },
+              overflowY: 'auto',
+              pr: 0.5,
+            }}
+          >
             {cartItems.length === 0 ? (
               <Box sx={{ minHeight: 160 }}>
                 <EmptyState
@@ -94,28 +101,37 @@ const CartPanel = ({ cartItems, transactionType }) => {
 
           <Divider />
 
-          <Stack spacing={0.75}>
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography variant='body2' color='text.secondary'>Subtotal</Typography>
-              <Typography variant='body2' fontWeight={600}>${subtotal.toFixed(2)}</Typography>
+          <Stack spacing={1} sx={{ pt: 0.5 }}>
+            <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
+              <Typography variant='body2' color='text.secondary'>
+                Subtotal
+              </Typography>
+              <Typography variant='body2' fontWeight={600}>
+                ${subtotal.toFixed(2)}
+              </Typography>
             </Stack>
 
             {transactionType === 'Exchange' && (
-              <Stack direction='row' justifyContent='space-between'>
+              <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
                 <Typography variant='body2' color='text.secondary'>Trade-in Deduction</Typography>
                 <Typography variant='body2' fontWeight={600}>-${tradeInValue.toFixed(2)}</Typography>
               </Stack>
             )}
 
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography variant='subtitle2' fontWeight={700}>Total Payable</Typography>
-              <Typography variant='subtitle1' fontWeight={800}>${payable.toFixed(2)}</Typography>
+            <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
+              <Typography variant='subtitle2' fontWeight={700}>
+                Total Payable
+              </Typography>
+              <Typography variant='h6' fontWeight={800}>
+                ${payable.toFixed(2)}
+              </Typography>
             </Stack>
           </Stack>
 
           <Button
             variant='outlined'
             color='error'
+            size='large'
             onClick={() => dispatch(clearCart())}
             disabled={!cartItems.length}
           >

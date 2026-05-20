@@ -38,7 +38,7 @@ const TradeInForm = () => {
           const parsed = Number(event.target.value);
           dispatch(setTradeIn({ tradeInValue: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0 }));
         }}
-        inputProps={{ min: 0, inputMode: 'decimal' }}
+        slotProps={{ htmlInput: { min: 0, inputMode: 'decimal' } }}
         onKeyDown={(event) => {
           if (['e', 'E', '+', '-'].includes(event.key)) {
             event.preventDefault();

@@ -7,7 +7,6 @@ import {
   CardContent,
   Chip,
   Divider,
-  Grid,
   Stack,
   Typography,
 } from '@mui/material';
@@ -129,8 +128,14 @@ const POSPage = () => {
   };
 
   return (
-    <Grid container spacing={2}>
-      <Grid size={{ xs: 12, md: 7 }}>
+    <Box
+      sx={{
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
+      }}
+    >
+      <Box sx={{ minWidth: 0 }}>
         <Card sx={{ height: '100%' }}>
           <CardContent>
             <Stack spacing={2}>
@@ -183,7 +188,7 @@ const POSPage = () => {
                       }}
                     >
                       <CardContent sx={{ py: 1.25, '&:last-child': { pb: 1.25 } }}>
-                        <Stack direction='row' alignItems='flex-start' justifyContent='space-between' spacing={1}>
+                        <Stack direction='row' spacing={1} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
                           <Box sx={{ minWidth: 0 }}>
                             <Typography variant='subtitle2' sx={{ overflowWrap: 'anywhere' }}>
                               {item.label}
@@ -194,7 +199,7 @@ const POSPage = () => {
                               </Typography>
                             )}
                           </Box>
-                          <Stack alignItems='flex-end' spacing={0.5}>
+                          <Stack spacing={0.5} sx={{ alignItems: 'flex-end' }}>
                             <Chip size='small' label={item.type} />
                             <Typography variant='subtitle2' fontWeight={700}>
                               ${item.sellPrice}
@@ -209,12 +214,12 @@ const POSPage = () => {
             </Stack>
           </CardContent>
         </Card>
-      </Grid>
+      </Box>
 
-      <Grid size={{ xs: 12, md: 5 }}>
+      <Box sx={{ minWidth: 0 }}>
         <CartPanel cartItems={cartItems} transactionType={transactionType} />
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 
