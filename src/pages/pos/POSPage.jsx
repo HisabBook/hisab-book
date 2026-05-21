@@ -127,6 +127,16 @@ const POSPage = () => {
     dispatch(addToCart(item.cartPayload));
   };
 
+  const getItemDetails = (item) => {
+    if (item.identifier) {
+      return `${item.type === 'laptop' ? 'Serial' : 'IMEI'}: ${item.identifier}`;
+    }
+
+    const detailParts = [item.cartPayload?.brand, item.cartPayload?.model].filter(Boolean);
+    if (detailParts.length > 0) return detailParts.join(' - ');
+    return 'In stock';
+  };
+
   return (
     <Box
       sx={{
@@ -184,28 +194,74 @@ const POSPage = () => {
                       onClick={() => handleAddToCart(item)}
                       sx={{
                         cursor: 'pointer',
+                        overflow: 'visible',
                         '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
                       }}
                     >
-                      <CardContent sx={{ py: 1.25, '&:last-child': { pb: 1.25 } }}>
-                        <Stack direction='row' spacing={1} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                          <Box sx={{ minWidth: 0 }}>
-                            <Typography variant='subtitle2' sx={{ overflowWrap: 'anywhere' }}>
-                              {item.label}
-                            </Typography>
-                            {item.identifier && (
-                              <Typography variant='caption' color='text.secondary' sx={{ overflowWrap: 'anywhere' }}>
-                                {item.type === 'laptop' ? 'Serial' : 'IMEI'}: {item.identifier}
-                              </Typography>
-                            )}
-                          </Box>
-                          <Stack spacing={0.5} sx={{ alignItems: 'flex-end' }}>
-                            <Chip size='small' label={item.type} />
-                            <Typography variant='subtitle2' fontWeight={700}>
-                              ${item.sellPrice}
-                            </Typography>
-                          </Stack>
-                        </Stack>
+                      <CardContent
+                        sx={{
+                          py: 1.25,
+                          minHeight: 78,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          overflow: 'visible',
+                          '&:last-child': { pb: 1.25 },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'minmax(0, 1fr) auto',
+                            columnGap: 1,
+                            alignItems: 'start',
+                          }}
+                        >
+                          <Typography
+                            variant='subtitle2'
+                            sx={{ minWidth: 0, overflowWrap: 'anywhere', lineHeight: 1.35 }}
+                          >
+                            {item.label}
+                          </Typography>
+                          <Chip size='small' label={item.type} />
+                        </Box>
+
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <Typography
+                            component='div'
+                            sx={{
+                              minWidth: 0,
+                              fontSize: '0.8rem',
+                              color: 'text.secondary',
+                              overflowWrap: 'anywhere',
+                              lineHeight: 1.35,
+                              flex: 1,
+                            }}
+                          >
+                            {getItemDetails(item)}
+                          </Typography>
+                          <Typography
+                            component='div'
+                            sx={{
+                              fontSize: '0.95rem',
+                              fontWeight: 700,
+                              color: 'text.primary',
+                              whiteSpace: 'nowrap',
+                              flexShrink: 0,
+                            }}
+                          >
+                            ${item.sellPrice}
+                          </Typography>
+                        </Box>
                       </CardContent>
                     </Card>
                   ))
