@@ -149,11 +149,17 @@ export const {
   decreaseAccessoryQty,
 } = inventorySlice.actions;
 
-export const selectAllPhones = (state) => state.inventory.phones;
-export const selectAvailablePhones = (state) =>
-  state.inventory.phones.filter((p) => p.stockStatus === 'Available');
-export const selectAllLaptops = (state) => state.inventory.laptops;
-export const selectAllAccessories = (state) => state.inventory.accessories;
+const EMPTY_ARRAY = [];
+
+export const selectAllPhones = (state) => state.inventory?.phones ?? EMPTY_ARRAY;
+export const selectAllLaptops = (state) => state.inventory?.laptops ?? EMPTY_ARRAY;
+export const selectAllAccessories = (state) =>
+  state.inventory?.accessories ?? EMPTY_ARRAY;
+
+export const selectAvailablePhones = createSelector(
+  [selectAllPhones],
+  (phones) => phones.filter((p) => p.stockStatus === 'Available')
+);
 
 export const selectPhoneImeiSet = createSelector([selectAllPhones], (phones) =>
   new Set(phones.map((p) => normalize(p.imei)))
