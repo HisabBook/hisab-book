@@ -25,6 +25,7 @@ const initialState = {
 
   // ── UI State
   isCheckoutOpen: false,
+  isFinalizingCheckout: false,
   lastInvoiceNumber: null,
 };
 
@@ -113,6 +114,10 @@ const posSlice = createSlice({
       state.isCheckoutOpen = false;
     },
 
+    setIsFinalizingCheckout(state, action) {
+      state.isFinalizingCheckout = Boolean(action.payload);
+    },
+
     setLastInvoiceNumber(state, action) {
       state.lastInvoiceNumber = action.payload;
     },
@@ -127,6 +132,7 @@ const posSlice = createSlice({
       state.amountPaid = 0;
       state.dueAmount = 0;
       state.isCheckoutOpen = false;
+      state.isFinalizingCheckout = false;
     },
   },
 });
@@ -146,6 +152,7 @@ export const {
   setDueAmount,
   openCheckout,
   closeCheckout,
+  setIsFinalizingCheckout,
   setLastInvoiceNumber,
   resetPOS,
 } = posSlice.actions;
@@ -162,6 +169,8 @@ export const selectTransactionType = (state) => state.pos.transactionType;
 export const selectTradeIn = (state) => state.pos.tradeIn;
 export const selectSelectedCurrency = (state) => state.pos.selectedCurrency;
 export const selectIsCheckoutOpen = (state) => state.pos.isCheckoutOpen;
+export const selectIsFinalizingCheckout = (state) =>
+  state.pos.isFinalizingCheckout;
 export const selectAmountPaid = (state) => state.pos.amountPaid;
 export const selectDueAmount = (state) => state.pos.dueAmount;
 

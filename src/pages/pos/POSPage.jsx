@@ -1,9 +1,182 @@
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Backdrop, Box, CircularProgress } from '@mui/material';
+import SearchBar from './components/SearchBar';
+import CartPanel from './components/CartPanel';
+import {
+  addToCart,
+  selectCartItems,
+  selectIsFinalizingCheckout,
+  selectTransactionType,
+} from '../../redux/slices/posSlice';
+import {
+  selectAllAccessories,
+  selectAllLaptops,
+  selectAvailablePhones,
+} from '../../redux/slices/inventorySlice';
 
-const Pos = () => {
-    return <div>
-        POS Page
-    </div>
-}
+const normalize = (value) => String(value ?? '').trim().toLowerCase();
 
-export default Pos;
+const POSPage = () => {
+  const dispatch = useDispatch();
+  const phones = useSelector(selectAvailablePhones);
+  const laptops = useSelector(selectAllLaptops);
+  const accessories = useSelector(selectAllAccessories);
+  const cartItems = useSelector(selectCartItems);
+  const transactionType = useSelector(selectTransactionType);
+  const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
+
+  const [query, setQuery] = useState('');
+  const [scanFeedback, setScanFeedback] = useState('');
+
+  const inventoryPool = useMemo(() => {
+    const availableLaptops = laptops.filter((laptop) => laptop.stockStatus === 'Available');
+    const availableAccessories = accessories.filter((item) => item.quantity > 0);
+
+    return [
+      ...phones.map((phone) => ({
+        id: phone.id,
+        type: 'phone',
+        label: `${phone.brand} ${phone.model}`,
+        identifier: phone.imei,
+        sellPrice: phone.sellPrice,
+        cartPayload: {
+          itemId: phone.id,
+          type: 'phone',
+          name: `${phone.brand} ${phone.model}`,
+          brand: phone.brand,
+          model: phone.model,
+          imei: phone.imei,
+          sellPrice: phone.sellPrice,
+          currency: phone.currency,
+          quantity: 1,
+        },
+        searchText: `${phone.brand} ${phone.model} ${phone.imei}`,
+      })),
+      ...availableLaptops.map((laptop) => ({
+        id: laptop.id,
+        type: 'laptop',
+        label: `${laptop.brand} ${laptop.model}`,
+        identifier: laptop.serialNumber,
+        sellPrice: laptop.sellPrice,
+        cartPayload: {
+          itemId: laptop.id,
+          type: 'laptop',
+          name: `${laptop.brand} ${laptop.model}`,
+          brand: laptop.brand,
+          model: laptop.model,
+          serialNumber: laptop.serialNumber,
+          sellPrice: laptop.sellPrice,
+          currency: laptop.currency,
+          quantity: 1,
+        },
+        searchText: `${laptop.brand} ${laptop.model} ${laptop.serialNumber}`,
+      })),
+      ...availableAccessories.map((item) => ({
+        id: item.id,
+        type: 'accessory',
+        label: item.name,
+        identifier: null,
+        sellPrice: item.sellPrice,
+        cartPayload: {
+          itemId: item.id,
+          type: 'accessory',
+          name: item.name,
+          brand: item.brand,
+          sellPrice: item.sellPrice,
+          currency: item.currency,
+          quantity: 1,
+          availableQty: item.quantity,
+        },
+        searchText: `${item.name} ${item.brand}`,
+      })),
+    ];
+  }, [phones, laptops, accessories]);
+
+  const filteredInventory = useMemo(() => {
+    const trimmed = normalize(query);
+    if (!trimmed) return inventoryPool;
+
+    return inventoryPool.filter((item) => normalize(item.searchText).includes(trimmed));
+  }, [inventoryPool, query]);
+
+  useEffect(() => {
+    const trimmed = normalize(query);
+    if (!trimmed) return;
+
+    const exactMatch = inventoryPool.find(
+      (item) => item.identifier && normalize(item.identifier) === trimmed
+    );
+
+    if (exactMatch) {
+      dispatch(addToCart(exactMatch.cartPayload));
+      setScanFeedback(`Scanned: ${exactMatch.label}`);
+      setQuery('');
+    }
+  }, [dispatch, inventoryPool, query]);
+
+  const handleAddToCart = (item) => {
+    dispatch(addToCart(item.cartPayload));
+  };
+
+  return (
+    <>
+      <Backdrop
+        open={isFinalizingCheckout}
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal + 2 }}
+      >
+        <CircularProgress color='inherit' />
+      </Backdrop>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
+          pointerEvents: isFinalizingCheckout ? 'none' : 'auto',
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <SearchBar
+            value={query}
+            onChange={setQuery}
+            placeholder='Search by brand, model, accessory name, IMEI or serial...'
+          />
+
+          {scanFeedback && (
+            <Box sx={{ mt: 1, fontSize: 12, color: 'success.main' }}>{scanFeedback}</Box>
+          )}
+
+          <Box sx={{ mt: 2, display: 'grid', gap: 1 }}>
+            {filteredInventory.map((item) => (
+              <Box
+                key={`${item.type}_${item.id}`}
+                onClick={() => handleAddToCart(item)}
+                sx={{
+                  cursor: 'pointer',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  '&:hover': { bgcolor: 'action.hover', borderColor: 'primary.main' },
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+                  <Box sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>{item.label}</Box>
+                  <Box sx={{ whiteSpace: 'nowrap', fontWeight: 700 }}>${item.sellPrice}</Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        <Box sx={{ minWidth: 0 }}>
+          <CartPanel cartItems={cartItems} transactionType={transactionType} />
+        </Box>
+      </Box>
+    </>
+  );
+};
+
+export default POSPage;
+

@@ -23,6 +23,22 @@
     "noAlerts":          "د لږ ذخیرې هیڅ خبرداری نشته",
     "items":             "توکي"
   },
+  "pos": {
+    "checkout": "حساب تصفیه",
+    "amountPaid": "ورکړل شوې پیسې",
+    "dueAmount": "پاتې پور",
+    "customerName": "د پېرودونکي نوم",
+    "customerPhone": "د پېرودونکي تلیفون",
+    "returnChange": "باقي پیسې",
+    "debtWillBeRecorded": "پاتې پیسې به په خاته کې ثبت شي.",
+    "customerDebtRequired": "که پور پاتې وي، د پېرودونکي نوم او تلیفون اړین دي.",
+    "item": "توکی",
+    "identifier": "IMEI / سریال",
+    "qty": "شمېر",
+    "unitPrice": "د واحد بیه",
+    "subtotal": "ټول",
+    "thankYou": "ستاسو له پېرود څخه مننه!"
+  },
   "common": {
     "save":         "خوندي کول",
     "cancel":       "لغو کول",
