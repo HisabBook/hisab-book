@@ -15,9 +15,12 @@ import {
 import EmptyState from '../../../components/ui/EmptyState';
 import CartItem from './CartItem';
 import TradeInForm from './TradeInForm';
+import CheckoutModal from './CheckoutModal';
 import {
   clearCart,
+  openCheckout,
   selectCustomer,
+  selectIsCheckoutOpen,
   selectTradeIn,
   setCustomer,
   setTransactionType,
@@ -27,6 +30,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
   const dispatch = useDispatch();
   const customer = useSelector(selectCustomer);
   const tradeIn = useSelector(selectTradeIn);
+  const isCheckoutOpen = useSelector(selectIsCheckoutOpen);
 
   const subtotal = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.sellPrice * item.quantity, 0),
@@ -129,6 +133,15 @@ const CartPanel = ({ cartItems, transactionType }) => {
           </Stack>
 
           <Button
+            variant='contained'
+            size='large'
+            onClick={() => dispatch(openCheckout())}
+            disabled={!cartItems.length}
+          >
+            Checkout
+          </Button>
+
+          <Button
             variant='outlined'
             color='error'
             size='large'
@@ -139,6 +152,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
           </Button>
         </Stack>
       </CardContent>
+      <CheckoutModal open={isCheckoutOpen} />
     </Card>
   );
 };

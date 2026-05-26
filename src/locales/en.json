@@ -23,6 +23,16 @@
     "noAlerts":         "No low stock alerts",
     "items":            "items"
   },
+  "pos": {
+    "checkout": "Checkout",
+    "amountPaid": "Amount Paid",
+    "dueAmount": "Due Amount",
+    "customerName": "Customer Name",
+    "customerPhone": "Customer Phone",
+    "returnChange": "Return Change",
+    "debtWillBeRecorded": "Remaining amount will be recorded in Khata.",
+    "customerDebtRequired": "Customer name and phone are required for debt sales."
+  },
   "common": {
     "save":        "Save",
     "cancel":      "Cancel",
