@@ -27,7 +27,7 @@ import { useCheckout } from '../../settings/hooks/useCheckout';
 const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
 const amountPattern = /^\d*\.?\d*$/;
 
-const CheckoutModal = ({ open }) => {
+const CheckoutModal = ({ open, onPdfReady }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const customer = useSelector(selectCustomer);
@@ -108,7 +108,17 @@ const CheckoutModal = ({ open }) => {
         setSubmitError(
           t('pos.customerDebtRequired', 'Customer name and phone are required for debt sales.')
         );
+        return;
       }
+
+      if (typeof onPdfReady === 'function') {
+        onPdfReady(result.pdf);
+      }
+    } catch (error) {
+      setSubmitError(
+        t('pos.invoiceFailed', 'Invoice PDF could not be generated. Please try again.')
+      );
+      console.error('Checkout finalization failed', error);
     } finally {
       dispatch(setIsFinalizingCheckout(false));
     }

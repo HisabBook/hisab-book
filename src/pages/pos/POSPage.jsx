@@ -123,7 +123,7 @@ const POSPage = () => {
     <>
       <Backdrop
         open={isFinalizingCheckout}
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal + 2 }}
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal - 1 }}
       >
         <CircularProgress color='inherit' />
       </Backdrop>

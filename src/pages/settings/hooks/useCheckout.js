@@ -58,7 +58,7 @@ export const useCheckout = () => {
     };
   }, [cartItems, exchangeRate, tradeIn.currency, tradeIn.tradeInValue, transactionType]);
 
-  const finalizeCheckout = ({
+  const finalizeCheckout = async ({
     selectedCurrency,
     amountPaid,
     customerName,
@@ -146,8 +146,8 @@ export const useCheckout = () => {
     dispatch(setLastInvoiceNumber(invoiceNumber));
     dispatch(closeCheckout());
     dispatch(resetPOS());
-    generateInvoicePDF(sale);
-    return { ok: true, sale };
+    const pdf = await generateInvoicePDF(sale);
+    return { ok: true, sale, pdf };
   };
 
   return { pricing, finalizeCheckout };

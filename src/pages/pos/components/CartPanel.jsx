@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -12,9 +13,11 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
+import { ROUTE_PATHS } from '../../../constants/routePaths';
 import CartItem from './CartItem';
 import TradeInForm from './TradeInForm';
 import CheckoutModal from './CheckoutModal';
+import { setCurrentInvoicePdf } from '../invoicePreviewStore';
 import {
   clearCart,
   openCheckout,
@@ -26,8 +29,11 @@ import {
   setTransactionType,
 } from '../../../redux/slices/posSlice';
 
+const STORAGE_KEY = 'hisabbook:lastInvoicePdf';
+
 const CartPanel = ({ cartItems, transactionType }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const customer = useSelector(selectCustomer);
   const tradeIn = useSelector(selectTradeIn);
   const isCheckoutOpen = useSelector(selectIsCheckoutOpen);
@@ -40,6 +46,21 @@ const CartPanel = ({ cartItems, transactionType }) => {
 
   const tradeInValue = Number(tradeIn.tradeInValue) || 0;
   const payable = Math.max(0, subtotal - (transactionType === 'Exchange' ? tradeInValue : 0));
+
+  const handlePdfReady = (pdf) => {
+    if (!pdf?.blobUrl) return;
+    const payload = {
+      blobUrl: pdf.blobUrl,
+      fileName: pdf.fileName || 'invoice.pdf',
+    };
+    setCurrentInvoicePdf(payload);
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // Session storage can fail in private mode or low-quota environments.
+    }
+    navigate(ROUTE_PATHS.INVOICE_PREVIEW, { replace: true, state: payload });
+  };
 
   return (
     <Card sx={{ height: '100%', borderRadius: 2 }}>
@@ -152,7 +173,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
         </Stack>
       </CardContent>
 
-      <CheckoutModal open={isCheckoutOpen} />
+      <CheckoutModal open={isCheckoutOpen} onPdfReady={handlePdfReady} />
     </Card>
   );
 };
