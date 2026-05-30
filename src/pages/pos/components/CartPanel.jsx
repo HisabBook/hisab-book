@@ -106,7 +106,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
                 Subtotal
               </Typography>
               <Typography variant='body2' fontWeight={600}>
-                {subtotal.toFixed(2)}
+                ${subtotal.toFixed(2)}
               </Typography>
             </Stack>
 

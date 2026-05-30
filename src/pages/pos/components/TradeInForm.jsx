@@ -1,5 +1,5 @@
+import { Stack, TextField, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { Stack, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { selectTradeIn, setTradeIn } from '../../../redux/slices/posSlice';
 
 const TradeInForm = () => {
@@ -8,22 +8,43 @@ const TradeInForm = () => {
 
   return (
     <Stack spacing={1.25}>
+      <Typography variant='subtitle2' fontWeight={700}>
+        Trade-in Device Details
+      </Typography>
       <TextField
         size='small'
-        label='Trade-in Value'
-        value={tradeIn.tradeInValue}
-        onChange={(e) => dispatch(setTradeIn({ tradeInValue: e.target.value }))}
-        inputMode='decimal'
+        label='Brand'
+        value={tradeIn.brand}
+        onChange={(event) => dispatch(setTradeIn({ brand: event.target.value }))}
       />
-      <ToggleButtonGroup
-        exclusive
+      <TextField
         size='small'
-        value={tradeIn.currency}
-        onChange={(_, value) => value && dispatch(setTradeIn({ currency: value }))}
-      >
-        <ToggleButton value='USD'>USD</ToggleButton>
-        <ToggleButton value='AFN'>AFN</ToggleButton>
-      </ToggleButtonGroup>
+        label='Model'
+        value={tradeIn.model}
+        onChange={(event) => dispatch(setTradeIn({ model: event.target.value }))}
+      />
+      <TextField
+        size='small'
+        label='Old Phone IMEI'
+        value={tradeIn.imei}
+        onChange={(event) => dispatch(setTradeIn({ imei: event.target.value }))}
+      />
+      <TextField
+        size='small'
+        label='Trade-in Value (USD)'
+        type='number'
+        value={tradeIn.tradeInValue}
+        onChange={(event) => {
+          const parsed = Number(event.target.value);
+          dispatch(setTradeIn({ tradeInValue: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0 }));
+        }}
+        slotProps={{ htmlInput: { min: 0, inputMode: 'decimal' } }}
+        onKeyDown={(event) => {
+          if (['e', 'E', '+', '-'].includes(event.key)) {
+            event.preventDefault();
+          }
+        }}
+      />
     </Stack>
   );
 };

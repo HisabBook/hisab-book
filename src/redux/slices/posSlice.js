@@ -36,11 +36,34 @@ const posSlice = createSlice({
     // ── Cart Operations
     addToCart(state, action) {
       const item = action.payload;
-      // For phones/laptops: prevent duplicate IMEI in cart
-      if (item.imei) {
-        const exists = state.cartItems.some((c) => c.imei === item.imei);
-        if (exists) return;
+
+      // Accessories should merge into one cart row and increase quantity.
+      if (item.type === 'accessory') {
+        const existingAccessory = state.cartItems.find(
+          (c) => c.type === 'accessory' && c.itemId === item.itemId
+        );
+        if (existingAccessory) {
+          const nextQty = existingAccessory.quantity + (item.quantity ?? 1);
+          const maxQty = Number(item.availableQty);
+          existingAccessory.quantity = Number.isFinite(maxQty)
+            ? Math.min(nextQty, maxQty)
+            : nextQty;
+          return;
+        }
       }
+
+      // For unique items: prevent duplicates in cart.
+      if (item.imei) {
+        const imeiExists = state.cartItems.some((c) => c.imei === item.imei);
+        if (imeiExists) return;
+      }
+      if (item.serialNumber) {
+        const serialExists = state.cartItems.some(
+          (c) => c.serialNumber === item.serialNumber
+        );
+        if (serialExists) return;
+      }
+
       state.cartItems.push({
         ...item,
         cartItemId: `cart_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -59,7 +82,11 @@ const posSlice = createSlice({
       const item = state.cartItems.find((c) => c.cartItemId === cartItemId);
       // Only accessories can have qty > 1
       if (item && item.type === 'accessory') {
-        item.quantity = Math.max(1, quantity);
+        const clampedMin = Math.max(1, quantity);
+        const maxQty = Number(item.availableQty);
+        item.quantity = Number.isFinite(maxQty)
+          ? Math.min(clampedMin, maxQty)
+          : clampedMin;
       }
     },
 

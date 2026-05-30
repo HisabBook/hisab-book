@@ -19,11 +19,7 @@ import {
   increaseDebt,
   selectAllCustomers,
 } from '../../../redux/slices/khataSlice';
-import {
-  selectExchangeRate,
-  selectLanguage,
-  selectShopProfile,
-} from '../../../redux/slices/settingsSlice';
+import { selectExchangeRate } from '../../../redux/slices/settingsSlice';
 import { generateInvoicePDF } from '../utils/generateInvoicePDF';
 
 const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
@@ -43,22 +39,17 @@ export const useCheckout = () => {
   const tradeIn = useSelector(selectTradeIn);
   const transactionType = useSelector(selectTransactionType);
   const exchangeRate = useSelector(selectExchangeRate);
-  const shopProfile = useSelector(selectShopProfile);
-  const language = useSelector(selectLanguage);
 
   const pricing = useMemo(() => {
-    const subtotalUSD = cartItems.reduce((sum, item) => {
-      const qty = Number(item.quantity) || 1;
-      const unit = Number(item.sellPrice) || 0;
-      const line = unit * qty;
-      return sum + toUSD(line, item.currency, exchangeRate);
-    }, 0);
-
+    const subtotalUSD = cartItems.reduce(
+      (sum, item) =>
+        sum + toUSD((Number(item.sellPrice) || 0) * (Number(item.quantity) || 1), item.currency, exchangeRate),
+      0
+    );
     const tradeInUSD =
       transactionType === 'Exchange'
         ? toUSD(Number(tradeIn.tradeInValue) || 0, tradeIn.currency, exchangeRate)
         : 0;
-
     const netTotalUSD = Math.max(0, subtotalUSD - tradeInUSD);
     return {
       subtotalUSD: round2(subtotalUSD),
@@ -67,12 +58,11 @@ export const useCheckout = () => {
     };
   }, [cartItems, exchangeRate, tradeIn.currency, tradeIn.tradeInValue, transactionType]);
 
-  const finalizeCheckout = async ({
+  const finalizeCheckout = ({
     selectedCurrency,
     amountPaid,
     customerName,
     customerPhone,
-    t,
   }) => {
     const paid = round2(Number(amountPaid) || 0);
     const netTotal = round2(fromUSD(pricing.netTotalUSD, selectedCurrency, exchangeRate));
@@ -110,17 +100,26 @@ export const useCheckout = () => {
           })
         );
       }
+      dispatch(
+        increaseDebt({
+          customerId,
+          amount: dueAmount,
+        })
+      );
     }
+
+    cartItems.forEach((item) => {
+      if (item.type === 'phone') dispatch(markPhoneSold(item.itemId));
+      if (item.type === 'accessory') {
+        dispatch(decreaseAccessoryQty({ id: item.itemId, qty: item.quantity }));
+      }
+    });
 
     const sale = {
       id: uid('sale'),
       customerId: customerId || null,
       customerName: customerName?.trim() || customer.name || 'Walk-in',
-      items: cartItems.map((item) => ({
-        ...item,
-        quantity: Number(item.quantity) || 1,
-        sellPrice: Number(item.sellPrice) || 0,
-      })),
+      items: cartItems,
       totalAmount: netTotal,
       amountPaid: paid,
       dueAmount,
@@ -143,34 +142,11 @@ export const useCheckout = () => {
           : 0,
     };
 
-    // 1) Generate PDF first while UI is locked (Backdrop).
-    await generateInvoicePDF({
-      sale,
-      exchangeRate,
-      shopProfile,
-      language,
-      t,
-    });
-
-    // 2) Apply inventory changes.
-    sale.items.forEach((item) => {
-      if (item.type === 'phone') dispatch(markPhoneSold(item.itemId));
-      if (item.type === 'accessory') {
-        dispatch(decreaseAccessoryQty({ id: item.itemId, qty: item.quantity }));
-      }
-    });
-
-    // 3) Record debt after successful PDF generation.
-    if (hasDebt && customerId) {
-      dispatch(increaseDebt({ customerId, amount: dueAmount }));
-    }
-
-    // 4) Save sale + reset POS.
     dispatch(addSale(sale));
     dispatch(setLastInvoiceNumber(invoiceNumber));
     dispatch(closeCheckout());
     dispatch(resetPOS());
-
+    generateInvoicePDF(sale);
     return { ok: true, sale };
   };
 

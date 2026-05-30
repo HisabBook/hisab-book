@@ -38,6 +38,7 @@
     "unitPrice": "Unit Price",
     "subtotal": "Subtotal",
     "thankYou": "Thank you for your purchase!"
+    "customerDebtRequired": "Customer name and phone are required for debt sales."
   },
   "common": {
     "save":        "Save",
