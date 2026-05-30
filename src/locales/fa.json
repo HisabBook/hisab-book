@@ -67,7 +67,16 @@
     "printReceipt":      "چاپ رسید",
     "addToCart":         "افزودن به سبد",
     "removeItem":        "حذف",
-    "tradeIn":           "ارزش معاوضه"
+    "tradeIn":           "ارزش معاوضه",
+    "returnChange":      "باقی پول",
+    "debtWillBeRecorded":"مانده بدهی در خاته ثبت می‌شود.",
+    "customerDebtRequired":"برای فروش با بدهی، نام و شماره تلفن اجباری است.",
+    "item":              "کالا",
+    "identifier":        "IMEI / سریال",
+    "qty":               "تعداد",
+    "unitPrice":         "قیمت یکی",
+    "subtotal":          "جمع",
+    "thankYou":          "با سپاس از خرید شما!"
   },
   "khata": {
     "title":        "خاطه — بدهی مشتریان",

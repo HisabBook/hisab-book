@@ -31,6 +31,13 @@
     "customerPhone": "Customer Phone",
     "returnChange": "Return Change",
     "debtWillBeRecorded": "Remaining amount will be recorded in Khata.",
+    "customerDebtRequired": "Customer name and phone are required for debt sales.",
+    "item": "Item",
+    "identifier": "IMEI/Serial",
+    "qty": "Qty",
+    "unitPrice": "Unit Price",
+    "subtotal": "Subtotal",
+    "thankYou": "Thank you for your purchase!"
     "customerDebtRequired": "Customer name and phone are required for debt sales."
   },
   "common": {

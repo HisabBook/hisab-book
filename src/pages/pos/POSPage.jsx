@@ -1,21 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Alert,
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Backdrop, Box, CircularProgress } from '@mui/material';
 import SearchBar from './components/SearchBar';
 import CartPanel from './components/CartPanel';
-import EmptyState from '../../components/ui/EmptyState';
 import {
   addToCart,
   selectCartItems,
+  selectIsFinalizingCheckout,
   selectTransactionType,
 } from '../../redux/slices/posSlice';
 import {
@@ -33,6 +24,7 @@ const POSPage = () => {
   const accessories = useSelector(selectAllAccessories);
   const cartItems = useSelector(selectCartItems);
   const transactionType = useSelector(selectTransactionType);
+  const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
 
   const [query, setQuery] = useState('');
   const [scanFeedback, setScanFeedback] = useState('');
@@ -127,156 +119,64 @@ const POSPage = () => {
     dispatch(addToCart(item.cartPayload));
   };
 
-  const getItemDetails = (item) => {
-    if (item.identifier) {
-      return `${item.type === 'laptop' ? 'Serial' : 'IMEI'}: ${item.identifier}`;
-    }
-
-    const detailParts = [item.cartPayload?.brand, item.cartPayload?.model].filter(Boolean);
-    if (detailParts.length > 0) return detailParts.join(' - ');
-    return 'In stock';
-  };
-
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gap: 2,
-        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
-      }}
-    >
-      <Box sx={{ minWidth: 0 }}>
-        <Card sx={{ height: '100%' }}>
-          <CardContent>
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant='h5' fontWeight={700}>
-                  POS Workspace
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  Fast IMEI / Serial scan and smart item search.
-                </Typography>
+    <>
+      <Backdrop
+        open={isFinalizingCheckout}
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal + 2 }}
+      >
+        <CircularProgress color='inherit' />
+      </Backdrop>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
+          pointerEvents: isFinalizingCheckout ? 'none' : 'auto',
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <SearchBar
+            value={query}
+            onChange={setQuery}
+            placeholder='Search by brand, model, accessory name, IMEI or serial...'
+          />
+
+          {scanFeedback && (
+            <Box sx={{ mt: 1, fontSize: 12, color: 'success.main' }}>{scanFeedback}</Box>
+          )}
+
+          <Box sx={{ mt: 2, display: 'grid', gap: 1 }}>
+            {filteredInventory.map((item) => (
+              <Box
+                key={`${item.type}_${item.id}`}
+                onClick={() => handleAddToCart(item)}
+                sx={{
+                  cursor: 'pointer',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 1,
+                  '&:hover': { bgcolor: 'action.hover', borderColor: 'primary.main' },
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+                  <Box sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>{item.label}</Box>
+                  <Box sx={{ whiteSpace: 'nowrap', fontWeight: 700 }}>${item.sellPrice}</Box>
+                </Box>
               </Box>
+            ))}
+          </Box>
+        </Box>
 
-              <SearchBar
-                value={query}
-                onChange={setQuery}
-                placeholder='Search by brand, model, accessory name, IMEI or serial...'
-              />
-
-              {scanFeedback && (
-                <Alert severity='success' onClose={() => setScanFeedback('')}>
-                  {scanFeedback}
-                </Alert>
-              )}
-
-              <Divider />
-
-              <Stack spacing={1.25} sx={{ maxHeight: { xs: 420, md: 560 }, overflowY: 'auto', pr: 0.5 }}>
-                {!query.trim() && (
-                  <Typography variant='caption' color='text.secondary'>
-                    {inventoryPool.length} items ready for checkout.
-                  </Typography>
-                )}
-
-                {query.trim() && filteredInventory.length === 0 ? (
-                  <Box sx={{ minHeight: 220 }}>
-                    <EmptyState
-                      message='No matching inventory found'
-                      details='Try another brand/model/IMEI or check spelling.'
-                    />
-                  </Box>
-                ) : (
-                  filteredInventory.map((item) => (
-                    <Card
-                      key={`${item.type}_${item.id}`}
-                      variant='outlined'
-                      onClick={() => handleAddToCart(item)}
-                      sx={{
-                        cursor: 'pointer',
-                        overflow: 'visible',
-                        '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
-                      }}
-                    >
-                      <CardContent
-                        sx={{
-                          py: 1.25,
-                          minHeight: 78,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                          gap: 0.75,
-                          overflow: 'visible',
-                          '&:last-child': { pb: 1.25 },
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'grid',
-                            gridTemplateColumns: 'minmax(0, 1fr) auto',
-                            columnGap: 1,
-                            alignItems: 'start',
-                          }}
-                        >
-                          <Typography
-                            variant='subtitle2'
-                            sx={{ minWidth: 0, overflowWrap: 'anywhere', lineHeight: 1.35 }}
-                          >
-                            {item.label}
-                          </Typography>
-                          <Chip size='small' label={item.type} />
-                        </Box>
-
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            minWidth: 0,
-                          }}
-                        >
-                          <Typography
-                            component='div'
-                            sx={{
-                              minWidth: 0,
-                              fontSize: '0.8rem',
-                              color: 'text.secondary',
-                              overflowWrap: 'anywhere',
-                              lineHeight: 1.35,
-                              flex: 1,
-                            }}
-                          >
-                            {getItemDetails(item)}
-                          </Typography>
-                          <Typography
-                            component='div'
-                            sx={{
-                              fontSize: '0.95rem',
-                              fontWeight: 700,
-                              color: 'text.primary',
-                              whiteSpace: 'nowrap',
-                              flexShrink: 0,
-                            }}
-                          >
-                            ${item.sellPrice}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
+        <Box sx={{ minWidth: 0 }}>
+          <CartPanel cartItems={cartItems} transactionType={transactionType} />
+        </Box>
       </Box>
-
-      <Box sx={{ minWidth: 0 }}>
-        <CartPanel cartItems={cartItems} transactionType={transactionType} />
-      </Box>
-    </Box>
+    </>
   );
 };
 
 export default POSPage;
+
