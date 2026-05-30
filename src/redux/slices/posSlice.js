@@ -1,29 +1,30 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { selectExchangeRate } from './settingsSlice';
+
 const initialState = {
+  // Cart & Customer
   cartItems: [],
   customer: {
     id: null,
     name: '',
     phone: '',
   },
-  transactionType: 'Standard', // 'Standard' | 'Exchange'
 
-  // ── Trade-in (Exchange only)
+  // Transaction Flow State
+  transactionType: 'Standard', // 'Standard' | 'Exchange'
   tradeIn: {
     brand: '',
     model: '',
     imei: '',
     condition: 'Used',
-    tradeInValue: 0, // deducted from total bill
+    tradeInValue: 0,
     currency: 'USD',
   },
 
-  // ── Checkout
-  selectedCurrency: 'USD', // 'USD' | 'AFN'
+  // Checkout & UI State
+  selectedCurrency: 'USD',
   amountPaid: 0,
   dueAmount: 0,
-
-  // ── UI State
   isCheckoutOpen: false,
   lastInvoiceNumber: null,
 };
@@ -32,41 +33,38 @@ const posSlice = createSlice({
   name: 'pos',
   initialState,
   reducers: {
-    // ── Cart Operations
+    // --- Core Cart Engine ---
     addToCart(state, action) {
-      const item = action.payload;
+      const itemPayload = action.payload;
 
-      // Accessories should merge into one cart row and increase quantity.
-      if (item.type === 'accessory') {
-        const existingAccessory = state.cartItems.find(
-          (c) => c.type === 'accessory' && c.itemId === item.itemId
+      // Unique Item Validation (Phones/Laptops)
+      if (itemPayload.type === 'phone' || itemPayload.type === 'laptop') {
+        if (itemPayload.stockStatus === 'Sold') return;
+        const uniqueIdentifier = itemPayload.imei || itemPayload.serialNumber;
+        const isAlreadyInCart = state.cartItems.some(
+          (cartItem) =>
+            (cartItem.imei || cartItem.serialNumber) === uniqueIdentifier
         );
-        if (existingAccessory) {
-          const nextQty = existingAccessory.quantity + (item.quantity ?? 1);
-          const maxQty = Number(item.availableQty);
-          existingAccessory.quantity = Number.isFinite(maxQty)
-            ? Math.min(nextQty, maxQty)
-            : nextQty;
+        if (isAlreadyInCart) return;
+      }
+
+      // Bulk Item Validation (Accessories)
+      if (itemPayload.type === 'accessory') {
+        if (itemPayload.availableQty <= 0) return;
+        const existingItem = state.cartItems.find(
+          (cartItem) => cartItem.itemId === itemPayload.itemId
+        );
+        if (existingItem) {
+          const newQty = existingItem.quantity + 1;
+          existingItem.quantity = Math.min(newQty, itemPayload.availableQty);
           return;
         }
       }
 
-      // For unique items: prevent duplicates in cart.
-      if (item.imei) {
-        const imeiExists = state.cartItems.some((c) => c.imei === item.imei);
-        if (imeiExists) return;
-      }
-      if (item.serialNumber) {
-        const serialExists = state.cartItems.some(
-          (c) => c.serialNumber === item.serialNumber
-        );
-        if (serialExists) return;
-      }
-
       state.cartItems.push({
-        ...item,
+        ...itemPayload,
+        quantity: 1,
         cartItemId: `cart_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-        quantity: item.quantity ?? 1,
       });
     },
 
@@ -79,13 +77,12 @@ const posSlice = createSlice({
     updateCartItemQty(state, action) {
       const { cartItemId, quantity } = action.payload;
       const item = state.cartItems.find((c) => c.cartItemId === cartItemId);
-      // Only accessories can have qty > 1
+
       if (item && item.type === 'accessory') {
-        const clampedMin = Math.max(1, quantity);
-        const maxQty = Number(item.availableQty);
-        item.quantity = Number.isFinite(maxQty)
-          ? Math.min(clampedMin, maxQty)
-          : clampedMin;
+        const requestedQty = Number(quantity);
+        if (!Number.isFinite(requestedQty)) return;
+        const clampedMin = Math.max(1, requestedQty);
+        item.quantity = Math.min(clampedMin, Number(item.availableQty));
       }
     },
 
@@ -93,81 +90,56 @@ const posSlice = createSlice({
       state.cartItems = [];
     },
 
-    // ── Customer
+    // --- Customer & Transaction Management ---
     setCustomer(state, action) {
       state.customer = { ...state.customer, ...action.payload };
     },
 
-    clearCustomer(state) {
-      state.customer = { id: null, name: '', phone: '' };
-    },
-
-    // ── Transaction Type
     setTransactionType(state, action) {
-      state.transactionType = action.payload; // 'Standard' | 'Exchange'
+      state.transactionType = action.payload;
       if (action.payload !== 'Exchange') {
-        state.tradeIn = initialState.tradeIn;
+        state.tradeIn = initialState.tradeIn; // Reset trade-in if not an exchange
       }
     },
 
-    // ── Trade-in
     setTradeIn(state, action) {
       state.tradeIn = { ...state.tradeIn, ...action.payload };
     },
 
-    clearTradeIn(state) {
-      state.tradeIn = initialState.tradeIn;
-    },
-
-    // ── Checkout
+    // --- Checkout UI Flow ---
     setSelectedCurrency(state, action) {
       state.selectedCurrency = action.payload;
     },
-
     setAmountPaid(state, action) {
       state.amountPaid = action.payload;
     },
-
     setDueAmount(state, action) {
       state.dueAmount = action.payload;
     },
-
     openCheckout(state) {
       state.isCheckoutOpen = true;
     },
-
     closeCheckout(state) {
       state.isCheckoutOpen = false;
     },
-
     setLastInvoiceNumber(state, action) {
       state.lastInvoiceNumber = action.payload;
     },
 
-    // ── Reset entire POS after successful sale
-    resetPOS(state) {
-      state.cartItems = [];
-      state.customer = { id: null, name: '', phone: '' };
-      state.transactionType = 'Standard';
-      state.tradeIn = initialState.tradeIn;
-      state.selectedCurrency = 'USD';
-      state.amountPaid = 0;
-      state.dueAmount = 0;
-      state.isCheckoutOpen = false;
-    },
+    // --- Global Reset ---
+    resetPOS: () => initialState,
   },
 });
 
+// --- Actions ---
 export const {
   addToCart,
   removeFromCart,
   updateCartItemQty,
   clearCart,
   setCustomer,
-  clearCustomer,
   setTransactionType,
   setTradeIn,
-  clearTradeIn,
   setSelectedCurrency,
   setAmountPaid,
   setDueAmount,
@@ -177,19 +149,28 @@ export const {
   resetPOS,
 } = posSlice.actions;
 
-// ── Selectors
+// --- Selectors ---
 export const selectCartItems = (state) => state.pos.cartItems;
-export const selectCartTotal = (state) =>
-  state.pos.cartItems.reduce(
-    (sum, item) => sum + item.sellPrice * item.quantity,
-    0
-  );
 export const selectCustomer = (state) => state.pos.customer;
 export const selectTransactionType = (state) => state.pos.transactionType;
 export const selectTradeIn = (state) => state.pos.tradeIn;
 export const selectSelectedCurrency = (state) => state.pos.selectedCurrency;
 export const selectIsCheckoutOpen = (state) => state.pos.isCheckoutOpen;
-export const selectAmountPaid = (state) => state.pos.amountPaid;
-export const selectDueAmount = (state) => state.pos.dueAmount;
+
+export const selectCartTotal = createSelector(
+  [selectCartItems, selectExchangeRate],
+  (cartItems, exchangeRate) => {
+    let totalUSD = 0;
+    cartItems.forEach((item) => {
+      const itemTotal = item.sellPrice * item.quantity;
+      if (item.currency === 'USD') {
+        totalUSD += itemTotal;
+      } else if (item.currency === 'AFN' && exchangeRate > 0) {
+        totalUSD += itemTotal / exchangeRate;
+      }
+    });
+    return { usd: totalUSD, afn: totalUSD * exchangeRate };
+  }
+);
 
 export default posSlice.reducer;
