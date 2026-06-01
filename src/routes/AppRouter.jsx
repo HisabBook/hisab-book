@@ -14,6 +14,7 @@ const InventoryPage = lazy(
   () => import('../pages/inventory/InventoryPage.jsx')
 );
 const POSPage = lazy(() => import('../pages/pos/POSPage.jsx'));
+const InvoicePreviewPage = lazy(() => import('../pages/pos/InvoicePreviewPage.jsx'));
 const KhataPage = lazy(() => import('../pages/khata/KhataPage.jsx'));
 const RoznamchaPage = lazy(
   () => import('../pages/roznamcha/RoznamchaPage.jsx')
@@ -46,6 +47,15 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <POSPage />
+          </Suspense>
+        ),
+        handle: { titleKey: 'nav.pos' },
+      },
+      {
+        path: ROUTE_PATHS.INVOICE_PREVIEW,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <InvoicePreviewPage />
           </Suspense>
         ),
         handle: { titleKey: 'nav.pos' },

@@ -2,6 +2,7 @@
   ROOT: '/',
   DASHBOARD: '/dashboard',
   POS: '/pos',
+  INVOICE_PREVIEW: '/pos/invoice-preview',
   INVENTORY: '/inventory',
   KHATA: '/khata',
   ROZNAMCHA: '/roznamcha',

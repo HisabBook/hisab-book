@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -12,28 +13,54 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import EmptyState from '../../../components/ui/EmptyState';
+import { ROUTE_PATHS } from '../../../constants/routePaths';
 import CartItem from './CartItem';
 import TradeInForm from './TradeInForm';
+import CheckoutModal from './CheckoutModal';
+import { setCurrentInvoicePdf } from '../invoicePreviewStore';
 import {
   clearCart,
+  openCheckout,
   selectCustomer,
+  selectIsCheckoutOpen,
+  selectIsFinalizingCheckout,
   selectTradeIn,
   setCustomer,
   setTransactionType,
 } from '../../../redux/slices/posSlice';
 
+const STORAGE_KEY = 'hisabbook:lastInvoicePdf';
+
 const CartPanel = ({ cartItems, transactionType }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const customer = useSelector(selectCustomer);
   const tradeIn = useSelector(selectTradeIn);
+  const isCheckoutOpen = useSelector(selectIsCheckoutOpen);
+  const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
 
   const subtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.sellPrice * item.quantity, 0),
+    () => cartItems.reduce((sum, item) => sum + (Number(item.sellPrice) || 0) * (Number(item.quantity) || 1), 0),
     [cartItems]
   );
+
   const tradeInValue = Number(tradeIn.tradeInValue) || 0;
   const payable = Math.max(0, subtotal - (transactionType === 'Exchange' ? tradeInValue : 0));
+
+  const handlePdfReady = (pdf) => {
+    if (!pdf?.blobUrl) return;
+    const payload = {
+      blobUrl: pdf.blobUrl,
+      fileName: pdf.fileName || 'invoice.pdf',
+    };
+    setCurrentInvoicePdf(payload);
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // Session storage can fail in private mode or low-quota environments.
+    }
+    navigate(ROUTE_PATHS.INVOICE_PREVIEW, { replace: true, state: payload });
+  };
 
   return (
     <Card sx={{ height: '100%', borderRadius: 2 }}>
@@ -53,8 +80,8 @@ const CartPanel = ({ cartItems, transactionType }) => {
             fullWidth
             value={transactionType}
             onChange={(_, value) => value && dispatch(setTransactionType(value))}
-            aria-label='transaction type'
             size='small'
+            disabled={isFinalizingCheckout}
           >
             <ToggleButton value='Standard'>Standard</ToggleButton>
             <ToggleButton value='Exchange'>Exchange</ToggleButton>
@@ -65,13 +92,15 @@ const CartPanel = ({ cartItems, transactionType }) => {
               size='small'
               label='Customer Name'
               value={customer.name}
-              onChange={(event) => dispatch(setCustomer({ name: event.target.value }))}
+              onChange={(e) => dispatch(setCustomer({ name: e.target.value }))}
+              disabled={isFinalizingCheckout}
             />
             <TextField
               size='small'
               label='Customer Phone'
               value={customer.phone}
-              onChange={(event) => dispatch(setCustomer({ phone: event.target.value }))}
+              onChange={(e) => dispatch(setCustomer({ phone: e.target.value }))}
+              disabled={isFinalizingCheckout}
             />
           </Stack>
 
@@ -79,23 +108,14 @@ const CartPanel = ({ cartItems, transactionType }) => {
 
           <Divider />
 
-          <Stack
-            spacing={1.25}
-            sx={{
-              maxHeight: { xs: 300, md: 360 },
-              overflowY: 'auto',
-              pr: 0.5,
-            }}
-          >
-            {cartItems.length === 0 ? (
-              <Box sx={{ minHeight: 160 }}>
-                <EmptyState
-                  message='Cart is empty'
-                  details='Select items from the inventory list to begin checkout.'
-                />
-              </Box>
-            ) : (
-              cartItems.map((item) => <CartItem key={item.cartItemId} item={item} />)
+          <Stack spacing={1.25} sx={{ maxHeight: { xs: 300, md: 360 }, overflowY: 'auto', pr: 0.5 }}>
+            {cartItems.map((item) => (
+              <CartItem key={item.cartItemId} item={item} />
+            ))}
+            {!cartItems.length && (
+              <Typography variant='body2' color='text.secondary'>
+                Cart is empty.
+              </Typography>
             )}
           </Stack>
 
@@ -113,8 +133,12 @@ const CartPanel = ({ cartItems, transactionType }) => {
 
             {transactionType === 'Exchange' && (
               <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
-                <Typography variant='body2' color='text.secondary'>Trade-in Deduction</Typography>
-                <Typography variant='body2' fontWeight={600}>-${tradeInValue.toFixed(2)}</Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Trade-in Deduction
+                </Typography>
+                <Typography variant='body2' fontWeight={600}>
+                  -{tradeInValue.toFixed(2)}
+                </Typography>
               </Stack>
             )}
 
@@ -123,22 +147,33 @@ const CartPanel = ({ cartItems, transactionType }) => {
                 Total Payable
               </Typography>
               <Typography variant='h6' fontWeight={800}>
-                ${payable.toFixed(2)}
+                {payable.toFixed(2)}
               </Typography>
             </Stack>
           </Stack>
+
+          <Button
+            variant='contained'
+            size='large'
+            onClick={() => dispatch(openCheckout())}
+            disabled={!cartItems.length || isFinalizingCheckout}
+          >
+            Checkout
+          </Button>
 
           <Button
             variant='outlined'
             color='error'
             size='large'
             onClick={() => dispatch(clearCart())}
-            disabled={!cartItems.length}
+            disabled={!cartItems.length || isFinalizingCheckout}
           >
             Clear Cart
           </Button>
         </Stack>
       </CardContent>
+
+      <CheckoutModal open={isCheckoutOpen} onPdfReady={handlePdfReady} />
     </Card>
   );
 };

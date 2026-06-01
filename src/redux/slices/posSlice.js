@@ -26,6 +26,7 @@ const initialState = {
   amountPaid: 0,
   dueAmount: 0,
   isCheckoutOpen: false,
+  isFinalizingCheckout: false, // Kept from 'main' branch
   lastInvoiceNumber: null,
 };
 
@@ -122,16 +123,25 @@ const posSlice = createSlice({
     closeCheckout(state) {
       state.isCheckoutOpen = false;
     },
+
+    // Kept from 'main' branch - this is for loading spinners
+    setIsFinalizingCheckout(state, action) {
+      state.isFinalizingCheckout = Boolean(action.payload);
+    },
+
     setLastInvoiceNumber(state, action) {
       state.lastInvoiceNumber = action.payload;
     },
 
     // --- Global Reset ---
+    // Using the superior method from the 'HIS-60' branch.
+    // It automatically resets ALL fields, including `isFinalizingCheckout`.
     resetPOS: () => initialState,
   },
 });
 
 // --- Actions ---
+// All actions from both branches are combined here.
 export const {
   addToCart,
   removeFromCart,
@@ -145,18 +155,25 @@ export const {
   setDueAmount,
   openCheckout,
   closeCheckout,
+  setIsFinalizingCheckout, // Combined
   setLastInvoiceNumber,
   resetPOS,
 } = posSlice.actions;
 
 // --- Selectors ---
+// All selectors from both branches are combined here.
 export const selectCartItems = (state) => state.pos.cartItems;
 export const selectCustomer = (state) => state.pos.customer;
 export const selectTransactionType = (state) => state.pos.transactionType;
 export const selectTradeIn = (state) => state.pos.tradeIn;
 export const selectSelectedCurrency = (state) => state.pos.selectedCurrency;
 export const selectIsCheckoutOpen = (state) => state.pos.isCheckoutOpen;
+export const selectIsFinalizingCheckout = (state) =>
+  state.pos.isFinalizingCheckout;
+export const selectAmountPaid = (state) => state.pos.amountPaid;
+export const selectDueAmount = (state) => state.pos.dueAmount;
 
+// The powerful, currency-aware selector from the 'HIS-60' branch.
 export const selectCartTotal = createSelector(
   [selectCartItems, selectExchangeRate],
   (cartItems, exchangeRate) => {
