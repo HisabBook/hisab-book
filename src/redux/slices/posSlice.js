@@ -26,7 +26,7 @@ const initialState = {
   amountPaid: 0,
   dueAmount: 0,
   isCheckoutOpen: false,
-  isFinalizingCheckout: false, // Kept from 'main' branch
+  isFinalizingCheckout: false,
   lastInvoiceNumber: null,
 };
 
@@ -75,7 +75,8 @@ const posSlice = createSlice({
       );
     },
 
-    updateCartItemQty(state, action) {
+    // *** RENAMED based on feedback for consistency ***
+    updateCartQty(state, action) {
       const { cartItemId, quantity } = action.payload;
       const item = state.cartItems.find((c) => c.cartItemId === cartItemId);
 
@@ -99,7 +100,7 @@ const posSlice = createSlice({
     setTransactionType(state, action) {
       state.transactionType = action.payload;
       if (action.payload !== 'Exchange') {
-        state.tradeIn = initialState.tradeIn; // Reset trade-in if not an exchange
+        state.tradeIn = initialState.tradeIn;
       }
     },
 
@@ -123,29 +124,23 @@ const posSlice = createSlice({
     closeCheckout(state) {
       state.isCheckoutOpen = false;
     },
-
-    // Kept from 'main' branch - this is for loading spinners
     setIsFinalizingCheckout(state, action) {
       state.isFinalizingCheckout = Boolean(action.payload);
     },
-
     setLastInvoiceNumber(state, action) {
       state.lastInvoiceNumber = action.payload;
     },
 
     // --- Global Reset ---
-    // Using the superior method from the 'HIS-60' branch.
-    // It automatically resets ALL fields, including `isFinalizingCheckout`.
     resetPOS: () => initialState,
   },
 });
 
 // --- Actions ---
-// All actions from both branches are combined here.
 export const {
   addToCart,
   removeFromCart,
-  updateCartItemQty,
+  updateCartQty, // *** RENAMED here as well ***
   clearCart,
   setCustomer,
   setTransactionType,
@@ -155,13 +150,12 @@ export const {
   setDueAmount,
   openCheckout,
   closeCheckout,
-  setIsFinalizingCheckout, // Combined
+  setIsFinalizingCheckout,
   setLastInvoiceNumber,
   resetPOS,
 } = posSlice.actions;
 
 // --- Selectors ---
-// All selectors from both branches are combined here.
 export const selectCartItems = (state) => state.pos.cartItems;
 export const selectCustomer = (state) => state.pos.customer;
 export const selectTransactionType = (state) => state.pos.transactionType;
@@ -173,7 +167,6 @@ export const selectIsFinalizingCheckout = (state) =>
 export const selectAmountPaid = (state) => state.pos.amountPaid;
 export const selectDueAmount = (state) => state.pos.dueAmount;
 
-// The powerful, currency-aware selector from the 'HIS-60' branch.
 export const selectCartTotal = createSelector(
   [selectCartItems, selectExchangeRate],
   (cartItems, exchangeRate) => {
