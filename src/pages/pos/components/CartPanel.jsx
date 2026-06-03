@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,13 +17,13 @@ import CartItem from './CartItem';
 import TradeInForm from './TradeInForm';
 import CheckoutModal from './CheckoutModal';
 import { setCurrentInvoicePdf } from '../invoicePreviewStore';
+import { useCheckout } from '../../../hooks/useCheckout';
 import {
   clearCart,
   openCheckout,
   selectCustomer,
   selectIsCheckoutOpen,
   selectIsFinalizingCheckout,
-  selectTradeIn,
   setCustomer,
   setTransactionType,
 } from '../../../redux/slices/posSlice';
@@ -35,17 +34,15 @@ const CartPanel = ({ cartItems, transactionType }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const customer = useSelector(selectCustomer);
-  const tradeIn = useSelector(selectTradeIn);
   const isCheckoutOpen = useSelector(selectIsCheckoutOpen);
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
 
-  const subtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + (Number(item.sellPrice) || 0) * (Number(item.quantity) || 1), 0),
-    [cartItems]
-  );
-
-  const tradeInValue = Number(tradeIn.tradeInValue) || 0;
-  const payable = Math.max(0, subtotal - (transactionType === 'Exchange' ? tradeInValue : 0));
+  // We get the multi-currency aware pricing directly from the hook.
+  // This correctly handles currency conversion and negative balances.
+  const { pricing } = useCheckout();
+  const subtotal = pricing.subtotalUSD;
+  const tradeInValue = pricing.tradeInUSD;
+  const payable = pricing.netTotalUSD;
 
   const handlePdfReady = (pdf) => {
     if (!pdf?.blobUrl) return;
@@ -79,7 +76,9 @@ const CartPanel = ({ cartItems, transactionType }) => {
             exclusive
             fullWidth
             value={transactionType}
-            onChange={(_, value) => value && dispatch(setTransactionType(value))}
+            onChange={(_, value) =>
+              value && dispatch(setTransactionType(value))
+            }
             size='small'
             disabled={isFinalizingCheckout}
           >
@@ -108,7 +107,10 @@ const CartPanel = ({ cartItems, transactionType }) => {
 
           <Divider />
 
-          <Stack spacing={1.25} sx={{ maxHeight: { xs: 300, md: 360 }, overflowY: 'auto', pr: 0.5 }}>
+          <Stack
+            spacing={1.25}
+            sx={{ maxHeight: { xs: 300, md: 360 }, overflowY: 'auto', pr: 0.5 }}
+          >
             {cartItems.map((item) => (
               <CartItem key={item.cartItemId} item={item} />
             ))}
@@ -136,18 +138,31 @@ const CartPanel = ({ cartItems, transactionType }) => {
                 <Typography variant='body2' color='text.secondary'>
                   Trade-in Deduction
                 </Typography>
-                <Typography variant='body2' fontWeight={600}>
-                  -{tradeInValue.toFixed(2)}
+                <Typography
+                  variant='body2'
+                  fontWeight={600}
+                  color='text.secondary'
+                >
+                  -${tradeInValue.toFixed(2)}
                 </Typography>
               </Stack>
             )}
 
-            <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
+            <Stack
+              direction='row'
+              sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+            >
               <Typography variant='subtitle2' fontWeight={700}>
-                Total Payable
+                {payable < 0 ? 'Refund to Customer' : 'Total Payable'}
               </Typography>
-              <Typography variant='h6' fontWeight={800}>
-                {payable.toFixed(2)}
+              <Typography
+                variant='h6'
+                fontWeight={800}
+                color={payable < 0 ? 'success.main' : 'text.primary'}
+              >
+                {payable < 0
+                  ? `$${Math.abs(payable).toFixed(2)}`
+                  : `$${payable.toFixed(2)}`}
               </Typography>
             </Stack>
           </Stack>
