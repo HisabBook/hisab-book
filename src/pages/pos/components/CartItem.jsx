@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { Box, Button, IconButton, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { removeFromCart, updateCartItemQty } from '../../../redux/slices/posSlice';
+import { removeFromCart, updateCartQty } from '../../../redux/slices/posSlice';
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
@@ -47,24 +47,48 @@ const CartItem = ({ item }) => {
         </IconButton>
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+        }}
+      >
         {isAccessory ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Button
               size='small'
               variant='outlined'
-              onClick={() => dispatch(updateCartItemQty({ cartItemId: item.cartItemId, quantity: qty - 1 }))}
+              onClick={() =>
+                dispatch(
+                  updateCartQty({
+                    cartItemId: item.cartItemId,
+                    quantity: qty - 1,
+                  })
+                )
+              }
               disabled={qty <= 1}
             >
               -
             </Button>
-            <Typography variant='body2' sx={{ minWidth: 22, textAlign: 'center' }}>
+            <Typography
+              variant='body2'
+              sx={{ minWidth: 22, textAlign: 'center' }}
+            >
               {qty}
             </Typography>
             <Button
               size='small'
               variant='outlined'
-              onClick={() => dispatch(updateCartItemQty({ cartItemId: item.cartItemId, quantity: qty + 1 }))}
+              onClick={() =>
+                dispatch(
+                  updateCartQty({
+                    cartItemId: item.cartItemId,
+                    quantity: qty + 1,
+                  })
+                )
+              }
             >
               +
             </Button>
