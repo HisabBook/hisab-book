@@ -5,7 +5,7 @@ import {
   closeCheckout,
   resetPOS,
   selectCartItems,
-  selectCartTotal, // Using the new, powerful selector
+  selectCartTotal,
   selectCustomer,
   selectTradeIn,
   selectTransactionType,
@@ -41,7 +41,7 @@ export const useCheckout = () => {
 
   // --- Redux State ---
   const cartItems = useSelector(selectCartItems);
-  const cartTotal = useSelector(selectCartTotal); // Using the selector from the merged PR
+  const cartTotal = useSelector(selectCartTotal);
   const customer = useSelector(selectCustomer);
   const customers = useSelector(selectAllCustomers);
   const tradeIn = useSelector(selectTradeIn);
@@ -51,14 +51,14 @@ export const useCheckout = () => {
 
   // --- Memoized Pricing Engine ---
   const pricing = useMemo(() => {
-    const subtotalUSD = cartTotal.usd; // Directly use the value from the smart selector
+    const subtotalUSD = cartTotal.usd;
 
     const tradeInUSD =
       transactionType === 'Exchange'
         ? toUSD(tradeIn.tradeInValue || 0, tradeIn.currency, exchangeRate)
         : 0;
 
-    const netTotalUSD = subtotalUSD - tradeInUSD; // This can correctly be negative
+    const netTotalUSD = subtotalUSD - tradeInUSD;
 
     return {
       subtotalUSD: round2(subtotalUSD),
@@ -76,7 +76,7 @@ export const useCheckout = () => {
   }) => {
     dispatch(setIsFinalizingCheckout(true));
 
-    // --- Step 1: Pre-flight Validation ---
+    // --- Pre-flight Validation ---
     const tradeInImei = normalize(tradeIn.imei);
     if (transactionType === 'Exchange') {
       if (!/^\d{15}$/.test(tradeInImei)) {
@@ -97,7 +97,7 @@ export const useCheckout = () => {
       }
     }
 
-    // --- Step 2: Calculate Final Amounts ---
+    // ---  Calculate Final Amounts ---
     const netTotalInSelectedCurrency =
       selectedCurrency === 'AFN'
         ? pricing.netTotalUSD * exchangeRate
@@ -118,7 +118,7 @@ export const useCheckout = () => {
       };
     }
 
-    // --- Step 3: Dispatch State Updates ---
+    // ---  Dispatch State Updates ---
     const now = new Date();
     const saleDate = now.toISOString().slice(0, 10);
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
@@ -189,7 +189,7 @@ export const useCheckout = () => {
       dispatch(addPhone(tradedInPhone));
     }
 
-    // D) Log the Final Sale
+    // Log the Final Sale
     const sale = {
       id: uid('sale'),
       customerId,
@@ -211,8 +211,6 @@ export const useCheckout = () => {
     };
     dispatch(addSale(sale));
 
-    // --- Step 4: Finalize and Cleanup ---
-    // Use a small timeout to allow Redux state to settle before PDF generation
     setTimeout(() => {
       generateInvoicePDF(sale);
       dispatch(closeCheckout());
