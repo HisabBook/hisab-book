@@ -5,6 +5,7 @@ import {
   Typography,
   MenuItem,
   InputAdornment,
+  useTheme,
 } from '@mui/material';
 import { selectTradeIn, setTradeIn } from '../../../redux/slices/posSlice';
 import { PHONE_BRANDS } from '../../../constants/brands';
@@ -12,6 +13,8 @@ import { CURRENCIES } from '../../../constants/conditions';
 
 const TradeInForm = () => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const tradeIn = useSelector(selectTradeIn);
 
   // Generic handler to dispatch updates to the tradeIn state
@@ -36,11 +39,12 @@ const TradeInForm = () => {
       sx={{
         p: 1.5,
         border: '1px solid',
-        borderColor: 'divider',
+        borderColor: isDark ? 'rgba(148, 163, 184, 0.14)' : theme.palette.divider,
         borderRadius: 2,
+        bgcolor: isDark ? 'rgba(15, 30, 49, 0.82)' : theme.palette.background.paper,
       }}
     >
-      <Typography variant='subtitle2' fontWeight={700}>
+      <Typography variant='subtitle2' fontWeight={700} color={isDark ? 'common.white' : 'text.primary'}>
         Trade-in Device Details
       </Typography>
 
@@ -52,6 +56,17 @@ const TradeInForm = () => {
         name='brand'
         value={tradeIn.brand}
         onChange={handleChange}
+        InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            bgcolor: isDark ? 'rgba(10, 35, 61, 0.92)' : theme.palette.background.paper,
+            borderRadius: 2,
+            color: isDark ? 'common.white' : 'text.primary',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: isDark ? 'rgba(148, 163, 184, 0.18)' : theme.palette.divider,
+          },
+        }}
       >
         {PHONE_BRANDS.map((brand) => (
           <MenuItem key={brand} value={brand}>
@@ -67,6 +82,17 @@ const TradeInForm = () => {
         name='model'
         value={tradeIn.model}
         onChange={handleChange}
+        InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            bgcolor: isDark ? 'rgba(10, 35, 61, 0.92)' : theme.palette.background.paper,
+            borderRadius: 2,
+            color: isDark ? 'common.white' : 'text.primary',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: isDark ? 'rgba(148, 163, 184, 0.18)' : theme.palette.divider,
+          },
+        }}
       />
 
       <TextField
@@ -78,6 +104,17 @@ const TradeInForm = () => {
         onChange={handleChange}
         required
         inputProps={{ maxLength: 15 }}
+        InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            bgcolor: isDark ? 'rgba(10, 35, 61, 0.92)' : theme.palette.background.paper,
+            borderRadius: 2,
+            color: isDark ? 'common.white' : 'text.primary',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: isDark ? 'rgba(148, 163, 184, 0.18)' : theme.palette.divider,
+          },
+        }}
       />
 
       <Stack direction='row' spacing={1}>
@@ -90,12 +127,23 @@ const TradeInForm = () => {
           value={tradeIn.tradeInValue || ''}
           onChange={handleValueChange}
           required
+          InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
                 {tradeIn.currency === 'USD' ? '$' : 'AFN'}
               </InputAdornment>
             ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              bgcolor: isDark ? 'rgba(10, 35, 61, 0.92)' : theme.palette.background.paper,
+              borderRadius: 2,
+              color: isDark ? 'common.white' : 'text.primary',
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: isDark ? 'rgba(148, 163, 184, 0.18)' : theme.palette.divider,
+            },
           }}
         />
         <TextField
@@ -106,6 +154,14 @@ const TradeInForm = () => {
           value={tradeIn.currency}
           onChange={handleChange}
           sx={{ minWidth: 100 }}
+          InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
+          SelectProps={{
+            sx: {
+              bgcolor: isDark ? 'rgba(10, 35, 61, 0.92)' : theme.palette.background.paper,
+              color: isDark ? 'common.white' : 'text.primary',
+              borderRadius: 2,
+            },
+          }}
         >
           {CURRENCIES.map((c) => (
             <MenuItem key={c} value={c}>

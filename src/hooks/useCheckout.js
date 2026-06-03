@@ -23,7 +23,7 @@ import {
   selectAllCustomers,
 } from '../redux/slices/khataSlice';
 import { selectExchangeRate } from '../redux/slices/settingsSlice';
-import { generateInvoicePDF } from '../utils/generateInvoicePDF';
+import { generateInvoicePDF } from '../pages/settings/utils/generateInvoicePDF';
 
 // --- Helper Functions ---
 const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
