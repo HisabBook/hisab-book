@@ -69,6 +69,9 @@ const CartPanel = ({ cartItems, transactionType }) => {
     <Card
       sx={{
         height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
         borderRadius: 3,
         bgcolor: isDark ? 'rgba(7, 25, 44, 0.96)' : theme.palette.background.paper,
         color: isDark ? 'common.white' : 'text.primary',
@@ -78,8 +81,17 @@ const CartPanel = ({ cartItems, transactionType }) => {
         overflow: 'hidden',
       }}
     >
-      <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
-        <Stack spacing={2}>
+      <CardContent
+        sx={{
+          p: { xs: 1.5, md: 2 },
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <Stack spacing={2} sx={{ flex: 1, minHeight: 0 }}>
           <Box>
             <Typography
               variant='h6'
@@ -171,8 +183,8 @@ const CartPanel = ({ cartItems, transactionType }) => {
           <Stack
             spacing={1.25}
             sx={{
-              minHeight: { xs: 260, md: 380 },
-              maxHeight: { xs: 340, md: 440 },
+              flex: 1,
+              minHeight: 0,
               overflowY: 'auto',
               overflowX: 'hidden',
               pr: 0.5,
