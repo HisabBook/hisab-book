@@ -4,6 +4,8 @@ import InventoryRoundedIcon from '@mui/icons-material/InventoryRounded';
 import PropTypes from 'prop-types';
 
 const EmptyState = ({
+  icon,
+  color = 'text.secondary',
   message = 'No data to display',
   details = 'Try adding a new item or adjusting your filters.',
 }) => {
@@ -17,10 +19,14 @@ const EmptyState = ({
         height: '100%',
         textAlign: 'center',
         p: 3,
-        color: 'text.secondary',
+        color,
       }}
     >
-      <InventoryRoundedIcon sx={{ fontSize: 48, mb: 1.5, opacity: 0.5 }} />
+      {icon || (
+        <InventoryRoundedIcon
+          sx={{ fontSize: 48, mb: 1.5, opacity: 0.5, color: 'inherit' }}
+        />
+      )}
       <Typography variant='h6' sx={{ fontWeight: 600 }}>
         {message}
       </Typography>
@@ -30,6 +36,8 @@ const EmptyState = ({
 };
 
 EmptyState.propTypes = {
+  icon: PropTypes.node,
+  color: PropTypes.string,
   message: PropTypes.string,
   details: PropTypes.string,
 };

@@ -22,14 +22,16 @@ const createTextFormatter = (language) => {
 
 const formatMoney = (value) => round2(Number(value) || 0).toFixed(2);
 
-export const generateInvoicePDF = async ({
-  sale,
-  exchangeRate,
-  shopProfile,
-  language,
-  t,
-}) => {
+export const generateInvoicePDF = async (input = {}) => {
   try {
+    const sale = input.sale || input;
+    const exchangeRate = input.exchangeRate ?? 1;
+    const shopProfile = input.shopProfile;
+    const language = input.language;
+    const t =
+      input.t ||
+      ((_, fallback) => fallback);
+
     const fmt = createTextFormatter(language);
     const rtl = isRTL(language);
 
