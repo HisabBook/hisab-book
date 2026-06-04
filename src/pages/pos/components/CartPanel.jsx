@@ -1,4 +1,3 @@
-// CartPanel.js (Redesigned for Professional Layout)
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -91,7 +90,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
           p: { xs: 1.5, md: 2 },
           display: 'flex',
           flexDirection: 'column',
-          flexGrow: 1, // CHANGED: Ensure CardContent fills the Card
+          flexGrow: 1,
           minHeight: 0,
           overflow: 'hidden',
         }}
