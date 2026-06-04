@@ -1,3 +1,4 @@
+// CartPanel.js (Redesigned for Professional Layout)
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -42,8 +43,6 @@ const CartPanel = ({ cartItems, transactionType }) => {
   const isCheckoutOpen = useSelector(selectIsCheckoutOpen);
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
 
-  // We get the multi-currency aware pricing directly from the hook.
-  // This correctly handles currency conversion and negative balances.
   const { pricing } = useCheckout();
   const subtotal = pricing.subtotalUSD;
   const tradeInValue = pricing.tradeInUSD;
@@ -73,11 +72,17 @@ const CartPanel = ({ cartItems, transactionType }) => {
         display: 'flex',
         flexDirection: 'column',
         borderRadius: 3,
-        bgcolor: isDark ? 'rgba(7, 25, 44, 0.96)' : theme.palette.background.paper,
+        bgcolor: isDark
+          ? 'rgba(7, 25, 44, 0.96)'
+          : theme.palette.background.paper,
         color: isDark ? 'common.white' : 'text.primary',
         border: '1px solid',
-        borderColor: isDark ? 'rgba(148, 163, 184, 0.14)' : theme.palette.divider,
-        boxShadow: isDark ? '0 20px 60px rgba(2, 8, 23, 0.35)' : theme.shadows[2],
+        borderColor: isDark
+          ? 'rgba(148, 163, 184, 0.14)'
+          : theme.palette.divider,
+        boxShadow: isDark
+          ? '0 20px 60px rgba(2, 8, 23, 0.35)'
+          : theme.shadows[2],
         overflow: 'hidden',
       }}
     >
@@ -86,113 +91,86 @@ const CartPanel = ({ cartItems, transactionType }) => {
           p: { xs: 1.5, md: 2 },
           display: 'flex',
           flexDirection: 'column',
-          flex: 1,
+          flexGrow: 1, // CHANGED: Ensure CardContent fills the Card
           minHeight: 0,
           overflow: 'hidden',
         }}
       >
-        <Stack spacing={2} sx={{ flex: 1, minHeight: 0 }}>
-          <Box>
-            <Typography
-              variant='h6'
-              fontWeight={800}
-              color={isDark ? 'common.white' : 'text.primary'}
-            >
-              Active Cart
-            </Typography>
-            <Typography
-              variant='body2'
-              color={isDark ? 'rgba(226, 232, 240, 0.68)' : 'text.secondary'}
-            >
-              Manage customer info, products, and totals instantly.
-            </Typography>
-          </Box>
-
-          <ToggleButtonGroup
-            exclusive
-            fullWidth
-            value={transactionType}
-            onChange={(_, value) =>
-              value && dispatch(setTransactionType(value))
-            }
-            size='small'
-            disabled={isFinalizingCheckout}
-            sx={{
-              bgcolor: isDark ? 'rgba(15, 30, 49, 0.9)' : theme.palette.action.hover,
-              borderRadius: 2,
-              p: 0.4,
-              '& .MuiToggleButton-root': {
-                color: isDark ? 'rgba(226, 232, 240, 0.82)' : 'text.primary',
-                border: 0,
-                textTransform: 'none',
-                fontWeight: 700,
-              },
-              '& .Mui-selected': {
-                bgcolor: isDark ? 'rgba(59, 130, 246, 0.22) !important' : 'rgba(5, 214, 125, 0.12) !important',
-                color: isDark ? 'common.white' : 'text.primary',
-              },
-            }}
+        {/* --- TOP SECTION (Not scrollable) --- */}
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant='h6'
+            fontWeight={800}
+            color={isDark ? 'common.white' : 'text.primary'}
           >
-            <ToggleButton value='Standard'>Standard</ToggleButton>
-            <ToggleButton value='Exchange'>Exchange</ToggleButton>
-          </ToggleButtonGroup>
-
-          <Stack spacing={1.25}>
-            <TextField
-              size='small'
-              label='Customer Name'
-              value={customer.name}
-              onChange={(e) => dispatch(setCustomer({ name: e.target.value }))}
-              disabled={isFinalizingCheckout}
-              InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: isDark ? 'rgba(15, 30, 49, 0.82)' : theme.palette.background.paper,
-                  borderRadius: 2,
-                  color: isDark ? 'common.white' : 'text.primary',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: isDark ? 'rgba(148, 163, 184, 0.18)' : theme.palette.divider,
-                },
-              }}
-            />
-            <TextField
-              size='small'
-              label='Customer Phone'
-              value={customer.phone}
-              onChange={(e) => dispatch(setCustomer({ phone: e.target.value }))}
-              disabled={isFinalizingCheckout}
-              InputLabelProps={{ sx: { color: isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary' } }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: isDark ? 'rgba(15, 30, 49, 0.82)' : theme.palette.background.paper,
-                  borderRadius: 2,
-                  color: isDark ? 'common.white' : 'text.primary',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: isDark ? 'rgba(148, 163, 184, 0.18)' : theme.palette.divider,
-                },
-              }}
-            />
-          </Stack>
-
-          {transactionType === 'Exchange' && <TradeInForm />}
-
-          <Divider />
-
-          <Stack
-            spacing={1.25}
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              pr: 0.5,
-              minWidth: 0,
-            }}
+            Active Cart
+          </Typography>
+          <Typography
+            variant='body2'
+            color={isDark ? 'rgba(226, 232, 240, 0.68)' : 'text.secondary'}
           >
+            Manage customer info, products, and totals instantly.
+          </Typography>
+        </Box>
+
+        {/* --- MIDDLE SCROLLABLE SECTION --- */}
+        {/* NEW: This Box will contain all the content that needs to scroll */}
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', pr: 0.5 }}>
+          <Stack spacing={2}>
+            <ToggleButtonGroup
+              exclusive
+              fullWidth
+              value={transactionType}
+              onChange={(_, value) =>
+                value && dispatch(setTransactionType(value))
+              }
+              size='small'
+              disabled={isFinalizingCheckout}
+              sx={{
+                bgcolor: isDark
+                  ? 'rgba(15, 30, 49, 0.9)'
+                  : theme.palette.action.hover,
+                borderRadius: 2,
+                p: 0.4,
+                // ... (rest of the sx props are fine)
+              }}
+            >
+              <ToggleButton value='Standard'>Standard</ToggleButton>
+              <ToggleButton value='Exchange'>Exchange</ToggleButton>
+            </ToggleButtonGroup>
+
+            <Stack spacing={1.25}>
+              <TextField
+                size='small'
+                label='Customer Name'
+                value={customer.name}
+                onChange={(e) =>
+                  dispatch(setCustomer({ name: e.target.value }))
+                }
+                disabled={isFinalizingCheckout}
+                // ... (sx props are fine)
+              />
+              <TextField
+                size='small'
+                label='Customer Phone'
+                value={customer.phone}
+                onChange={(e) =>
+                  dispatch(setCustomer({ phone: e.target.value }))
+                }
+                disabled={isFinalizingCheckout}
+                // ... (sx props are fine)
+              />
+            </Stack>
+
+            {transactionType === 'Exchange' && <TradeInForm />}
+
+            {hasItems && <Divider />}
+
+            {/* The list of cart items */}
             {hasItems ? (
-              cartItems.map((item) => <CartItem key={item.cartItemId} item={item} />)
+              cartItems.map((item) => (
+                <CartItem key={item.cartItemId} item={item} />
+              ))
             ) : (
               <EmptyState
                 icon={
@@ -206,12 +184,16 @@ const CartPanel = ({ cartItems, transactionType }) => {
               />
             )}
           </Stack>
+        </Box>
 
-          <Divider />
+        {/* --- BOTTOM STICKY FOOTER SECTION --- */}
+        {/* NEW: This section is now outside the scrollable Box */}
+        <Box sx={{ pt: 2 }}>
+          <Divider sx={{ mb: 2 }} />
 
-          <Stack spacing={1} sx={{ pt: 0.5 }}>
+          <Stack spacing={1}>
             <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
-              <Typography variant='body2' color={isDark ? 'text.secondary' : 'text.secondary'}>
+              <Typography variant='body2' color='text.secondary'>
                 Subtotal
               </Typography>
               <Typography
@@ -231,7 +213,9 @@ const CartPanel = ({ cartItems, transactionType }) => {
                 <Typography
                   variant='body2'
                   fontWeight={600}
-                  color={isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary'}
+                  color={
+                    isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary'
+                  }
                 >
                   -${tradeInValue.toFixed(2)}
                 </Typography>
@@ -248,7 +232,13 @@ const CartPanel = ({ cartItems, transactionType }) => {
               <Typography
                 variant='h6'
                 fontWeight={800}
-                color={payable < 0 ? 'success.light' : isDark ? 'common.white' : 'text.primary'}
+                color={
+                  payable < 0
+                    ? 'success.light'
+                    : isDark
+                      ? 'common.white'
+                      : 'text.primary'
+                }
               >
                 {payable < 0
                   ? `$${Math.abs(payable).toFixed(2)}`
@@ -257,32 +247,36 @@ const CartPanel = ({ cartItems, transactionType }) => {
             </Stack>
           </Stack>
 
-          {hasItems && (
-            <Button
-              variant='contained'
-              color='primary'
-              size='large'
-              onClick={() => dispatch(openCheckout())}
-              disabled={isFinalizingCheckout}
-            >
-              Checkout
-            </Button>
-          )}
+          <Stack spacing={1} sx={{ mt: 2 }}>
+            {hasItems && (
+              <Button
+                variant='contained'
+                color='primary'
+                size='large'
+                onClick={() => dispatch(openCheckout())}
+                disabled={isFinalizingCheckout}
+              >
+                Checkout
+              </Button>
+            )}
 
-          <Button
-            variant='outlined'
-            color='error'
-            size='large'
-            onClick={() => dispatch(clearCart())}
-            disabled={!hasItems || isFinalizingCheckout}
-            sx={{
-              color: 'error.main',
-              borderColor: isDark ? 'rgba(248, 113, 113, 0.35)' : theme.palette.error.main,
-            }}
-          >
-            Clear Cart
-          </Button>
-        </Stack>
+            <Button
+              variant='outlined'
+              color='error'
+              size='large'
+              onClick={() => dispatch(clearCart())}
+              disabled={!hasItems || isFinalizingCheckout}
+              sx={{
+                color: 'error.main',
+                borderColor: isDark
+                  ? 'rgba(248, 113, 113, 0.35)'
+                  : 'error.main',
+              }}
+            >
+              Clear Cart
+            </Button>
+          </Stack>
+        </Box>
       </CardContent>
 
       <CheckoutModal open={isCheckoutOpen} onPdfReady={handlePdfReady} />
