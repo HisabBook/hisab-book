@@ -12,6 +12,7 @@ import {
 import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
 import SearchBar from './components/SearchBar';
 import CartPanel from './components/CartPanel';
+import POSPageSkeleton from './components/POSPageSkeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import {
   addToCart,
@@ -46,6 +47,7 @@ const POSPage = () => {
 
   const [query, setQuery] = useState('');
   const [scanFeedback, setScanFeedback] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   const inventoryPool = useMemo(() => {
     const availableLaptops = laptops.filter((laptop) => laptop.stockStatus === 'Available');
@@ -133,11 +135,20 @@ const POSPage = () => {
     }
   }, [dispatch, inventoryPool, query]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleAddToCart = (item) => {
     dispatch(addToCart(item.cartPayload));
   };
 
   const hasSearchResults = filteredInventory.length > 0;
+
+  if (isLoading) {
+    return <POSPageSkeleton />;
+  }
 
   return (
     <>
@@ -152,9 +163,11 @@ const POSPage = () => {
         sx={{
           display: 'grid',
           gap: 2.5,
+          alignItems: 'stretch',
           gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
           pointerEvents: isFinalizingCheckout ? 'none' : 'auto',
-          minHeight: 'calc(100vh - 120px)',
+          height: { xs: 'auto', md: 'calc(100dvh - 120px)' },
+          overflow: { xs: 'visible', md: 'hidden' },
           p: { xs: 1, sm: 1.5, md: 2 },
           borderRadius: 4,
           bgcolor: isDark ? 'rgba(2, 12, 27, 0.94)' : theme.palette.background.paper,
@@ -168,9 +181,12 @@ const POSPage = () => {
         <Box
           sx={{
             minWidth: 0,
-            display: 'grid',
+            display: 'flex',
+            flexDirection: 'column',
             gap: 1.5,
-            gridTemplateRows: 'auto auto 1fr',
+            minHeight: 0,
+            height: '100%',
+            overflow: 'hidden',
           }}
         >
           <Box>
@@ -197,14 +213,16 @@ const POSPage = () => {
 
           <Box
             sx={{
-              minHeight: { xs: 320, md: '100%' },
+              minHeight: { xs: 320, md: 0 },
+              flex: 1,
               borderRadius: 3,
               border: '1px solid',
               borderColor: isDark ? 'rgba(148, 163, 184, 0.12)' : theme.palette.divider,
               bgcolor: isDark ? 'rgba(9, 28, 51, 0.75)' : theme.palette.background.paper,
               p: 1.25,
               overflow: 'hidden',
-              display: 'grid',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <Box
@@ -239,13 +257,14 @@ const POSPage = () => {
 
             <Box
               sx={{
+                flex: 1,
+                minHeight: 0,
                 display: 'grid',
                 gap: 1,
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 pr: 0.5,
                 alignContent: 'start',
-                minHeight: 0,
               }}
             >
               {hasSearchResults ? (
@@ -345,7 +364,7 @@ const POSPage = () => {
           </Box>
         </Box>
 
-        <Box sx={{ minWidth: 0, height: '100%' }}>
+        <Box sx={{ minWidth: 0, height: '100%', minHeight: 0, overflow: 'hidden' }}>
           <CartPanel cartItems={cartItems} transactionType={transactionType} />
         </Box>
       </Box>
