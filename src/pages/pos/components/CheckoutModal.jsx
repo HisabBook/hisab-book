@@ -14,6 +14,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import {
   closeCheckout,
@@ -21,20 +22,28 @@ import {
   selectIsFinalizingCheckout,
   setIsFinalizingCheckout,
 } from '../../../redux/slices/posSlice';
-import { selectExchangeRate } from '../../../redux/slices/settingsSlice';
-import { useCheckout } from '../../settings/hooks/useCheckout';
+import {
+  selectExchangeRate,
+  selectShopSettings,
+} from '../../../redux/slices/settingsSlice';
+import { useCheckout } from '../../../hooks/useCheckout';
+import { generateInvoicePDF } from '../../../utils/generateInvoicePDF'; // Use correct path
 
 const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
 const amountPattern = /^\d*\.?\d*$/;
 
 const CheckoutModal = ({ open, onPdfReady }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const customer = useSelector(selectCustomer);
   const exchangeRate = useSelector(selectExchangeRate);
+  const shopSettings = useSelector(selectShopSettings); // For PDF
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
+
+  // The logic hook
   const { pricing, finalizeCheckout } = useCheckout();
 
+  // Local state for the modal's form
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [amountPaidInput, setAmountPaidInput] = useState('');
   const [name, setName] = useState(customer.name || '');
@@ -42,59 +51,53 @@ const CheckoutModal = ({ open, onPdfReady }) => {
   const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
-    if (!open) return;
-    setName(customer.name || '');
-    setPhone(customer.phone || '');
-    setAmountPaidInput('');
-    setSelectedCurrency('USD');
-    setSubmitError('');
+    if (open) {
+      setName(customer.name || '');
+      setPhone(customer.phone || '');
+      setAmountPaidInput('');
+      setSelectedCurrency('USD');
+      setSubmitError('');
+    }
   }, [customer.name, customer.phone, open]);
 
-  const netTotal = useMemo(() => {
-    const value =
-      selectedCurrency === 'AFN' ? pricing.netTotalUSD * exchangeRate : pricing.netTotalUSD;
-    return round2(value);
-  }, [exchangeRate, pricing.netTotalUSD, selectedCurrency]);
-
-  const amountPaid = useMemo(() => round2(Number(amountPaidInput) || 0), [amountPaidInput]);
-
+  // Memoized calculations for display
+  const netTotal = useMemo(
+    () =>
+      round2(
+        pricing.netTotalUSD * (selectedCurrency === 'AFN' ? exchangeRate : 1)
+      ),
+    [exchangeRate, pricing.netTotalUSD, selectedCurrency]
+  );
+  const amountPaid = useMemo(
+    () => round2(Number(amountPaidInput) || 0),
+    [amountPaidInput]
+  );
   const dueAmount = useMemo(
     () => (amountPaid >= netTotal ? 0 : round2(netTotal - amountPaid)),
     [amountPaid, netTotal]
   );
-
   const changeAmount = useMemo(
     () => (amountPaid > netTotal ? round2(amountPaid - netTotal) : 0),
     [amountPaid, netTotal]
   );
-
   const hasDebt = dueAmount > 0;
   const customerRequiredError = hasDebt && (!name.trim() || !phone.trim());
 
   const handleClose = () => {
     if (isFinalizingCheckout) return;
     dispatch(closeCheckout());
-    setSubmitError('');
   };
 
   const handleAmountChange = (event) => {
-    const next = event.target.value.trim();
-    if (!amountPattern.test(next)) return;
-    if ((next.match(/\./g) || []).length > 1) return;
-    setAmountPaidInput(next);
+    const next = event.target.value;
+    if (next === '' || amountPattern.test(next)) {
+      setAmountPaidInput(next);
+    }
   };
 
   const handleFinalize = async () => {
     if (isFinalizingCheckout) return;
     setSubmitError('');
-
-    if (customerRequiredError) {
-      setSubmitError(
-        t('pos.customerDebtRequired', 'Customer name and phone are required for debt sales.')
-      );
-      return;
-    }
-
     dispatch(setIsFinalizingCheckout(true));
     try {
       const result = await finalizeCheckout({
@@ -102,24 +105,31 @@ const CheckoutModal = ({ open, onPdfReady }) => {
         amountPaid,
         customerName: name,
         customerPhone: phone,
-        t,
       });
-      if (!result.ok) {
-        setSubmitError(
-          t('pos.customerDebtRequired', 'Customer name and phone are required for debt sales.')
-        );
-        return;
-      }
 
-      if (typeof onPdfReady === 'function') {
-        onPdfReady(result.pdf);
+      if (result.ok) {
+        const pdfData = await generateInvoicePDF(
+          result.sale,
+          shopSettings,
+          t,
+          i18n
+        );
+        if (typeof onPdfReady === 'function') {
+          onPdfReady(pdfData);
+        }
+      } else {
+        setSubmitError(result.message || 'An unknown error occurred.');
       }
     } catch (error) {
-      setSubmitError(
-        t('pos.invoiceFailed', 'Invoice PDF could not be generated. Please try again.')
-      );
       console.error('Checkout finalization failed', error);
+      setSubmitError(
+        t(
+          'pos.invoiceFailed',
+          'An unexpected error occurred. Please try again.'
+        )
+      );
     } finally {
+      // Always turn off the loading state
       dispatch(setIsFinalizingCheckout(false));
     }
   };
@@ -133,7 +143,7 @@ const CheckoutModal = ({ open, onPdfReady }) => {
             exclusive
             fullWidth
             value={selectedCurrency}
-            onChange={(_, value) => value && setSelectedCurrency(value)}
+            onChange={(_, v) => v && setSelectedCurrency(v)}
             disabled={isFinalizingCheckout}
           >
             <ToggleButton value='USD'>USD</ToggleButton>
@@ -151,14 +161,19 @@ const CheckoutModal = ({ open, onPdfReady }) => {
           <Box sx={{ p: 1.5, borderRadius: 1, bgcolor: 'action.hover' }}>
             <Stack spacing={0.5}>
               <Typography variant='body2'>
-                {t('common.total', 'Total')}: {netTotal.toFixed(2)} {selectedCurrency}
+                {t('common.total', 'Total')}: {netTotal.toFixed(2)}{' '}
+                {selectedCurrency}
               </Typography>
-              <Typography variant='body2' color={hasDebt ? 'warning.main' : 'success.main'}>
-                {t('pos.dueAmount', 'Due Amount')}: {dueAmount.toFixed(2)} {selectedCurrency}
+              <Typography
+                variant='body2'
+                color={hasDebt ? 'warning.main' : 'text.secondary'}
+              >
+                {t('pos.dueAmount', 'Due Amount')}: {dueAmount.toFixed(2)}{' '}
+                {selectedCurrency}
               </Typography>
               <Typography variant='body2' color='info.main'>
-                {t('pos.returnChange', 'Return Change')}: {changeAmount.toFixed(2)}{' '}
-                {selectedCurrency}
+                {t('pos.returnChange', 'Return Change')}:{' '}
+                {changeAmount.toFixed(2)} {selectedCurrency}
               </Typography>
             </Stack>
           </Box>
@@ -166,7 +181,7 @@ const CheckoutModal = ({ open, onPdfReady }) => {
           <TextField
             label={t('pos.customerName', 'Customer Name')}
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(e) => setName(e.target.value)}
             required={hasDebt}
             error={customerRequiredError && !name.trim()}
             disabled={isFinalizingCheckout}
@@ -174,7 +189,7 @@ const CheckoutModal = ({ open, onPdfReady }) => {
           <TextField
             label={t('pos.customerPhone', 'Customer Phone')}
             value={phone}
-            onChange={(event) => setPhone(event.target.value)}
+            onChange={(e) => setPhone(e.target.value)}
             required={hasDebt}
             error={customerRequiredError && !phone.trim()}
             disabled={isFinalizingCheckout}
@@ -182,14 +197,16 @@ const CheckoutModal = ({ open, onPdfReady }) => {
 
           {hasDebt && (
             <Alert severity='warning'>
-              {t('pos.debtWillBeRecorded', 'Remaining amount will be recorded in Khata.')}
+              {t(
+                'pos.debtWillBeRecorded',
+                'Remaining amount will be recorded in Khata.'
+              )}
             </Alert>
           )}
-
           {!!submitError && <Alert severity='error'>{submitError}</Alert>}
         </Stack>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ p: '16px 24px' }}>
         <Button onClick={handleClose} disabled={isFinalizingCheckout}>
           {t('common.cancel', 'Cancel')}
         </Button>
@@ -197,8 +214,15 @@ const CheckoutModal = ({ open, onPdfReady }) => {
           variant='contained'
           onClick={handleFinalize}
           disabled={customerRequiredError || isFinalizingCheckout}
+          startIcon={
+            isFinalizingCheckout ? (
+              <CircularProgress size={20} color='inherit' />
+            ) : null
+          }
         >
-          {t('common.confirm', 'Confirm')}
+          {isFinalizingCheckout
+            ? t('common.processing', 'Processing...')
+            : t('common.confirm', 'Confirm Sale')}
         </Button>
       </DialogActions>
     </Dialog>

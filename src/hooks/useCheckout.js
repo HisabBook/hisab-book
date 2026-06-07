@@ -9,11 +9,11 @@ import {
   selectCustomer,
   selectTradeIn,
   selectTransactionType,
-  setIsFinalizingCheckout,
 } from '../redux/slices/posSlice';
 import {
   addPhone,
   decreaseAccessoryQty,
+  markLaptopSold,
   markPhoneSold,
   selectPhoneImeiSet,
 } from '../redux/slices/inventorySlice';
@@ -23,7 +23,6 @@ import {
   selectAllCustomers,
 } from '../redux/slices/khataSlice';
 import { selectExchangeRate } from '../redux/slices/settingsSlice';
-import { generateInvoicePDF } from '../pages/settings/utils/generateInvoicePDF';
 
 // --- Helper Functions ---
 const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
@@ -52,14 +51,11 @@ export const useCheckout = () => {
   // --- Memoized Pricing Engine ---
   const pricing = useMemo(() => {
     const subtotalUSD = cartTotal.usd;
-
     const tradeInUSD =
       transactionType === 'Exchange'
         ? toUSD(tradeIn.tradeInValue || 0, tradeIn.currency, exchangeRate)
         : 0;
-
     const netTotalUSD = subtotalUSD - tradeInUSD;
-
     return {
       subtotalUSD: round2(subtotalUSD),
       tradeInUSD: round2(tradeInUSD),
@@ -67,20 +63,16 @@ export const useCheckout = () => {
     };
   }, [cartTotal.usd, exchangeRate, tradeIn, transactionType]);
 
-  // --- Master Checkout Orchestrator ---
-  const finalizeCheckout = ({
+  const finalizeCheckout = async ({
     selectedCurrency,
     amountPaid,
     customerName,
     customerPhone,
   }) => {
-    dispatch(setIsFinalizingCheckout(true));
-
     // --- Pre-flight Validation ---
     const tradeInImei = normalize(tradeIn.imei);
     if (transactionType === 'Exchange') {
       if (!/^\d{15}$/.test(tradeInImei)) {
-        dispatch(setIsFinalizingCheckout(false));
         return {
           ok: false,
           error: 'INVALID_TRADE_IN_IMEI',
@@ -88,29 +80,26 @@ export const useCheckout = () => {
         };
       }
       if (existingImeiSet.has(tradeInImei)) {
-        dispatch(setIsFinalizingCheckout(false));
         return {
           ok: false,
-          error: 'CIRCULAR_IMEI_LOOP',
+          error: 'DUPLICATE_TRADE_IN_IMEI',
           message: 'This trade-in device already exists in the inventory.',
         };
       }
     }
 
-    // ---  Calculate Final Amounts ---
+    // --- Calculate Final Amounts ---
     const netTotalInSelectedCurrency =
       selectedCurrency === 'AFN'
         ? pricing.netTotalUSD * exchangeRate
         : pricing.netTotalUSD;
     const netTotal = round2(netTotalInSelectedCurrency);
     const paid = round2(amountPaid || 0);
-
     const dueAmount = paid >= netTotal ? 0 : round2(netTotal - paid);
     const changeAmount = paid > netTotal ? round2(paid - netTotal) : 0;
     const hasDebt = dueAmount > 0;
 
     if (hasDebt && (!customerName?.trim() || !customerPhone?.trim())) {
-      dispatch(setIsFinalizingCheckout(false));
       return {
         ok: false,
         error: 'CUSTOMER_REQUIRED_FOR_DEBT',
@@ -118,7 +107,7 @@ export const useCheckout = () => {
       };
     }
 
-    // ---  Dispatch State Updates ---
+    // --- Dispatch State Updates ---
     const now = new Date();
     const saleDate = now.toISOString().slice(0, 10);
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
@@ -139,23 +128,21 @@ export const useCheckout = () => {
             id: customerId,
             name: customerName.trim(),
             phone: normalizedPhone,
-            email: '',
             debtAmount: 0,
             currency: selectedCurrency,
             createdAt: now.toISOString(),
-            updatedAt: now.toISOString(),
-            notes: 'Created via POS',
           })
         );
       }
       dispatch(increaseDebt({ customerId, amount: dueAmount }));
     }
 
-    // B) Update Inventory (Deduct sold items)
     cartItems.forEach((item) => {
-      if (item.type === 'phone' || item.type === 'laptop')
+      if (item.type === 'phone') {
         dispatch(markPhoneSold(item.itemId));
-      if (item.type === 'accessory') {
+      } else if (item.type === 'laptop') {
+        dispatch(markLaptopSold(item.itemId));
+      } else if (item.type === 'accessory') {
         dispatch(decreaseAccessoryQty({ id: item.itemId, qty: item.quantity }));
       }
     });
@@ -167,19 +154,13 @@ export const useCheckout = () => {
         imei: tradeIn.imei.trim(),
         brand: tradeIn.brand,
         model: tradeIn.model,
-        condition: 'Used', // Strictly 'Used'
-        purchasePrice: toUSD(
-          tradeIn.tradeInValue || 0,
-          tradeIn.currency,
-          exchangeRate
-        ), // The cost is its trade-in value in USD
+        condition: 'Used',
+        purchasePrice: pricing.tradeInUSD,
         currency: 'USD',
         stockStatus: 'Available',
         dateAdded: saleDate,
         createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
         notes: `Traded-in via sale ${invoiceNumber}`,
-        // Unspecified fields are blank for later manual entry
         color: '',
         ram: '',
         rom: '',
@@ -188,13 +169,18 @@ export const useCheckout = () => {
       };
       dispatch(addPhone(tradedInPhone));
     }
-
-    // Log the Final Sale
     const sale = {
       id: uid('sale'),
+      invoiceNumber,
       customerId,
       customerName: customerName?.trim() || customer.name || 'Walk-in',
       items: cartItems,
+      subtotal: round2(
+        pricing.subtotalUSD * (selectedCurrency === 'AFN' ? exchangeRate : 1)
+      ),
+      tradeInDeduction: round2(
+        pricing.tradeInUSD * (selectedCurrency === 'AFN' ? exchangeRate : 1)
+      ),
       totalAmount: netTotal,
       amountPaid: paid,
       dueAmount,
@@ -203,19 +189,11 @@ export const useCheckout = () => {
       saleType: transactionType,
       saleDate,
       createdAt: now.toISOString(),
-      invoiceNumber,
       tradeIn: transactionType === 'Exchange' ? { ...tradeIn } : null,
-      tradeInDeduction: round2(
-        pricing.tradeInUSD * (selectedCurrency === 'AFN' ? exchangeRate : 1)
-      ),
     };
     dispatch(addSale(sale));
-
-    setTimeout(() => {
-      generateInvoicePDF(sale);
-      dispatch(closeCheckout());
-      dispatch(resetPOS()); // This will also set isFinalizingCheckout to false
-    }, 500);
+    dispatch(closeCheckout());
+    dispatch(resetPOS());
 
     return { ok: true, sale };
   };

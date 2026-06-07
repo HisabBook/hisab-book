@@ -1,5 +1,12 @@
 import { useDispatch } from 'react-redux';
-import { Box, Button, IconButton, Stack, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { removeFromCart, updateCartQty } from '../../../redux/slices/posSlice';
 
@@ -24,14 +31,14 @@ const CartItem = ({ item }) => {
     <Box
       sx={{
         border: '1px solid',
-        borderColor: isDark ? 'rgba(148, 163, 184, 0.14)' : theme.palette.divider,
         borderRadius: 2,
         p: 1,
         display: 'grid',
         gap: 0.75,
         minWidth: 0,
-        bgcolor: isDark ? 'rgba(14, 30, 48, 0.95)' : theme.palette.background.paper,
-        boxShadow: isDark ? '0 8px 24px rgba(2, 8, 23, 0.18)' : theme.shadows[1],
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        boxShadow: 1,
       }}
     >
       <Box
@@ -117,7 +124,9 @@ const CartItem = ({ item }) => {
               variant='outlined'
               sx={{
                 color: isDark ? 'rgba(226, 232, 240, 0.9)' : 'text.primary',
-                borderColor: isDark ? 'rgba(148, 163, 184, 0.22)' : theme.palette.divider,
+                borderColor: isDark
+                  ? 'rgba(148, 163, 184, 0.22)'
+                  : theme.palette.divider,
               }}
               onClick={() =>
                 dispatch(
@@ -131,7 +140,14 @@ const CartItem = ({ item }) => {
             >
               -
             </Button>
-              <Typography variant='body2' sx={{ minWidth: 22, textAlign: 'center', color: isDark ? 'common.white' : 'text.primary' }}>
+            <Typography
+              variant='body2'
+              sx={{
+                minWidth: 22,
+                textAlign: 'center',
+                color: isDark ? 'common.white' : 'text.primary',
+              }}
+            >
               {qty}
             </Typography>
             <Button
@@ -139,7 +155,9 @@ const CartItem = ({ item }) => {
               variant='outlined'
               sx={{
                 color: isDark ? 'rgba(226, 232, 240, 0.9)' : 'text.primary',
-                borderColor: isDark ? 'rgba(148, 163, 184, 0.22)' : theme.palette.divider,
+                borderColor: isDark
+                  ? 'rgba(148, 163, 184, 0.22)'
+                  : theme.palette.divider,
               }}
               onClick={() =>
                 dispatch(
@@ -154,7 +172,13 @@ const CartItem = ({ item }) => {
             </Button>
           </Box>
         ) : (
-          <Typography variant='body2' sx={{ minWidth: 0, color: isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary' }}>
+          <Typography
+            variant='body2'
+            sx={{
+              minWidth: 0,
+              color: isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary',
+            }}
+          >
             Qty: {qty}
           </Typography>
         )}
