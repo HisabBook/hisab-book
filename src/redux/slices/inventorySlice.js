@@ -8,7 +8,10 @@ import {
 const isNonNegativeNumber = (value) =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
-const normalize = (value) => String(value ?? '').trim().toLowerCase();
+const normalize = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
 
 const initialState = {
   phones: mockPhones,
@@ -20,6 +23,7 @@ const inventorySlice = createSlice({
   name: 'inventory',
   initialState,
   reducers: {
+    // --- Phone Reducers ---
     addPhone(state, action) {
       const payload = action.payload;
       const imei = normalize(payload.imei);
@@ -60,6 +64,7 @@ const inventorySlice = createSlice({
       if (phone) phone.stockStatus = 'Sold';
     },
 
+    // --- Laptop Reducers ---
     addLaptop(state, action) {
       const payload = action.payload;
       const serial = normalize(payload.serialNumber);
@@ -97,6 +102,10 @@ const inventorySlice = createSlice({
     deleteLaptop(state, action) {
       state.laptops = state.laptops.filter((l) => l.id !== action.payload);
     },
+    markLaptopSold(state, action) {
+      const laptop = state.laptops.find((l) => l.id === action.payload);
+      if (laptop) laptop.stockStatus = 'Sold';
+    },
 
     addAccessory(state, action) {
       const payload = action.payload;
@@ -125,7 +134,9 @@ const inventorySlice = createSlice({
       state.accessories[index] = payload;
     },
     deleteAccessory(state, action) {
-      state.accessories = state.accessories.filter((a) => a.id !== action.payload);
+      state.accessories = state.accessories.filter(
+        (a) => a.id !== action.payload
+      );
     },
     decreaseAccessoryQty(state, action) {
       const { id, qty } = action.payload;
@@ -143,6 +154,7 @@ export const {
   addLaptop,
   updateLaptop,
   deleteLaptop,
+  markLaptopSold,
   addAccessory,
   updateAccessory,
   deleteAccessory,
@@ -150,29 +162,27 @@ export const {
 } = inventorySlice.actions;
 
 const EMPTY_ARRAY = [];
-
-export const selectAllPhones = (state) => state.inventory?.phones ?? EMPTY_ARRAY;
-export const selectAllLaptops = (state) => state.inventory?.laptops ?? EMPTY_ARRAY;
+export const selectAllPhones = (state) =>
+  state.inventory?.phones ?? EMPTY_ARRAY;
+export const selectAllLaptops = (state) =>
+  state.inventory?.laptops ?? EMPTY_ARRAY;
 export const selectAllAccessories = (state) =>
   state.inventory?.accessories ?? EMPTY_ARRAY;
-
 export const selectAvailablePhones = createSelector(
   [selectAllPhones],
   (phones) => phones.filter((p) => p.stockStatus === 'Available')
 );
-
-export const selectPhoneImeiSet = createSelector([selectAllPhones], (phones) =>
-  new Set(phones.map((p) => normalize(p.imei)))
+export const selectPhoneImeiSet = createSelector(
+  [selectAllPhones],
+  (phones) => new Set(phones.map((p) => normalize(p.imei)))
 );
-
-export const selectLaptopSerialSet = createSelector([selectAllLaptops], (laptops) =>
-  new Set(laptops.map((l) => normalize(l.serialNumber)))
+export const selectLaptopSerialSet = createSelector(
+  [selectAllLaptops],
+  (laptops) => new Set(laptops.map((l) => normalize(l.serialNumber)))
 );
-
 export const selectLowStockAccessories = createSelector(
   [selectAllAccessories],
-  (accessories) =>
-    accessories.filter((a) => a.quantity <= a.lowStockThreshold)
+  (accessories) => accessories.filter((a) => a.quantity <= a.lowStockThreshold)
 );
 
 export default inventorySlice.reducer;
