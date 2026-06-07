@@ -25,7 +25,7 @@ import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 
 import { useAppStatus } from '../../hooks/useAppStatus';
-import { selectShopProfile } from '../../redux/slices/settingsSlice';
+import { selectShopSettings } from '../../redux/slices/settingsSlice';
 import { selectLowStockAccessories } from '../../redux/slices/inventorySlice';
 import { ROUTE_PATHS } from '../../constants/routePaths';
 import { selectDebtors } from '../../redux/slices/khataSlice';
@@ -143,10 +143,7 @@ const NavItem = ({ item, isActive }) => {
           primary={t(item.labelKey)}
           slotProps={{
             primary: {
-              sx: {
-                fontWeight: active ? 700 : 500,
-                fontSize: '0.92rem',
-              },
+              sx: { fontWeight: active ? 700 : 500, fontSize: '0.92rem' },
             },
           }}
         />
@@ -170,7 +167,7 @@ const NavItem = ({ item, isActive }) => {
 const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
   const location = useLocation();
   const { isRtl } = useAppStatus();
-  const shopProfile = useSelector(selectShopProfile);
+  const shopSettings = useSelector(selectShopSettings) || {};
 
   const mainNavItems = useMemo(() => buildNavItems(), []);
   const bottomNavItems = useMemo(() => buildBottomNavItems(), []);
@@ -188,7 +185,7 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: SIDEBAR_WIDTH,
-          backgroundColor: '#05192D', // Using the consistent dark color
+          backgroundColor: '#05192D',
           border: 'none',
           boxShadow: isRtl
             ? '-4px 0 20px rgba(5,25,45,0.25)'
@@ -279,7 +276,7 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
         }}
       >
         <Avatar
-          src={shopProfile.shopLogo || undefined}
+          src={shopSettings.logo || undefined}
           sx={{
             width: 34,
             height: 34,
@@ -288,7 +285,7 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
             fontWeight: 800,
           }}
         >
-          {shopProfile.shopName?.charAt(0)?.toUpperCase() || 'H'}
+          {shopSettings.name?.charAt(0)?.toUpperCase() || 'H'}
         </Avatar>
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
           <Typography
@@ -301,7 +298,7 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
               textOverflow: 'ellipsis',
             }}
           >
-            {shopProfile.shopName || 'HisabBook Store'}
+            {shopSettings.name || 'HisabBook Store'}
           </Typography>
         </Box>
       </Box>
@@ -310,4 +307,3 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
 };
 
 export default Sidebar;
-
