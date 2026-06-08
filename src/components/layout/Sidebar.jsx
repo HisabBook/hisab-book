@@ -31,6 +31,23 @@ import { selectDebtors } from '../../redux/slices/khataSlice';
 
 export const SIDEBAR_WIDTH = 260;
 export const TOPBAR_HEIGHT = 64;
+const assetBase = import.meta.env.BASE_URL;
+
+const resolvePublicAsset = (assetPath) => {
+  if (!assetPath) {
+    return `${assetBase}favicon.svg`;
+  }
+
+  if (/^(https?:|data:|blob:)/.test(assetPath)) {
+    return assetPath;
+  }
+
+  if (assetPath.startsWith('/')) {
+    return `${assetBase}${assetPath.slice(1)}`;
+  }
+
+  return assetPath;
+};
 
 const EMPTY_ARRAY = [];
 
@@ -209,7 +226,7 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
       >
         <Box
           component='img'
-          src='/favicon.svg'
+          src={`${assetBase}favicon.svg`}
           alt='HisabBook logo'
           sx={{
             width: 30,
@@ -276,7 +293,7 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
       >
         <Box
           component='img'
-          src={shopSettings.logo || '/favicon.svg'}
+          src={resolvePublicAsset(shopSettings.logo)}
           alt={shopSettings.name || 'HisabBook Store'}
           sx={{
             width: 30,
