@@ -6,8 +6,11 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const isGitHubPages = process.env.GITHUB_PAGES === 'true';
+const base = process.env.VITE_BASE_PATH ?? (isGitHubPages ? '/hisab-book/' : '/');
 
 export default defineConfig({
+  base,
   plugins: [
     react(),
     tailwindcss(),
