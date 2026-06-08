@@ -20,7 +20,9 @@ import {
   closeCheckout,
   selectCustomer,
   selectIsFinalizingCheckout,
+  selectSelectedCurrency,
   setIsFinalizingCheckout,
+  setSelectedCurrency,
 } from '../../../redux/slices/posSlice';
 import {
   selectExchangeRate,
@@ -39,12 +41,13 @@ const CheckoutModal = ({ open, onPdfReady }) => {
   const exchangeRate = useSelector(selectExchangeRate);
   const shopSettings = useSelector(selectShopSettings); // For PDF
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
+  const selectedCurrencyFromStore = useSelector(selectSelectedCurrency);
 
   // The logic hook
   const { pricing, finalizeCheckout } = useCheckout();
 
   // Local state for the modal's form
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [selectedCurrency, setSelectedCurrencyLocal] = useState('USD');
   const [amountPaidInput, setAmountPaidInput] = useState('');
   const [name, setName] = useState(customer.name || '');
   const [phone, setPhone] = useState(customer.phone || '');
@@ -55,10 +58,10 @@ const CheckoutModal = ({ open, onPdfReady }) => {
       setName(customer.name || '');
       setPhone(customer.phone || '');
       setAmountPaidInput('');
-      setSelectedCurrency('USD');
+      setSelectedCurrencyLocal(selectedCurrencyFromStore);
       setSubmitError('');
     }
-  }, [customer.name, customer.phone, open]);
+  }, [customer.name, customer.phone, open, selectedCurrencyFromStore]);
 
   // Memoized calculations for display
   const netTotal = useMemo(
@@ -143,7 +146,11 @@ const CheckoutModal = ({ open, onPdfReady }) => {
             exclusive
             fullWidth
             value={selectedCurrency}
-            onChange={(_, v) => v && setSelectedCurrency(v)}
+            onChange={(_, v) => {
+              if (!v) return;
+              setSelectedCurrencyLocal(v);
+              dispatch(setSelectedCurrency(v));
+            }}
             disabled={isFinalizingCheckout}
           >
             <ToggleButton value='USD'>USD</ToggleButton>

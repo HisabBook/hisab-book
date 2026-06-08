@@ -30,6 +30,7 @@ import {
   addAccessory,
   updateAccessory,
   deleteAccessory,
+  resetInventory,
 } from '../../redux/slices/inventorySlice';
 
 const createNextId = (items, prefix) => {
@@ -77,6 +78,7 @@ const InventoryPage = () => {
   const [activeTab, setActiveTab] = useState('phones');
   const [formMeta, setFormMeta] = useState({ open: false, item: null });
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -134,6 +136,12 @@ const InventoryPage = () => {
     setItemToDelete(null);
   };
 
+  const handleResetInventory = () => {
+    dispatch(resetInventory());
+    setFeedback('Demo inventory restored successfully.');
+    setIsResetConfirmOpen(false);
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
@@ -179,6 +187,14 @@ const InventoryPage = () => {
         >
           Add {activeTab.slice(0, -1)}
         </Button>
+        <Button
+          variant='outlined'
+          color='warning'
+          onClick={() => setIsResetConfirmOpen(true)}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
+          Reset Demo Inventory
+        </Button>
       </PageHeader>
 
       {feedback && (
@@ -220,6 +236,17 @@ const InventoryPage = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setItemToDelete(null)}
         danger
+      />
+
+      <ConfirmDialog
+        open={isResetConfirmOpen}
+        title='Reset Demo Inventory'
+        message='This will restore phones, laptops, and accessories back to the seeded mock data in local storage. Continue?'
+        confirmText='Reset'
+        cancelText='Cancel'
+        danger
+        onConfirm={handleResetInventory}
+        onCancel={() => setIsResetConfirmOpen(false)}
       />
     </Stack>
   );

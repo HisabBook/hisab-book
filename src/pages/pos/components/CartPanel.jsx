@@ -21,12 +21,15 @@ import TradeInForm from './TradeInForm';
 import CheckoutModal from './CheckoutModal';
 import { setCurrentInvoicePdf } from '../invoicePreviewStore';
 import { useCheckout } from '../../../hooks/useCheckout';
+import { useCurrencyConverter } from '../../../hooks/useCurrencyConverter';
+import { formatCurrency } from '../../../utils/currencyFormatter';
 import {
   clearCart,
   openCheckout,
   selectCustomer,
   selectIsCheckoutOpen,
   selectIsFinalizingCheckout,
+  selectSelectedCurrency,
   setCustomer,
   setTransactionType,
 } from '../../../redux/slices/posSlice';
@@ -41,12 +44,16 @@ const CartPanel = ({ cartItems, transactionType }) => {
   const customer = useSelector(selectCustomer);
   const isCheckoutOpen = useSelector(selectIsCheckoutOpen);
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
+  const selectedCurrency = useSelector(selectSelectedCurrency);
+  const convert = useCurrencyConverter();
 
   const { pricing } = useCheckout();
   const subtotal = pricing.subtotalUSD;
   const tradeInValue = pricing.tradeInUSD;
   const payable = pricing.netTotalUSD;
   const hasItems = cartItems.length > 0;
+  const formatPrimaryCurrency = (amount) =>
+    formatCurrency(convert(amount, 'USD', selectedCurrency), selectedCurrency);
 
   const handlePdfReady = (pdf) => {
     if (!pdf?.blobUrl) return;
@@ -200,7 +207,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
                 fontWeight={600}
                 color={isDark ? 'common.white' : 'text.primary'}
               >
-                ${subtotal.toFixed(2)}
+                {formatPrimaryCurrency(subtotal)}
               </Typography>
             </Stack>
 
@@ -216,7 +223,7 @@ const CartPanel = ({ cartItems, transactionType }) => {
                     isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary'
                   }
                 >
-                  -${tradeInValue.toFixed(2)}
+                  - {formatPrimaryCurrency(tradeInValue)}
                 </Typography>
               </Stack>
             )}
@@ -236,12 +243,11 @@ const CartPanel = ({ cartItems, transactionType }) => {
                     ? 'success.light'
                     : isDark
                       ? 'common.white'
-                      : 'text.primary'
+                    : 'text.primary'
                 }
               >
-                {payable < 0
-                  ? `$${Math.abs(payable).toFixed(2)}`
-                  : `$${payable.toFixed(2)}`}
+                {payable < 0 ? '-' : ''}
+                {formatPrimaryCurrency(Math.abs(payable))}
               </Typography>
             </Stack>
           </Stack>

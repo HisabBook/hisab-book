@@ -13,11 +13,13 @@ const normalize = (value) =>
     .trim()
     .toLowerCase();
 
-const initialState = {
-  phones: mockPhones,
-  laptops: mockLaptops,
-  accessories: mockAccessories,
-};
+const createInitialState = () => ({
+  phones: mockPhones.map((item) => ({ ...item })),
+  laptops: mockLaptops.map((item) => ({ ...item })),
+  accessories: mockAccessories.map((item) => ({ ...item })),
+});
+
+const initialState = createInitialState();
 
 const inventorySlice = createSlice({
   name: 'inventory',
@@ -143,6 +145,7 @@ const inventorySlice = createSlice({
       const item = state.accessories.find((a) => a.id === id);
       if (item) item.quantity = Math.max(0, item.quantity - qty);
     },
+    resetInventory: () => createInitialState(),
   },
 });
 
@@ -159,6 +162,7 @@ export const {
   updateAccessory,
   deleteAccessory,
   decreaseAccessoryQty,
+  resetInventory,
 } = inventorySlice.actions;
 
 const EMPTY_ARRAY = [];
