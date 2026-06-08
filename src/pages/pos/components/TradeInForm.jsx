@@ -7,7 +7,11 @@ import {
   InputAdornment,
   useTheme,
 } from '@mui/material';
-import { selectTradeIn, setTradeIn } from '../../../redux/slices/posSlice';
+import {
+  selectTradeIn,
+  setSelectedCurrency,
+  setTradeIn,
+} from '../../../redux/slices/posSlice';
 import { PHONE_BRANDS } from '../../../constants/brands';
 import { CURRENCIES } from '../../../constants/conditions';
 
@@ -21,6 +25,9 @@ const TradeInForm = () => {
   const handleChange = (event) => {
     const { name, value } = event.target;
     dispatch(setTradeIn({ [name]: value }));
+    if (name === 'currency') {
+      dispatch(setSelectedCurrency(value));
+    }
   };
 
   // Specific handler for the trade-in value to ensure it's a valid number

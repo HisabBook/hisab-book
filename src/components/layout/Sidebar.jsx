@@ -11,7 +11,6 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  Avatar,
   Divider,
   Badge,
 } from '@mui/material';
@@ -268,31 +267,35 @@ const Sidebar = ({ isDesktop, mobileOpen, onMobileClose }) => {
       <Box
         sx={{
           px: 2,
-          py: 1.75,
+          py: 1.5,
           borderTop: '1px solid rgba(255,255,255,0.07)',
           display: 'flex',
           alignItems: 'center',
-          gap: 1.5,
+          gap: 1.25,
         }}
       >
-        <Avatar
-          src={shopSettings.logo || undefined}
+        <Box
+          component='img'
+          src={shopSettings.logo || '/favicon.svg'}
+          alt={shopSettings.name || 'HisabBook Store'}
           sx={{
-            width: 34,
-            height: 34,
-            backgroundColor: '#05D67D',
-            color: '#05192D',
-            fontWeight: 800,
+            width: 30,
+            height: 30,
+            flexShrink: 0,
+            display: 'block',
+            objectFit: 'contain',
+            p: 0.2,
+            borderRadius: 1.5,
+            backgroundColor: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
           }}
-        >
-          {shopSettings.name?.charAt(0)?.toUpperCase() || 'H'}
-        </Avatar>
-        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+        />
+        <Box sx={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
           <Typography
             sx={{
               color: '#FFFFFF',
-              fontWeight: 600,
-              fontSize: '0.82rem',
+              fontWeight: 700,
+              fontSize: '0.86rem',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',

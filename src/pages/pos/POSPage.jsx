@@ -15,6 +15,8 @@ import SearchBar from './components/SearchBar';
 import CartPanel from './components/CartPanel';
 import POSPageSkeleton from './components/POSPageSkeleton';
 import EmptyState from '../../components/ui/EmptyState';
+import { useCurrencyConverter } from '../../hooks/useCurrencyConverter';
+import { formatCurrency } from '../../utils/currencyFormatter';
 import {
   addToCart,
   selectCartItems,
@@ -26,6 +28,7 @@ import {
   selectAllLaptops,
   selectAvailablePhones,
 } from '../../redux/slices/inventorySlice';
+import { selectSelectedCurrency } from '../../redux/slices/posSlice';
 
 const normalize = (value) =>
   String(value ?? '')
@@ -47,6 +50,8 @@ const POSPage = () => {
   const cartItems = useSelector(selectCartItems);
   const transactionType = useSelector(selectTransactionType);
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
+  const selectedCurrency = useSelector(selectSelectedCurrency);
+  const convert = useCurrencyConverter();
 
   // Local state
   const [query, setQuery] = useState('');
@@ -130,6 +135,11 @@ const POSPage = () => {
       normalize(item.searchText).includes(trimmed)
     );
   }, [inventoryPool, query]);
+  const formatPrimaryCurrency = (amount, sourceCurrency = 'USD') =>
+    formatCurrency(
+      convert(amount, sourceCurrency, selectedCurrency),
+      selectedCurrency
+    );
 
   // Effect for "instant add" on exact IMEI/serial scan
   useEffect(() => {
@@ -335,7 +345,7 @@ const POSPage = () => {
                           sx={{ textTransform: 'capitalize' }}
                         />
                         <Typography variant='h6' fontWeight={800}>
-                          ${item.sellPrice}
+                          {formatPrimaryCurrency(item.sellPrice, item.cartPayload.currency)}
                         </Typography>
                       </Stack>
                     </Box>

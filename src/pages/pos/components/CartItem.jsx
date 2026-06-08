@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Button,
@@ -9,12 +9,17 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { removeFromCart, updateCartQty } from '../../../redux/slices/posSlice';
+import { selectSelectedCurrency } from '../../../redux/slices/posSlice';
+import { useCurrencyConverter } from '../../../hooks/useCurrencyConverter';
+import { formatCurrency } from '../../../utils/currencyFormatter';
 
 const CartItem = ({ item }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const isAccessory = item.type === 'accessory';
+  const selectedCurrency = useSelector(selectSelectedCurrency);
+  const convert = useCurrencyConverter();
   const identifier = item.imei || item.serialNumber || item.identifier || '';
   const identifierLabel =
     item.type === 'laptop'
@@ -26,6 +31,10 @@ const CartItem = ({ item }) => {
   const qty = Number(item.quantity) || 1;
   const unit = Number(item.sellPrice) || 0;
   const lineTotal = unit * qty;
+  const displayLineTotal = formatCurrency(
+    convert(lineTotal, item.currency || 'USD', selectedCurrency),
+    selectedCurrency
+  );
 
   return (
     <Box
@@ -192,7 +201,7 @@ const CartItem = ({ item }) => {
             color: isDark ? 'common.white' : 'text.primary',
           }}
         >
-          {item.currency || 'USD'} {lineTotal.toFixed(2)}
+          {displayLineTotal}
         </Typography>
       </Box>
     </Box>
