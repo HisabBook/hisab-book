@@ -212,6 +212,13 @@ npm install
 
 npm run dev
 
+## Deployment
+
+- The app is configured for a single free GitHub Pages URL.
+- Push to `main` to trigger the GitHub Actions deploy workflow.
+- In repository settings, set `Pages` source to `GitHub Actions` once.
+- For local production-style build checks, run `npm run build`.
+
 ---
 
 ## Status
