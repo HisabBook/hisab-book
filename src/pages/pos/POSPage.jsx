@@ -1,3 +1,5 @@
+// src/pages/pos/POSPage.jsx
+
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -7,7 +9,6 @@ import {
   CircularProgress,
   Stack,
   Typography,
-  useTheme,
 } from '@mui/material';
 import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
 import SearchBar from './components/SearchBar';
@@ -26,18 +27,20 @@ import {
   selectAvailablePhones,
 } from '../../redux/slices/inventorySlice';
 
-const normalize = (value) => String(value ?? '').trim().toLowerCase();
+const normalize = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
 
-const getItemTypeLabel = (item) => {
-  if (item.type === 'phone') return 'phone';
-  if (item.type === 'laptop') return 'laptop';
-  return 'accessory';
+const getItemTypeLabel = (itemType) => {
+  if (itemType === 'laptop') return 'Serial';
+  if (itemType === 'phone') return 'IMEI';
+  return 'ID';
 };
 
 const POSPage = () => {
   const dispatch = useDispatch();
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+  // Redux state
   const phones = useSelector(selectAvailablePhones);
   const laptops = useSelector(selectAllLaptops);
   const accessories = useSelector(selectAllAccessories);
@@ -45,13 +48,19 @@ const POSPage = () => {
   const transactionType = useSelector(selectTransactionType);
   const isFinalizingCheckout = useSelector(selectIsFinalizingCheckout);
 
+  // Local state
   const [query, setQuery] = useState('');
   const [scanFeedback, setScanFeedback] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Memoized full inventory pool for searching
   const inventoryPool = useMemo(() => {
-    const availableLaptops = laptops.filter((laptop) => laptop.stockStatus === 'Available');
-    const availableAccessories = accessories.filter((item) => item.quantity > 0);
+    const availableLaptops = laptops.filter(
+      (laptop) => laptop.stockStatus === 'Available'
+    );
+    const availableAccessories = accessories.filter(
+      (item) => item.quantity > 0
+    );
 
     return [
       ...phones.map((phone) => ({
@@ -113,16 +122,19 @@ const POSPage = () => {
     ];
   }, [phones, laptops, accessories]);
 
+  // Memoized search results
   const filteredInventory = useMemo(() => {
     const trimmed = normalize(query);
     if (!trimmed) return inventoryPool;
-
-    return inventoryPool.filter((item) => normalize(item.searchText).includes(trimmed));
+    return inventoryPool.filter((item) =>
+      normalize(item.searchText).includes(trimmed)
+    );
   }, [inventoryPool, query]);
 
+  // Effect for "instant add" on exact IMEI/serial scan
   useEffect(() => {
     const trimmed = normalize(query);
-    if (!trimmed) return;
+    if (!trimmed || trimmed.length < 5) return;
 
     const exactMatch = inventoryPool.find(
       (item) => item.identifier && normalize(item.identifier) === trimmed
@@ -130,20 +142,26 @@ const POSPage = () => {
 
     if (exactMatch) {
       dispatch(addToCart(exactMatch.cartPayload));
-      setScanFeedback(`Scanned: ${exactMatch.label}`);
+      setScanFeedback(`Added: ${exactMatch.label}`);
       setQuery('');
     }
   }, [dispatch, inventoryPool, query]);
 
+  // Effect to make the scan feedback chip disappear
+  useEffect(() => {
+    if (scanFeedback) {
+      const timer = setTimeout(() => setScanFeedback(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [scanFeedback]);
+
+  // Effect for initial page load skeleton
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleAddToCart = (item) => {
-    dispatch(addToCart(item.cartPayload));
-  };
-
+  const handleAddToCart = (item) => dispatch(addToCart(item.cartPayload));
   const hasSearchResults = filteredInventory.length > 0;
 
   if (isLoading) {
@@ -154,7 +172,7 @@ const POSPage = () => {
     <>
       <Backdrop
         open={isFinalizingCheckout}
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal - 1 }}
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <CircularProgress color='inherit' />
       </Backdrop>
@@ -164,18 +182,18 @@ const POSPage = () => {
           display: 'grid',
           gap: 2.5,
           alignItems: 'stretch',
-          gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 7fr) minmax(0, 5fr)' },
+          gridTemplateColumns: {
+            xs: '1fr',
+            md: 'minmax(0, 7fr) minmax(0, 5fr)',
+          },
           pointerEvents: isFinalizingCheckout ? 'none' : 'auto',
           height: { xs: 'auto', md: 'calc(100dvh - 120px)' },
           overflow: { xs: 'visible', md: 'hidden' },
           p: { xs: 1, sm: 1.5, md: 2 },
           borderRadius: 4,
-          bgcolor: isDark ? 'rgba(2, 12, 27, 0.94)' : theme.palette.background.paper,
+          bgcolor: 'background.paper',
           border: '1px solid',
-          borderColor: isDark ? 'rgba(148, 163, 184, 0.12)' : theme.palette.divider,
-          backgroundImage: isDark
-            ? 'radial-gradient(circle at top left, rgba(5, 214, 125, 0.08), transparent 30%), radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 28%)'
-            : 'none',
+          borderColor: 'divider',
         }}
       >
         <Box
@@ -190,17 +208,10 @@ const POSPage = () => {
           }}
         >
           <Box>
-            <Typography
-              variant='h6'
-              fontWeight={800}
-              color={isDark ? 'common.white' : 'text.primary'}
-            >
+            <Typography variant='h6' fontWeight={800}>
               Point of Sale
             </Typography>
-            <Typography
-              variant='body2'
-              color={isDark ? 'rgba(226, 232, 240, 0.68)' : 'text.secondary'}
-            >
+            <Typography variant='body2' color='text.secondary'>
               Fast IMEI / serial scan and smart item search.
             </Typography>
           </Box>
@@ -217,8 +228,8 @@ const POSPage = () => {
               flex: 1,
               borderRadius: 3,
               border: '1px solid',
-              borderColor: isDark ? 'rgba(148, 163, 184, 0.12)' : theme.palette.divider,
-              bgcolor: isDark ? 'rgba(9, 28, 51, 0.75)' : theme.palette.background.paper,
+              borderColor: 'divider',
+              bgcolor: 'background.default',
               p: 1.25,
               overflow: 'hidden',
               display: 'flex',
@@ -234,11 +245,10 @@ const POSPage = () => {
                 mb: 1.25,
               }}
             >
-              <Typography
-                variant='body2'
-                color={isDark ? 'rgba(226, 232, 240, 0.7)' : 'text.secondary'}
-              >
-                {hasSearchResults ? `${filteredInventory.length} items found` : 'No matches'}
+              <Typography variant='body2' color='text.secondary'>
+                {hasSearchResults
+                  ? `${filteredInventory.length} items found`
+                  : 'No matches'}
               </Typography>
               {!!scanFeedback && (
                 <Chip
@@ -246,11 +256,7 @@ const POSPage = () => {
                   label={scanFeedback}
                   color='success'
                   variant='outlined'
-                  sx={{
-                    borderColor: isDark ? 'rgba(5, 214, 125, 0.35)' : 'rgba(5, 214, 125, 0.22)',
-                    color: isDark ? 'rgba(167, 243, 208, 0.95)' : theme.palette.primary.main,
-                    bgcolor: 'rgba(5, 214, 125, 0.08)',
-                  }}
+                  onDelete={() => setScanFeedback('')}
                 />
               )}
             </Box>
@@ -262,7 +268,6 @@ const POSPage = () => {
                 display: 'grid',
                 gap: 1,
                 overflowY: 'auto',
-                overflowX: 'hidden',
                 pr: 0.5,
                 alignContent: 'start',
               }}
@@ -275,14 +280,15 @@ const POSPage = () => {
                     sx={{
                       cursor: 'pointer',
                       border: '1px solid',
-                      borderColor: isDark ? 'rgba(148, 163, 184, 0.12)' : theme.palette.divider,
+                      borderColor: 'divider',
                       borderRadius: 2,
                       p: 1.25,
-                      bgcolor: isDark ? 'rgba(10, 35, 61, 0.96)' : theme.palette.background.default,
-                      transition: 'transform 120ms ease, border-color 120ms ease, background-color 120ms ease',
+                      bgcolor: 'background.paper',
+                      transition:
+                        'transform 120ms ease, border-color 120ms ease',
                       '&:hover': {
-                        bgcolor: isDark ? 'rgba(24, 53, 86, 0.95)' : 'rgba(5, 214, 125, 0.05)',
-                        borderColor: 'rgba(5, 214, 125, 0.34)',
+                        bgcolor: 'action.hover',
+                        borderColor: 'primary.light',
                         transform: 'translateY(-1px)',
                       },
                     }}
@@ -300,46 +306,35 @@ const POSPage = () => {
                         <Typography
                           variant='subtitle2'
                           fontWeight={700}
-                          color={isDark ? 'common.white' : 'text.primary'}
-                          sx={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+                          sx={{ overflowWrap: 'anywhere' }}
                         >
                           {item.label}
                         </Typography>
                         <Stack spacing={0.25} sx={{ mt: 0.5 }}>
-                          <Typography
-                            variant='caption'
-                            color={isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary'}
-                            sx={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
-                          >
+                          <Typography variant='caption' color='text.secondary'>
                             {item.cartPayload.brand || 'Unknown brand'}
                           </Typography>
                           {item.identifier && (
                             <Typography
                               variant='caption'
-                              color={isDark ? 'rgba(226, 232, 240, 0.58)' : 'text.secondary'}
-                              sx={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+                              color='text.secondary'
                             >
-                              {getItemTypeLabel(item)} ID: {item.identifier}
+                              {getItemTypeLabel(item.type)}: {item.identifier}
                             </Typography>
                           )}
                         </Stack>
                       </Box>
-
-                      <Stack spacing={0.6} alignItems='flex-end' sx={{ flexShrink: 0 }}>
+                      <Stack
+                        spacing={0.6}
+                        alignItems='flex-end'
+                        sx={{ flexShrink: 0 }}
+                      >
                         <Chip
                           size='small'
                           label={item.type}
-                          sx={{
-                            bgcolor: isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(5, 25, 45, 0.06)',
-                            color: isDark ? 'rgba(226, 232, 240, 0.82)' : 'text.primary',
-                            textTransform: 'lowercase',
-                          }}
+                          sx={{ textTransform: 'capitalize' }}
                         />
-                        <Typography
-                          variant='h6'
-                          fontWeight={800}
-                          color={isDark ? 'common.white' : 'text.primary'}
-                        >
+                        <Typography variant='h6' fontWeight={800}>
                           ${item.sellPrice}
                         </Typography>
                       </Stack>
@@ -347,16 +342,22 @@ const POSPage = () => {
                   </Box>
                 ))
               ) : (
-                <Box sx={{ minHeight: 280 }}>
+                <Box
+                  sx={{
+                    minHeight: 280,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <EmptyState
                     icon={
                       <ManageSearchRoundedIcon
-                        sx={{ fontSize: 54, mb: 1.5, opacity: 0.55 }}
+                        sx={{ fontSize: 54, opacity: 0.5 }}
                       />
                     }
-                    color={isDark ? 'rgba(226, 232, 240, 0.72)' : 'text.secondary'}
                     message='No search results'
-                    details='Try a brand, model, accessory name, IMEI, or serial number.'
+                    details='Try a brand, model, IMEI, or serial number.'
                   />
                 </Box>
               )}
@@ -364,7 +365,9 @@ const POSPage = () => {
           </Box>
         </Box>
 
-        <Box sx={{ minWidth: 0, height: '100%', minHeight: 0, overflow: 'hidden' }}>
+        <Box
+          sx={{ minWidth: 0, height: '100%', minHeight: 0, overflow: 'hidden' }}
+        >
           <CartPanel cartItems={cartItems} transactionType={transactionType} />
         </Box>
       </Box>
@@ -373,4 +376,3 @@ const POSPage = () => {
 };
 
 export default POSPage;
-

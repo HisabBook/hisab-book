@@ -1,85 +1,56 @@
-import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  theme: 'light',
-  exchangeRate: 70, // 1 USD = 70 AFN
-  primaryCurrency: 'USD', 
-  language: 'en',
-  shopName: 'HisabBook Store',
-  shopAddress: 'Herat, Afghanistan',
-  shopPhone: '+93 700 000 000',
-  shopLogo: null,
+  shop: {
+    name: 'HisabBook Electronics',
+    logo: '',
+    address: 'Kabul, Afghanistan',
+    phone: '+93 788 000 000',
+    invoiceNotes: 'Items once sold are not returnable.',
+  },
+
+  exchangeRate: 70.0, // Default exchange rate
+  language: 'en', // 'en', 'fa', 'ps'
+  theme: 'light', // 'light', 'dark'
+  primaryCurrency: 'USD', // 'USD' or 'AFN'
 };
 
 const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
+    setExchangeRate(state, action) {
+      state.exchangeRate = Number(action.payload) || 0;
+    },
+    setLanguage(state, action) {
+      state.language = action.payload;
+    },
     toggleTheme(state) {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
     },
-
-    setTheme(state, action) {
-      state.theme = action.payload;
-    },
-
-    setExchangeRate(state, action) {
-      const rate = parseFloat(action.payload);
-      if (Number.isFinite(rate) && rate > 0) {
-        state.exchangeRate = rate;
-      }
-    },
-
     setPrimaryCurrency(state, action) {
-      const currency = action.payload;
-      if (currency === 'USD' || currency === 'AFN') {
-        state.primaryCurrency = currency;
-      }
+      state.primaryCurrency = action.payload;
     },
-
-    // ── Language: also syncs i18n in ThemeProviderWrapper ──
-    setLanguage(state, action) {
-      const validLangs = ['en', 'fa', 'ps'];
-      if (validLangs.includes(action.payload)) {
-        state.language = action.payload;
-      }
-    },
-
-    updateShopProfile(state, action) {
-      const { shopName, shopAddress, shopPhone, shopLogo } = action.payload;
-      if (shopName !== undefined) state.shopName = shopName;
-      if (shopAddress !== undefined) state.shopAddress = shopAddress;
-      if (shopPhone !== undefined) state.shopPhone = shopPhone;
-      if (shopLogo !== undefined) state.shopLogo = shopLogo;
+    updateShopSettings(state, action) {
+      state.shop = { ...state.shop, ...action.payload };
     },
   },
 });
 
 export const {
-  toggleTheme,
-  setTheme,
   setExchangeRate,
-  setPrimaryCurrency,
   setLanguage,
-  updateShopProfile,
+  toggleTheme,
+  setPrimaryCurrency,
+  updateShopSettings,
 } = settingsSlice.actions;
 
-// ── Selectors
+// --- Selectors ---
+export const selectExchangeRate = (state) => state.settings.exchangeRate;
 export const selectTheme = (state) => state.settings.theme;
 export const selectLanguage = (state) => state.settings.language;
-const selectSettings = (state) => state.settings;
-
-export const selectExchangeRate = (state) => state.settings.exchangeRate;
 export const selectPrimaryCurrency = (state) => state.settings.primaryCurrency;
 
-export const selectShopProfile = createSelector(
-  [selectSettings],
-  (settings) => ({
-    shopName: settings.shopName,
-    shopAddress: settings.shopAddress,
-    shopPhone: settings.shopPhone,
-    shopLogo: settings.shopLogo,
-  })
-);
+export const selectShopSettings = (state) => state.settings.shop;
 
 export default settingsSlice.reducer;
