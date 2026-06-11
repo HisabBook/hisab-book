@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import {
   persistStore,
   persistReducer,
+  createMigrate,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -11,6 +12,7 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
+import { migratePersistedRootState } from './khataMigrations';
 
 // ── Slice Reducers
 import settingsReducer from './slices/settingsSlice';
@@ -32,8 +34,11 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'hisabbook-root', // Key visible in DevTools → localStorage
   storage, // Browser localStorage
-  version: 1,
+  version: 2,
   blacklist: ['pos'],
+  migrate: createMigrate({
+    2: (state) => migratePersistedRootState(state),
+  }),
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

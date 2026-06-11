@@ -18,8 +18,7 @@ import {
   selectPhoneImeiSet,
 } from '../redux/slices/inventorySlice';
 import {
-  addCustomer,
-  increaseDebt,
+  createDebtRecord,
   selectAllCustomers,
 } from '../redux/slices/khataSlice';
 import { selectExchangeRate } from '../redux/slices/settingsSlice';
@@ -111,6 +110,7 @@ export const useCheckout = () => {
     const now = new Date();
     const saleDate = now.toISOString().slice(0, 10);
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
+    const saleId = uid('sale');
 
     // A) Update Khata (Customer Debt) if necessary
     let customerId = customer.id;
@@ -119,22 +119,26 @@ export const useCheckout = () => {
       const existing = customers.find(
         (item) => item.phone.trim() === normalizedPhone
       );
-      if (existing) {
-        customerId = existing.id;
-      } else {
-        customerId = uid('cust');
-        dispatch(
-          addCustomer({
+      customerId = existing?.id ?? uid('cust');
+      dispatch(
+        createDebtRecord({
+          id: uid('debt'),
+          customerId,
+          customer: {
             id: customerId,
             name: customerName.trim(),
             phone: normalizedPhone,
-            debtAmount: 0,
             currency: selectedCurrency,
             createdAt: now.toISOString(),
-          })
-        );
-      }
-      dispatch(increaseDebt({ customerId, amount: dueAmount }));
+            updatedAt: now.toISOString(),
+          },
+          totalDebt: dueAmount,
+          currency: selectedCurrency,
+          linkedSaleId: saleId,
+          linkedSaleNumber: invoiceNumber,
+          linkedSaleDate: saleDate,
+        })
+      );
     }
 
     cartItems.forEach((item) => {
@@ -170,7 +174,7 @@ export const useCheckout = () => {
       dispatch(addPhone(tradedInPhone));
     }
     const sale = {
-      id: uid('sale'),
+      id: saleId,
       invoiceNumber,
       customerId,
       customerName: customerName?.trim() || customer.name || 'Walk-in',
