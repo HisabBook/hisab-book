@@ -21,6 +21,7 @@ import {
   createDebtRecord,
   selectAllCustomers,
 } from '../redux/slices/khataSlice';
+import { addDebt } from '../redux/slices/khataSlice';
 import { selectExchangeRate } from '../redux/slices/settingsSlice';
 
 // --- Helper Functions ---
@@ -40,9 +41,7 @@ export const useCheckout = () => {
   // --- Redux State ---
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
-  const customer = useSelector(selectCustomer);
-  const customers = useSelector(selectAllCustomers);
-  const tradeIn = useSelector(selectTradeIn);
+  const tempCustomer = useSelector(selectCustomer);
   const transactionType = useSelector(selectTransactionType);
   const exchangeRate = useSelector(selectExchangeRate);
   const existingImeiSet = useSelector(selectPhoneImeiSet);
@@ -87,7 +86,6 @@ export const useCheckout = () => {
       }
     }
 
-    // --- Calculate Final Amounts ---
     const netTotalInSelectedCurrency =
       selectedCurrency === 'AFN'
         ? pricing.netTotalUSD * exchangeRate
@@ -109,11 +107,10 @@ export const useCheckout = () => {
     // --- Dispatch State Updates ---
     const now = new Date();
     const saleDate = now.toISOString().slice(0, 10);
+    const saleId = uid('sale'); // Generate a single ID for the sale
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
     const saleId = uid('sale');
 
-    // A) Update Khata (Customer Debt) if necessary
-    let customerId = customer.id;
     if (hasDebt) {
       const normalizedPhone = customerPhone.trim();
       const existing = customers.find(
@@ -137,10 +134,19 @@ export const useCheckout = () => {
           linkedSaleId: saleId,
           linkedSaleNumber: invoiceNumber,
           linkedSaleDate: saleDate,
+      dispatch(
+        addDebt({
+          saleId: saleId,
+          customer: {
+            name: customerName.trim(),
+            phone: customerPhone.trim(),
+          },
+          dueAmount: dueAmount,
+          currency: selectedCurrency,
+          createdAt: now.toISOString(),
         })
       );
     }
-
     cartItems.forEach((item) => {
       if (item.type === 'phone') {
         dispatch(markPhoneSold(item.itemId));
@@ -151,7 +157,6 @@ export const useCheckout = () => {
       }
     });
 
-    // C) Update Inventory (Add trade-in item)
     if (transactionType === 'Exchange' && tradeInImei) {
       const tradedInPhone = {
         id: uid('ph'),
@@ -176,8 +181,8 @@ export const useCheckout = () => {
     const sale = {
       id: saleId,
       invoiceNumber,
-      customerId,
-      customerName: customerName?.trim() || customer.name || 'Walk-in',
+      customerName: customerName?.trim() || tempCustomer.name || 'Walk-in',
+      customerPhone: customerPhone?.trim() || tempCustomer.phone || '',
       items: cartItems,
       subtotal: round2(
         pricing.subtotalUSD * (selectedCurrency === 'AFN' ? exchangeRate : 1)
