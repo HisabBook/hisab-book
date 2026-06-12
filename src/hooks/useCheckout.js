@@ -42,12 +42,14 @@ export const useCheckout = () => {
   const exchangeRate = useSelector(selectExchangeRate);
   const existingImeiSet = useSelector(selectPhoneImeiSet);
 
+  const tradeIn = useSelector(selectTradeIn);
+
   // --- Memoized Pricing Engine ---
   const pricing = useMemo(() => {
     const subtotalUSD = cartTotal.usd;
     const tradeInUSD =
       transactionType === 'Exchange'
-        ? toUSD(tradeIn.tradeInValue || 0, tradeIn.currency, exchangeRate)
+          toUSD(tradeIn.tradeInValue || 0, tradeIn.currency, exchangeRate)
         : 0;
     const netTotalUSD = subtotalUSD - tradeInUSD;
     return {
@@ -55,7 +57,7 @@ export const useCheckout = () => {
       tradeInUSD: round2(tradeInUSD),
       netTotalUSD: round2(netTotalUSD),
     };
-  }, [cartTotal.usd, exchangeRate, tradeIn, transactionType]);
+  }, [cartTotal.usd, exchangeRate, tradeIn, transactionType]); // `tradeIn` is now a valid dependency
 
   const finalizeCheckout = async ({
     selectedCurrency,
