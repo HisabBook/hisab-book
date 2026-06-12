@@ -18,7 +18,7 @@ const defaultValues = {
   brand: '',
   compatibleWith: '',
   quantity: '',
-  lowStockThreshold: '',
+  lowStockThreshold: '5',
   purchasePrice: '',
   sellPrice: '',
   currency: 'USD',
@@ -34,17 +34,21 @@ const AddAccessoryForm = ({
     ...defaultValues,
     ...(initialValues ?? {}),
     quantity:
-      initialValues?.quantity !== undefined ? String(initialValues.quantity) : '',
+      initialValues?.quantity !== undefined
+        ? String(initialValues.quantity)
+        : '',
     lowStockThreshold:
       initialValues?.lowStockThreshold !== undefined
         ? String(initialValues.lowStockThreshold)
-        : '',
+        : '5',
     purchasePrice:
       initialValues?.purchasePrice !== undefined
         ? String(initialValues.purchasePrice)
         : '',
     sellPrice:
-      initialValues?.sellPrice !== undefined ? String(initialValues.sellPrice) : '',
+      initialValues?.sellPrice !== undefined
+        ? String(initialValues.sellPrice)
+        : '',
   };
 
   const validate = (values) => {
@@ -77,8 +81,8 @@ const AddAccessoryForm = ({
       nextErrors.purchasePrice =
         'Purchase price must be a non-negative number.';
     }
-    if (values.sellPrice === '' || Number.isNaN(sellPrice) || sellPrice < 0) {
-      nextErrors.sellPrice = 'Sell price must be a non-negative number.';
+    if (values.sellPrice === '' || Number.isNaN(sellPrice) || sellPrice <= 0) {
+      nextErrors.sellPrice = 'Sell price must be a positive number.';
     }
 
     return nextErrors;
@@ -111,41 +115,125 @@ const AddAccessoryForm = ({
 
   return (
     <Box component='form' onSubmit={handleSubmit} noValidate>
-      <DialogTitle>{mode === 'edit' ? 'Edit Accessory' : 'Add Accessory'}</DialogTitle>
+      <DialogTitle>
+        {mode === 'edit' ? 'Edit Accessory' : 'Add Accessory'}
+      </DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mt: 0 }}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Name' name='name' value={values.name} onChange={handleChange} fullWidth required error={Boolean(errors.name)} helperText={errors.name} />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Name'
+              name='name'
+              value={values.name}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.name)}
+              helperText={errors.name}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField select label='Category' name='category' value={values.category} onChange={handleChange} fullWidth required error={Boolean(errors.category)} helperText={errors.category}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              label='Category'
+              name='category'
+              value={values.category}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.category)}
+              helperText={errors.category}
+            >
               {ACCESSORY_CATEGORIES.map((category) => (
-                <MenuItem key={category} value={category}>{category}</MenuItem>
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Brand' name='brand' value={values.brand} onChange={handleChange} fullWidth />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Brand'
+              name='brand'
+              value={values.brand}
+              onChange={handleChange}
+              fullWidth
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Compatible With' name='compatibleWith' value={values.compatibleWith} onChange={handleChange} fullWidth />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Compatible With'
+              name='compatibleWith'
+              value={values.compatibleWith}
+              onChange={handleChange}
+              fullWidth
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Quantity' name='quantity' type='number' value={values.quantity} onChange={handleChange} fullWidth required error={Boolean(errors.quantity)} helperText={errors.quantity} />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Quantity'
+              name='quantity'
+              type='number'
+              value={values.quantity}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.quantity)}
+              helperText={errors.quantity}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Low Stock Threshold' name='lowStockThreshold' type='number' value={values.lowStockThreshold} onChange={handleChange} fullWidth required error={Boolean(errors.lowStockThreshold)} helperText={errors.lowStockThreshold} />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Low Stock Threshold'
+              name='lowStockThreshold'
+              type='number'
+              value={values.lowStockThreshold}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.lowStockThreshold)}
+              helperText={errors.lowStockThreshold}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Purchase Price' name='purchasePrice' type='number' value={values.purchasePrice} onChange={handleChange} fullWidth required error={Boolean(errors.purchasePrice)} helperText={errors.purchasePrice} />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Purchase Price'
+              name='purchasePrice'
+              type='number'
+              value={values.purchasePrice}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.purchasePrice)}
+              helperText={errors.purchasePrice}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField label='Sell Price' name='sellPrice' type='number' value={values.sellPrice} onChange={handleChange} fullWidth required error={Boolean(errors.sellPrice)} helperText={errors.sellPrice} />
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label='Sell Price'
+              name='sellPrice'
+              type='number'
+              value={values.sellPrice}
+              onChange={handleChange}
+              fullWidth
+              required
+              error={Boolean(errors.sellPrice)}
+              helperText={errors.sellPrice}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField select label='Currency' name='currency' value={values.currency} onChange={handleChange} fullWidth>
-              {CURRENCIES.map((item) => (
-                <MenuItem key={item} value={item}>{item}</MenuItem>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              label='Currency'
+              name='currency'
+              value={values.currency}
+              onChange={handleChange}
+              fullWidth
+            >
+              {CURRENCIES.map((currency) => (
+                <MenuItem key={currency} value={currency}>
+                  {currency}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
@@ -162,4 +250,3 @@ const AddAccessoryForm = ({
 };
 
 export default AddAccessoryForm;
-

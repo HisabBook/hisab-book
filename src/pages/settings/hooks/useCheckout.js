@@ -43,12 +43,21 @@ export const useCheckout = () => {
   const pricing = useMemo(() => {
     const subtotalUSD = cartItems.reduce(
       (sum, item) =>
-        sum + toUSD((Number(item.sellPrice) || 0) * (Number(item.quantity) || 1), item.currency, exchangeRate),
+        sum +
+        toUSD(
+          (Number(item.sellPrice) || 0) * (Number(item.quantity) || 1),
+          item.currency,
+          exchangeRate
+        ),
       0
     );
     const tradeInUSD =
       transactionType === 'Exchange'
-        ? toUSD(Number(tradeIn.tradeInValue) || 0, tradeIn.currency, exchangeRate)
+        ? toUSD(
+            Number(tradeIn.tradeInValue) || 0,
+            tradeIn.currency,
+            exchangeRate
+          )
         : 0;
     const netTotalUSD = Math.max(0, subtotalUSD - tradeInUSD);
     return {
@@ -56,7 +65,13 @@ export const useCheckout = () => {
       tradeInUSD: round2(tradeInUSD),
       netTotalUSD: round2(netTotalUSD),
     };
-  }, [cartItems, exchangeRate, tradeIn.currency, tradeIn.tradeInValue, transactionType]);
+  }, [
+    cartItems,
+    exchangeRate,
+    tradeIn.currency,
+    tradeIn.tradeInValue,
+    transactionType,
+  ]);
 
   const finalizeCheckout = async ({
     selectedCurrency,
@@ -65,7 +80,9 @@ export const useCheckout = () => {
     customerPhone,
   }) => {
     const paid = round2(Number(amountPaid) || 0);
-    const netTotal = round2(fromUSD(pricing.netTotalUSD, selectedCurrency, exchangeRate));
+    const netTotal = round2(
+      fromUSD(pricing.netTotalUSD, selectedCurrency, exchangeRate)
+    );
     const dueAmount = paid >= netTotal ? 0 : round2(netTotal - paid);
     const changeAmount = paid > netTotal ? round2(paid - netTotal) : 0;
     const hasDebt = dueAmount > 0;
@@ -81,7 +98,9 @@ export const useCheckout = () => {
     let customerId = customer.id;
     if (hasDebt) {
       const normalizedPhone = customerPhone.trim();
-      const existing = customers.find((item) => item.phone.trim() === normalizedPhone);
+      const existing = customers.find(
+        (item) => item.phone.trim() === normalizedPhone
+      );
       if (existing) {
         customerId = existing.id;
       } else {

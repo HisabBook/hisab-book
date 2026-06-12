@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { nanoid } from '@reduxjs/toolkit';
 import { addSale } from '../redux/slices/salesSlice';
+import { addExpense } from '../redux/slices/roznamchaSlice';
 import {
   closeCheckout,
   resetPOS,
   selectCartItems,
-  selectCartTotal,
   selectCustomer,
   selectTradeIn,
   selectTransactionType,
@@ -36,20 +37,23 @@ export const useCheckout = () => {
 
   // --- Redux State ---
   const cartItems = useSelector(selectCartItems);
-  const cartTotal = useSelector(selectCartTotal);
   const tempCustomer = useSelector(selectCustomer);
   const transactionType = useSelector(selectTransactionType);
   const exchangeRate = useSelector(selectExchangeRate);
   const existingImeiSet = useSelector(selectPhoneImeiSet);
-
   const tradeIn = useSelector(selectTradeIn);
 
   // --- Memoized Pricing Engine ---
   const pricing = useMemo(() => {
-    const subtotalUSD = cartTotal.usd;
+    const subtotalUSD = cartItems.reduce((sum, item) => {
+      const itemPrice = item.sellPrice || 0;
+      const itemQty = item.quantity || 1;
+      return sum + toUSD(itemPrice * itemQty, item.currency, exchangeRate);
+    }, 0);
+
     const tradeInUSD =
       transactionType === 'Exchange'
-          toUSD(tradeIn.tradeInValue || 0, tradeIn.currency, exchangeRate)
+        ? toUSD(tradeIn.tradeInValue || 0, tradeIn.currency, exchangeRate)
         : 0;
     const netTotalUSD = subtotalUSD - tradeInUSD;
     return {
@@ -57,7 +61,7 @@ export const useCheckout = () => {
       tradeInUSD: round2(tradeInUSD),
       netTotalUSD: round2(netTotalUSD),
     };
-  }, [cartTotal.usd, exchangeRate, tradeIn, transactionType]); // `tradeIn` is now a valid dependency
+  }, [cartItems, exchangeRate, tradeIn, transactionType]);
 
   const finalizeCheckout = async ({
     selectedCurrency,
@@ -68,6 +72,13 @@ export const useCheckout = () => {
     // --- Pre-flight Validation ---
     const tradeInImei = normalize(tradeIn.imei);
     if (transactionType === 'Exchange') {
+      if (!tradeIn.model?.trim()) {
+        return {
+          ok: false,
+          error: 'INVALID_TRADE_IN_MODEL',
+          message: 'Trade-in phone model is required.',
+        };
+      }
       if (!/^\d{15}$/.test(tradeInImei)) {
         return {
           ok: false,
@@ -102,10 +113,9 @@ export const useCheckout = () => {
       };
     }
 
-    // --- Dispatch State Updates ---
     const now = new Date();
     const saleDate = now.toISOString().slice(0, 10);
-    const saleId = uid('sale'); // Generate a single ID for the sale
+    const saleId = uid('sale');
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
 
     if (hasDebt) {
@@ -122,14 +132,12 @@ export const useCheckout = () => {
         })
       );
     }
+
     cartItems.forEach((item) => {
-      if (item.type === 'phone') {
-        dispatch(markPhoneSold(item.itemId));
-      } else if (item.type === 'laptop') {
-        dispatch(markLaptopSold(item.itemId));
-      } else if (item.type === 'accessory') {
+      if (item.type === 'phone') dispatch(markPhoneSold(item.itemId));
+      else if (item.type === 'laptop') dispatch(markLaptopSold(item.itemId));
+      else if (item.type === 'accessory')
         dispatch(decreaseAccessoryQty({ id: item.itemId, qty: item.quantity }));
-      }
     });
 
     if (transactionType === 'Exchange' && tradeInImei) {
@@ -137,7 +145,7 @@ export const useCheckout = () => {
         id: uid('ph'),
         imei: tradeIn.imei.trim(),
         brand: tradeIn.brand,
-        model: tradeIn.model,
+        model: tradeIn.model.trim(),
         condition: 'Used',
         purchasePrice: pricing.tradeInUSD,
         currency: 'USD',
@@ -152,7 +160,26 @@ export const useCheckout = () => {
         sellPrice: 0,
       };
       dispatch(addPhone(tradedInPhone));
+
+      if (pricing.tradeInUSD > 0) {
+        const tradeInDescription =
+          `Trade-in Value: ${tradeIn.brand || ''} ${tradeIn.model || ''}`.trim();
+        dispatch(
+          addExpense({
+            id: `exp_trade_${saleId}`, // Unique, predictable ID
+            category: 'Stock Purchase',
+            amount: pricing.tradeInUSD,
+            currency: 'USD',
+            description: tradeInDescription,
+            date: saleDate,
+            notes: `Value for old device on sale ${invoiceNumber}`,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
+          })
+        );
+      }
     }
+
     const sale = {
       id: saleId,
       invoiceNumber,

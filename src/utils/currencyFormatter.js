@@ -1,21 +1,27 @@
 export const formatCurrency = (amount, currency, locale = 'en-US') => {
-  if (typeof amount !== 'number') {
-    return '';
+  if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+    return '—';
   }
 
-  const formatOptions =
-    currency === 'USD'
-      ? { style: 'currency', currency: 'USD' }
-      : {
-          style: 'decimal',
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        };
+  // Define the primary currency for special formatting.
+  const primaryCurrency = 'USD';
+
+  // Create a fallback currency if the provided one is invalid.
+  const validCurrency = currency || primaryCurrency;
+
+  const isPrimary = validCurrency === primaryCurrency;
+
+  const formatOptions = isPrimary
+    ? { style: 'currency', currency: primaryCurrency }
+    : {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      };
 
   const formattedAmount = new Intl.NumberFormat(locale, formatOptions).format(
     amount
   );
 
-  // Add the 'AFN' prefix manually as it's not a standard Intl currency symbol
-  return currency === 'AFN' ? `AFN ${formattedAmount}` : formattedAmount;
+  return isPrimary ? formattedAmount : `${validCurrency} ${formattedAmount}`;
 };
