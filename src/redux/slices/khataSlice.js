@@ -1,50 +1,105 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
-import { mockCustomers } from '../../mockData/initialData';
 
+const initialState = {
+  debts: [],
+  repayments: [],
+};
+
+// --- Slice Definition ---
 const khataSlice = createSlice({
   name: 'khata',
-  initialState: {
-    customers: mockCustomers,
-  },
+  initialState,
   reducers: {
-    addCustomer(state, action) {
-      state.customers.push(action.payload);
+    addDebt(state, action) {
+      const { saleId, customer, dueAmount, currency, createdAt } =
+        action.payload;
+
+      // Prevent adding a duplicate debt for the same sale
+      const exists = state.debts.some((debt) => debt.saleId === saleId);
+      if (exists) return;
+
+      state.debts.push({
+        id: `debt_${saleId}`,
+        saleId,
+        customer,
+        initialDue: dueAmount,
+        remainingDue: dueAmount,
+        currency,
+        status: 'Unpaid',
+        createdAt,
+      });
     },
-    updateCustomer(state, action) {
-      const index = state.customers.findIndex(
-        (c) => c.id === action.payload.id
-      );
-      if (index !== -1) state.customers[index] = action.payload;
-    },
-    deleteCustomer(state, action) {
-      state.customers = state.customers.filter((c) => c.id !== action.payload);
-    },
+
     recordRepayment(state, action) {
-      const { customerId, amount } = action.payload;
-      const customer = state.customers.find((c) => c.id === customerId);
-      if (customer) {
-        customer.debtAmount = Math.max(0, customer.debtAmount - amount);
+      const { debtId, amount, date } = action.payload;
+      const debt = state.debts.find((d) => d.id === debtId);
+
+      if (debt) {
+        const newRemaining = debt.remainingDue - amount;
+        debt.remainingDue = Math.max(0, newRemaining);
+
+        if (debt.remainingDue === 0) {
+          debt.status = 'Paid';
+        } else if (debt.remainingDue < debt.initialDue) {
+          debt.status = 'Partially Paid';
+        }
+
+        state.repayments.push({
+          id: `repay_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          debtId,
+          amount,
+          date,
+        });
       }
-    },
-    increaseDebt(state, action) {
-      const { customerId, amount } = action.payload;
-      const customer = state.customers.find((c) => c.id === customerId);
-      if (customer) customer.debtAmount += amount;
     },
   },
 });
 
-export const {
-  addCustomer,
-  updateCustomer,
-  deleteCustomer,
-  recordRepayment,
-  increaseDebt,
-} = khataSlice.actions;
+export const { addDebt, recordRepayment } = khataSlice.actions;
 
-export const selectAllCustomers = (state) => state.khata.customers;
-export const selectDebtors = createSelector([selectAllCustomers], (customers) =>
-  customers.filter((c) => c.debtAmount > 0)
+const selectKhataState = (state) => state.khata;
+export const selectAllDebts = createSelector(
+  [selectKhataState],
+  (khata) => khata.debts || []
 );
 
+export const selectAllRepayments = createSelector(
+  [selectKhataState],
+  (khata) => khata.repayments || []
+);
+
+export const selectActiveDebts = createSelector([selectAllDebts], (debts) =>
+  debts
+    .filter((d) => d.status !== 'Paid')
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+);
+
+export const selectDebtorsSummary = createSelector(
+  [selectActiveDebts],
+  (activeDebts) => {
+    const summary = {};
+    activeDebts.forEach((debt) => {
+      const phone = debt.customer.phone;
+      if (!summary[phone]) {
+        summary[phone] = {
+          customer: debt.customer,
+          totalDebtUSD: 0,
+          totalDebtAFN: 0,
+          debtCount: 0,
+          debts: [],
+        };
+      }
+      if (debt.currency === 'USD') {
+        summary[phone].totalDebtUSD += debt.remainingDue;
+      } else {
+        summary[phone].totalDebtAFN += debt.remainingDue;
+      }
+      summary[phone].debtCount += 1;
+      summary[phone].debts.push(debt);
+    });
+    return Object.values(summary);
+  }
+);
+
+export const selectDebtors = selectDebtorsSummary;
 export default khataSlice.reducer;
