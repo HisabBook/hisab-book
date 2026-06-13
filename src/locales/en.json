@@ -1,27 +1,27 @@
 {
   "nav": {
-    "dashboard":  "Dashboard",
-    "pos":        "Point of Sale",
-    "inventory":  "Inventory",
-    "khata":      "Khata",
-    "roznamcha":  "Roznamcha",
-    "reports":    "Reports",
-    "settings":   "Settings"
+    "dashboard": "Dashboard",
+    "pos": "Point of Sale",
+    "inventory": "Inventory",
+    "khata": "Khata",
+    "roznamcha": "Roznamcha",
+    "reports": "Reports",
+    "settings": "Settings"
   },
   "dashboard": {
-    "title":            "Dashboard",
-    "totalStock":       "Total Stock",
-    "inventoryValue":   "Inventory Value",
-    "todaySales":       "Today's Sales",
-    "todayProfit":      "Today's Net Profit",
-    "salesTrend":       "Sales Trend",
-    "stockDistribution":"Stock Distribution",
-    "recentActivity":   "Recent Activity",
-    "lowStock":         "Low Stock Alerts",
-    "last7days":        "Last 7 Days",
-    "last30days":       "Last 30 Days",
-    "noAlerts":         "No low stock alerts",
-    "items":            "items"
+    "title": "Dashboard",
+    "totalStock": "Total Stock",
+    "inventoryValue": "Inventory Value",
+    "todaySales": "Today's Sales",
+    "todayProfit": "Today's Net Profit",
+    "salesTrend": "Sales Trend",
+    "stockDistribution": "Stock Distribution",
+    "recentActivity": "Recent Activity",
+    "lowStock": "Low Stock Alerts",
+    "last7days": "Last 7 Days",
+    "last30days": "Last 30 Days",
+    "noAlerts": "No low stock alerts",
+    "items": "items"
   },
   "pos": {
     "checkout": "Checkout",
@@ -37,36 +37,72 @@
     "qty": "Qty",
     "unitPrice": "Unit Price",
     "subtotal": "Subtotal",
-    "thankYou": "Thank you for your purchase!",
-    "customerDebtRequired": "Customer name and phone are required for debt sales."
+    "thankYou": "Thank you for your purchase!"
   },
   "common": {
-    "save":        "Save",
-    "cancel":      "Cancel",
-    "delete":      "Delete",
-    "edit":        "Edit",
-    "add":         "Add",
-    "search":      "Search",
-    "filter":      "Filter",
-    "reset":       "Reset",
-    "confirm":     "Confirm",
-    "close":       "Close",
-    "loading":     "Loading...",
-    "noData":      "No data available",
-    "actions":     "Actions",
-    "currency":    "Currency",
-    "usd":         "USD",
-    "afn":         "AFN",
-    "english":     "English",
-    "persian":     "Persian (Dari)",
-    "pashto":      "Pashto",
-    "today":       "Today",
-    "total":       "Total",
-    "profit":      "Profit",
-    "status":      "Status",
-    "notes":       "Notes",
-    "dateAdded":   "Date Added",
-    "areYouSure":  "Are you sure?",
-    "deleteConfirm":"This action cannot be undone."
+    "all": "All",
+    "clear": "Clear",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "confirm": "Confirm",
+    "close": "Close",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "actions": "Actions",
+    "currency": "Currency",
+    "usd": "USD",
+    "afn": "AFN",
+    "english": "English",
+    "persian": "Persian (Dari)",
+    "pashto": "Pashto",
+    "today": "Today",
+    "total": "Total",
+    "profit": "Profit",
+    "status": "Status",
+    "notes": "Notes",
+    "date": "Date",
+    "category": "Category",
+    "description": "Description",
+    "amount": "Amount",
+    "dateAdded": "Date Added",
+    "areYouSure": "Are you sure?",
+    "deleteConfirm": "This action cannot be undone."
+  },
+  "roznamcha": {
+    "title": "Shop Expenses (Roznamcha)",
+    "addExpense": "Add Expense",
+    "editExpense": "Edit Expense",
+    "summary": {
+      "today": "Today's Expenses",
+      "thisWeek": "This Week's Expenses",
+      "totalFiltered": "Total (Filtered)"
+    },
+    "filters": {
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "empty": {
+      "title": "No Expenses Recorded",
+      "details": "Click 'Add Expense' to log your first shop cost."
+    },
+    "delete": {
+      "title": "Delete Expense",
+      "message": "Are you sure you want to permanently delete this expense record?"
+    },
+    "errors": {
+      "descRequired": "Description is required.",
+      "amountInvalid": "Please enter a valid, positive amount."
+    },
+    "feedback": {
+      "added": "Expense added successfully.",
+      "updated": "Expense updated successfully.",
+      "deleted": "Expense deleted successfully."
+    }
   }
 }
