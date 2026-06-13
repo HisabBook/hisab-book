@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button, Stack, Alert } from '@mui/material';
@@ -19,17 +19,19 @@ import ExpenseTable from './components/ExpenseTable';
 import ExpenseSummaryCards from './components/ExpenseSummaryCards';
 import ExpenseFilters from './components/ExpenseFilters';
 import { useExpenseFilters } from './hooks/useExpenseFilters';
+import RoznamchaPageSkeleton from './components/RoznamchaPageSkeleton';
 
 const RoznamchaPage = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  // --- Local State Management
+  const [isLoading, setIsLoading] = useState(true);
+
   const [formMeta, setFormMeta] = useState({ open: false, data: null });
   const [itemToDelete, setItemToDelete] = useState(null);
   const [feedback, setFeedback] = useState('');
 
-  // --- Redux Data & Filtering
+  // Data fetching and filtering
   const allExpenses = useSelector(selectAllExpenses);
   const {
     filters,
@@ -39,16 +41,27 @@ const RoznamchaPage = () => {
     isFiltering,
   } = useExpenseFilters(allExpenses);
 
-  // --- Handlers
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500); // Show skeleton for a brief period
+
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array ensures this runs only once
+
   const handleOpenForm = (data = null) => setFormMeta({ open: true, data });
   const handleCloseForm = () => setFormMeta({ open: false, data: null });
 
   const handleSubmit = (formData) => {
     const isEditMode = !!formMeta.data;
     if (isEditMode) {
-      dispatch(
-        updateExpense({ ...formData, updatedAt: new Date().toISOString() })
-      );
+      const payload = {
+        ...formData,
+        id: formMeta.data.id,
+        createdAt: formMeta.data.createdAt,
+        updatedAt: new Date().toISOString(),
+      };
+      dispatch(updateExpense(payload));
       setFeedback(t('roznamcha.feedback.updated'));
     } else {
       const now = new Date().toISOString();
@@ -72,6 +85,10 @@ const RoznamchaPage = () => {
     setItemToDelete(null);
   };
 
+  if (isLoading) {
+    return <RoznamchaPageSkeleton />;
+  }
+
   return (
     <>
       <Stack spacing={3}>
@@ -91,7 +108,6 @@ const RoznamchaPage = () => {
           </Alert>
         )}
 
-        {/* Summary Cards and Filters */}
         <ExpenseSummaryCards expenses={filteredData} />
         <ExpenseFilters
           filters={filters}
@@ -99,7 +115,6 @@ const RoznamchaPage = () => {
           onClear={handleClearFilters}
         />
 
-        {/* Data Table */}
         <ExpenseTable
           data={filteredData}
           loading={isFiltering}
@@ -108,7 +123,6 @@ const RoznamchaPage = () => {
         />
       </Stack>
 
-      {/* Dialogs */}
       <ExpenseFormDialog
         open={formMeta.open}
         initialData={formMeta.data}

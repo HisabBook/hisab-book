@@ -11,6 +11,7 @@ import {
   Button,
   useMediaQuery,
   useTheme,
+  Skeleton,
 } from '@mui/material';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
@@ -89,8 +90,34 @@ const ExpenseTable = ({ data, loading, onEdit, onDelete }) => {
     ],
     [t, onEdit, onDelete]
   );
+
   if (isMobile) {
-    if (!data.length && !loading) {
+    if (loading) {
+      return (
+        <Stack spacing={1.5}>
+          {[...Array(3)].map((_, index) => (
+            <Card key={index}>
+              <CardContent>
+                <Skeleton variant='text' width='80%' height={30} />
+                <Skeleton variant='text' width='40%' height={20} />
+                <Skeleton
+                  variant='text'
+                  width='50%'
+                  height={28}
+                  sx={{ my: 1 }}
+                />
+                <Stack direction='row' spacing={1}>
+                  <Skeleton variant='rounded' width={60} height={30} />
+                  <Skeleton variant='rounded' width={60} height={30} />
+                </Stack>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      );
+    }
+
+    if (!data.length) {
       return (
         <EmptyState
           message={t('roznamcha.empty.title')}
@@ -98,6 +125,7 @@ const ExpenseTable = ({ data, loading, onEdit, onDelete }) => {
         />
       );
     }
+
     return (
       <Stack spacing={1.5}>
         {data.map((row) => {
