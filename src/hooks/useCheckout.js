@@ -17,6 +17,10 @@ import {
   markPhoneSold,
   selectPhoneImeiSet,
 } from '../redux/slices/inventorySlice';
+import {
+  createDebtRecord,
+  selectAllCustomers,
+} from '../redux/slices/khataSlice';
 import { addDebt } from '../redux/slices/khataSlice';
 import { selectExchangeRate } from '../redux/slices/settingsSlice';
 
@@ -105,8 +109,31 @@ export const useCheckout = () => {
     const saleDate = now.toISOString().slice(0, 10);
     const saleId = uid('sale'); // Generate a single ID for the sale
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
+    const saleId = uid('sale');
 
     if (hasDebt) {
+      const normalizedPhone = customerPhone.trim();
+      const existing = customers.find(
+        (item) => item.phone.trim() === normalizedPhone
+      );
+      customerId = existing?.id ?? uid('cust');
+      dispatch(
+        createDebtRecord({
+          id: uid('debt'),
+          customerId,
+          customer: {
+            id: customerId,
+            name: customerName.trim(),
+            phone: normalizedPhone,
+            currency: selectedCurrency,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
+          },
+          totalDebt: dueAmount,
+          currency: selectedCurrency,
+          linkedSaleId: saleId,
+          linkedSaleNumber: invoiceNumber,
+          linkedSaleDate: saleDate,
       dispatch(
         addDebt({
           saleId: saleId,
