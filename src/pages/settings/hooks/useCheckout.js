@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addSale } from '../../../redux/slices/salesSlice';
+import {
+  addSale
+} from '../../../redux/slices/salesSlice';
 import {
   closeCheckout,
   resetPOS,
@@ -15,19 +17,23 @@ import {
   markPhoneSold,
 } from '../../../redux/slices/inventorySlice';
 import {
-  addCustomer,
-  increaseDebt,
+  createDebtRecord,
   selectAllCustomers,
 } from '../../../redux/slices/khataSlice';
-import { selectExchangeRate } from '../../../redux/slices/settingsSlice';
-import { generateInvoicePDF } from '../utils/generateInvoicePDF';
+import {
+  selectExchangeRate,
+  selectShopSettings
+} from '../../../redux/slices/settingsSlice';
+import {
+  generateInvoicePDF
+} from '../utils/generateInvoicePDF';
 
 const round2 = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
 const uid = (prefix) =>
   `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 const toUSD = (value, currency, rate) =>
-  currency === 'AFN' ? value / rate : value;
+  currency === 'AFN' && rate > 0 ? value / rate : value;
 const fromUSD = (value, currency, rate) =>
   currency === 'AFN' ? value * rate : value;
 
@@ -39,26 +45,27 @@ export const useCheckout = () => {
   const tradeIn = useSelector(selectTradeIn);
   const transactionType = useSelector(selectTransactionType);
   const exchangeRate = useSelector(selectExchangeRate);
+  const shopProfile = useSelector(selectShopSettings); // For PDF generation
 
   const pricing = useMemo(() => {
     const subtotalUSD = cartItems.reduce(
       (sum, item) =>
-        sum +
-        toUSD(
-          (Number(item.sellPrice) || 0) * (Number(item.quantity) || 1),
-          item.currency,
-          exchangeRate
-        ),
+      sum +
+      toUSD(
+        (Number(item.sellPrice) || 0) * (Number(item.quantity) || 1),
+        item.currency,
+        exchangeRate
+      ),
       0
     );
     const tradeInUSD =
-      transactionType === 'Exchange'
-        ? toUSD(
-            Number(tradeIn.tradeInValue) || 0,
-            tradeIn.currency,
-            exchangeRate
-          )
-        : 0;
+      transactionType === 'Exchange' ?
+      toUSD(
+        Number(tradeIn.tradeInValue) || 0,
+        tradeIn.currency,
+        exchangeRate
+      ) :
+      0;
     const netTotalUSD = Math.max(0, subtotalUSD - tradeInUSD);
     return {
       subtotalUSD: round2(subtotalUSD),
@@ -78,6 +85,8 @@ export const useCheckout = () => {
     amountPaid,
     customerName,
     customerPhone,
+    t,
+    i18n
   }) => {
     const paid = round2(Number(amountPaid) || 0);
     const netTotal = round2(
@@ -88,41 +97,37 @@ export const useCheckout = () => {
     const hasDebt = dueAmount > 0;
 
     if (hasDebt && (!customerName?.trim() || !customerPhone?.trim())) {
-      return { ok: false, error: 'CUSTOMER_REQUIRED_FOR_DEBT' };
+      return {
+        ok: false,
+        error: 'CUSTOMER_REQUIRED_FOR_DEBT'
+      };
     }
 
     const now = new Date();
     const saleDate = now.toISOString().slice(0, 10);
     const invoiceNumber = `INV-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
+    const saleId = uid('sale');
 
     let customerId = customer.id;
     if (hasDebt) {
       const normalizedPhone = customerPhone.trim();
-      const existing = customers.find(
-        (item) => item.phone.trim() === normalizedPhone
-      );
-      if (existing) {
-        customerId = existing.id;
-      } else {
-        customerId = uid('cust');
-        dispatch(
-          addCustomer({
+      // *** RESOLVED CONFLICT: Using the cleaner logic from 'main' branch ***
+      const existing = customers.find((item) => item.phone.trim() === normalizedPhone);
+      customerId = existing?.id ?? uid('cust');
+      dispatch(
+        createDebtRecord({
+          id: uid('debt'),
+          customerId,
+          customer: {
             id: customerId,
             name: customerName.trim(),
             phone: normalizedPhone,
-            email: '',
-            debtAmount: 0,
-            currency: selectedCurrency,
-            createdAt: now.toISOString(),
-            updatedAt: now.toISOString(),
-            notes: '',
-          })
-        );
-      }
-      dispatch(
-        increaseDebt({
-          customerId,
-          amount: dueAmount,
+          },
+          totalDebt: dueAmount,
+          currency: selectedCurrency,
+          linkedSaleId: saleId,
+          linkedSaleNumber: invoiceNumber,
+          linkedSaleDate: saleDate,
         })
       );
     }
@@ -130,12 +135,15 @@ export const useCheckout = () => {
     cartItems.forEach((item) => {
       if (item.type === 'phone') dispatch(markPhoneSold(item.itemId));
       if (item.type === 'accessory') {
-        dispatch(decreaseAccessoryQty({ id: item.itemId, qty: item.quantity }));
+        dispatch(decreaseAccessoryQty({
+          id: item.itemId,
+          qty: item.quantity
+        }));
       }
     });
 
     const sale = {
-      id: uid('sale'),
+      id: saleId,
       customerId: customerId || null,
       customerName: customerName?.trim() || customer.name || 'Walk-in',
       items: cartItems,
@@ -148,26 +156,42 @@ export const useCheckout = () => {
       saleDate,
       createdAt: now.toISOString(),
       invoiceNumber,
-      tradeIn:
-        transactionType === 'Exchange'
-          ? {
-              ...tradeIn,
-              tradeInValue: Number(tradeIn.tradeInValue) || 0,
-            }
-          : null,
-      tradeInDeduction:
-        transactionType === 'Exchange'
-          ? round2(fromUSD(pricing.tradeInUSD, selectedCurrency, exchangeRate))
-          : 0,
+      tradeIn: transactionType === 'Exchange' ?
+        {
+          ...tradeIn,
+          tradeInValue: Number(tradeIn.tradeInValue) || 0,
+        } :
+        null,
+      tradeInDeduction: transactionType === 'Exchange' ?
+        round2(fromUSD(pricing.tradeInUSD, selectedCurrency, exchangeRate)) :
+        0,
     };
 
     dispatch(addSale(sale));
     dispatch(setLastInvoiceNumber(invoiceNumber));
+
+    // Pass all necessary data to the PDF generator
+    const pdf = await generateInvoicePDF({
+      sale,
+      shopProfile,
+      t,
+      i18n,
+      exchangeRate
+    });
+
+    // Reset state only after all operations are successful
     dispatch(closeCheckout());
     dispatch(resetPOS());
-    const pdf = await generateInvoicePDF(sale);
-    return { ok: true, sale, pdf };
+
+    return {
+      ok: true,
+      sale,
+      pdf
+    };
   };
 
-  return { pricing, finalizeCheckout };
+  return {
+    pricing,
+    finalizeCheckout
+  };
 };
