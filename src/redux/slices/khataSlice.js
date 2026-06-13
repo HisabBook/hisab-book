@@ -8,6 +8,9 @@ const ENTITY_STATUSES = {
   SETTLED: 'settled',
 };
 
+const EMPTY_ARRAY = [];
+const EMPTY_OBJECT = {};
+
 const createId = (prefix) =>
   `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -31,26 +34,10 @@ const deriveDebtStatus = (remainingBalance, paidAmount = 0, totalDebt = 0) => {
   return paidAmount > 0 ? ENTITY_STATUSES.PARTIAL : ENTITY_STATUSES.OPEN;
 };
 
-const buildDebtIndex = (debts) => ({
-  ids: debts.map((debt) => debt.id),
-  entities: debts.reduce((accumulator, debt) => {
-    accumulator[debt.id] = debt;
-    return accumulator;
-  }, {}),
-});
-
-const buildCustomerIndex = (customers) => ({
-  ids: customers.map((customer) => customer.id),
-  entities: customers.reduce((accumulator, customer) => {
-    accumulator[customer.id] = customer;
-    return accumulator;
-  }, {}),
-});
-
-const buildRepaymentIndex = (repayments) => ({
-  ids: repayments.map((repayment) => repayment.id),
-  entities: repayments.reduce((accumulator, repayment) => {
-    accumulator[repayment.id] = repayment;
+const buildCollection = (items) => ({
+  ids: items.map((item) => item.id),
+  entities: items.reduce((accumulator, item) => {
+    accumulator[item.id] = item;
     return accumulator;
   }, {}),
 });
@@ -194,9 +181,9 @@ const createInitialState = () => {
   });
 
   return {
-    customers: buildCustomerIndex(customers),
-    debts: buildDebtIndex(debts),
-    repayments: buildRepaymentIndex(repayments),
+    customers: buildCollection(customers),
+    debts: buildCollection(debts),
+    repayments: buildCollection(repayments),
   };
 };
 
@@ -221,7 +208,7 @@ const getCustomerDebtSummaries = (state, customerId) => {
     { totalDebt: 0, paidAmount: 0, remainingBalance: 0 }
   );
 
-  const customerStatus =
+  const status =
     totals.remainingBalance <= 0
       ? ENTITY_STATUSES.SETTLED
       : totals.paidAmount > 0
@@ -235,7 +222,7 @@ const getCustomerDebtSummaries = (state, customerId) => {
     totalDebt: totals.totalDebt,
     paidAmount: totals.paidAmount,
     remainingBalance: totals.remainingBalance,
-    status: customerStatus,
+    status,
   };
 };
 
@@ -266,6 +253,7 @@ const upsertCustomer = (state, customerPayload) => {
     : null;
 
   const existingCustomer = existingById ?? existingByPhone;
+
   if (existingCustomer) {
     const updatedCustomer = {
       ...existingCustomer,
@@ -288,14 +276,7 @@ const upsertCustomer = (state, customerPayload) => {
   );
   return id;
 };
-import { createSlice, createSelector } from '@reduxjs/toolkit';
 
-const initialState = {
-  debts: [],
-  repayments: [],
-};
-
-// --- Slice Definition ---
 const khataSlice = createSlice({
   name: 'khata',
   initialState,
@@ -306,6 +287,7 @@ const khataSlice = createSlice({
     updateCustomer(state, action) {
       const payload = action.payload ?? {};
       if (!payload.id || !state.customers.entities[payload.id]) return;
+
       const currentCustomer = state.customers.entities[payload.id];
       state.customers.entities[payload.id] = {
         ...currentCustomer,
@@ -406,7 +388,9 @@ const khataSlice = createSlice({
                   payload.totalDebt != null ? payload.totalDebt : debt.totalDebt
                 ) -
                   asNumber(
-                    payload.paidAmount != null ? payload.paidAmount : debt.paidAmount
+                    payload.paidAmount != null
+                      ? payload.paidAmount
+                      : debt.paidAmount
                   )
               ),
         updatedAt: payload.updatedAt ?? nowIso(),
@@ -442,46 +426,6 @@ const khataSlice = createSlice({
 
       if (!state.repayments.entities[repaymentId]) {
         state.repayments.ids.push(repaymentId);
-    addDebt(state, action) {
-      const { saleId, customer, dueAmount, currency, createdAt } =
-        action.payload;
-
-      // Prevent adding a duplicate debt for the same sale
-      const exists = state.debts.some((debt) => debt.saleId === saleId);
-      if (exists) return;
-
-      state.debts.push({
-        id: `debt_${saleId}`,
-        saleId,
-        customer,
-        initialDue: dueAmount,
-        remainingDue: dueAmount,
-        currency,
-        status: 'Unpaid',
-        createdAt,
-      });
-    },
-
-    recordRepayment(state, action) {
-      const { debtId, amount, date } = action.payload;
-      const debt = state.debts.find((d) => d.id === debtId);
-
-      if (debt) {
-        const newRemaining = debt.remainingDue - amount;
-        debt.remainingDue = Math.max(0, newRemaining);
-
-        if (debt.remainingDue === 0) {
-          debt.status = 'Paid';
-        } else if (debt.remainingDue < debt.initialDue) {
-          debt.status = 'Partially Paid';
-        }
-
-        state.repayments.push({
-          id: `repay_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-          debtId,
-          amount,
-          date,
-        });
       }
       state.repayments.entities[repaymentId] = repayment;
 
@@ -534,83 +478,40 @@ export const {
 
 export const addCustomer = createCustomer;
 export const increaseDebt = createDebtRecord;
+export const addDebt = createDebtRecord;
 export const recordRepayment = addRepayment;
-
-const EMPTY_ARRAY = [];
-const EMPTY_OBJECT = {};
 
 export const selectKhataState = (state) =>
   normalizeKhataPersistedState(state.khata ?? initialState);
-export const selectCustomerEntities = createSelector(
-  [selectKhataState],
-  (khata) => khata.customers?.entities ?? EMPTY_OBJECT
-  },
-});
 
-export const { addDebt, recordRepayment } = khataSlice.actions;
-
-const selectKhataState = (state) => state.khata;
-export const selectAllDebts = createSelector(
-  [selectKhataState],
-  (khata) => khata.debts || []
-);
-
-export const selectAllRepayments = createSelector(
-  [selectKhataState],
-  (khata) => khata.repayments || []
-);
-
-export const selectActiveDebts = createSelector([selectAllDebts], (debts) =>
-  debts
-    .filter((d) => d.status !== 'Paid')
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-);
-
-export const selectDebtorsSummary = createSelector(
-  [selectActiveDebts],
-  (activeDebts) => {
-    const summary = {};
-    activeDebts.forEach((debt) => {
-      const phone = debt.customer.phone;
-      if (!summary[phone]) {
-        summary[phone] = {
-          customer: debt.customer,
-          totalDebtUSD: 0,
-          totalDebtAFN: 0,
-          debtCount: 0,
-          debts: [],
-        };
-      }
-      if (debt.currency === 'USD') {
-        summary[phone].totalDebtUSD += debt.remainingDue;
-      } else {
-        summary[phone].totalDebtAFN += debt.remainingDue;
-      }
-      summary[phone].debtCount += 1;
-      summary[phone].debts.push(debt);
-    });
-    return Object.values(summary);
-  }
-);
 export const selectCustomerIds = createSelector(
   [selectKhataState],
   (khata) => khata.customers?.ids ?? EMPTY_ARRAY
 );
-export const selectDebtEntities = createSelector(
+
+export const selectCustomerEntities = createSelector(
   [selectKhataState],
-  (khata) => khata.debts?.entities ?? EMPTY_OBJECT
+  (khata) => khata.customers?.entities ?? EMPTY_OBJECT
 );
+
 export const selectDebtIds = createSelector(
   [selectKhataState],
   (khata) => khata.debts?.ids ?? EMPTY_ARRAY
 );
-export const selectRepaymentEntities = createSelector(
+
+export const selectDebtEntities = createSelector(
   [selectKhataState],
-  (khata) => khata.repayments?.entities ?? EMPTY_OBJECT
+  (khata) => khata.debts?.entities ?? EMPTY_OBJECT
 );
+
 export const selectRepaymentIds = createSelector(
   [selectKhataState],
   (khata) => khata.repayments?.ids ?? EMPTY_ARRAY
+);
+
+export const selectRepaymentEntities = createSelector(
+  [selectKhataState],
+  (khata) => khata.repayments?.entities ?? EMPTY_OBJECT
 );
 
 export const selectAllCustomers = createSelector(
@@ -653,6 +554,44 @@ export const selectAllRepayments = createSelector(
     repaymentIds.map((repaymentId) => repaymentEntities[repaymentId])
 );
 
+export const selectActiveDebts = selectOpenDebts;
+
+export const selectDebtorsSummary = createSelector(
+  [selectOpenDebts, selectCustomerEntities],
+  (openDebts, customerEntities) => {
+    const summaryByCustomer = {};
+
+    openDebts.forEach((debt) => {
+      if (!debt) return;
+
+      const customer = customerEntities[debt.customerId] ?? null;
+      const key =
+        normalizeText(customer?.phone) || debt.customerId || debt.id || 'unknown';
+
+      if (!summaryByCustomer[key]) {
+        summaryByCustomer[key] = {
+          customer,
+          totalDebtUSD: 0,
+          totalDebtAFN: 0,
+          debtCount: 0,
+          debts: [],
+        };
+      }
+
+      if (debt.currency === 'AFN') {
+        summaryByCustomer[key].totalDebtAFN += asNumber(debt.remainingBalance);
+      } else {
+        summaryByCustomer[key].totalDebtUSD += asNumber(debt.remainingBalance);
+      }
+
+      summaryByCustomer[key].debtCount += 1;
+      summaryByCustomer[key].debts.push(debt);
+    });
+
+    return Object.values(summaryByCustomer);
+  }
+);
+
 export const selectCustomerDebtRecord = createSelector(
   [
     selectCustomerEntities,
@@ -675,10 +614,7 @@ export const selectCustomerDebtRecord = createSelector(
       customer,
       debtRecords,
       repayments,
-      totalDebt: debtRecords.reduce(
-        (sum, debt) => sum + asNumber(debt.totalDebt),
-        0
-      ),
+      totalDebt: debtRecords.reduce((sum, debt) => sum + asNumber(debt.totalDebt), 0),
       paidAmount: debtRecords.reduce(
         (sum, debt) => sum + asNumber(debt.paidAmount),
         0
@@ -694,5 +630,4 @@ export const selectCustomerDebtRecord = createSelector(
 
 export const selectDebtors = selectOpenDebts;
 
-export const selectDebtors = selectDebtorsSummary;
 export default khataSlice.reducer;
