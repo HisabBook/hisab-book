@@ -13,10 +13,11 @@ import {
   updateExpense,
   deleteExpense,
 } from '../../redux/slices/roznamchaSlice';
+import { selectPrimaryCurrency } from '../../redux/slices/settingsSlice';
 
 import ExpenseFormDialog from './components/ExpenseFormDialog';
 import ExpenseTable from './components/ExpenseTable';
-import ExpenseSummaryCards from './components/ExpenseSummaryCards';
+import RoznamchaSummary from './components/RoznamchaSummary';
 import ExpenseFilters from './components/ExpenseFilters';
 import { useExpenseFilters } from './hooks/useExpenseFilters';
 import RoznamchaPageSkeleton from './components/RoznamchaPageSkeleton';
@@ -26,13 +27,12 @@ const RoznamchaPage = () => {
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(true);
-
   const [formMeta, setFormMeta] = useState({ open: false, data: null });
   const [itemToDelete, setItemToDelete] = useState(null);
   const [feedback, setFeedback] = useState('');
 
-  // Data fetching and filtering
   const allExpenses = useSelector(selectAllExpenses);
+  const primaryCurrency = useSelector(selectPrimaryCurrency);
   const {
     filters,
     handleFilterChange,
@@ -44,10 +44,10 @@ const RoznamchaPage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500); // Show skeleton for a brief period
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   const handleOpenForm = (data = null) => setFormMeta({ open: true, data });
   const handleCloseForm = () => setFormMeta({ open: false, data: null });
@@ -108,7 +108,12 @@ const RoznamchaPage = () => {
           </Alert>
         )}
 
-        <ExpenseSummaryCards expenses={filteredData} />
+        {/* --- Render the single, redesigned summary component --- */}
+        <RoznamchaSummary
+          expenses={filteredData}
+          primaryCurrency={primaryCurrency}
+        />
+
         <ExpenseFilters
           filters={filters}
           onFilterChange={handleFilterChange}
