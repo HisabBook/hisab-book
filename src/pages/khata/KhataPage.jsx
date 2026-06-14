@@ -102,25 +102,28 @@ const SummaryCard = ({ label, value, helper, icon, tint }) => (
   <Paper
     elevation={0}
     sx={{
-      p: 2.25,
-      borderRadius: 3,
+      p: 2.5,
+      borderRadius: 4,
       border: '1px solid',
-      borderColor: 'divider',
+      borderColor: 'rgba(15, 23, 42, 0.08)',
       background:
-        'linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,251,253,0.96))',
-      minHeight: 126,
+        'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,253,0.95))',
+      boxShadow: '0 18px 48px rgba(15, 23, 42, 0.06)',
+      minHeight: 144,
     }}
   >
-    <Stack spacing={1.5}>
+    <Stack spacing={1.75}>
       <Box
         sx={{
-          width: 42,
-          height: 42,
+          width: 46,
+          height: 46,
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: 2,
+          borderRadius: 2.5,
           bgcolor: tint ?? 'rgba(25, 118, 210, 0.1)',
+          border: '1px solid',
+          borderColor: 'rgba(255,255,255,0.7)',
         }}
       >
         {icon}
@@ -129,10 +132,18 @@ const SummaryCard = ({ label, value, helper, icon, tint }) => (
         <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>
           {label}
         </Typography>
-        <Typography variant='h5' sx={{ fontWeight: 800, lineHeight: 1.1 }}>
+        <Typography
+          variant='h5'
+          sx={{
+            fontWeight: 850,
+            lineHeight: 1.05,
+            letterSpacing: '-0.03em',
+            mb: 0.25,
+          }}
+        >
           {value}
         </Typography>
-        <Typography variant='caption' color='text.secondary'>
+        <Typography variant='caption' color='text.secondary' sx={{ lineHeight: 1.6 }}>
           {helper}
         </Typography>
       </Box>
@@ -151,13 +162,18 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
         sx={{
           alignItems: 'flex-start',
           gap: 1.5,
-          borderRadius: 3,
+          borderRadius: 4,
           border: '1px solid',
-          borderColor: active ? meta.border : 'divider',
-          bgcolor: active ? meta.tint : 'background.paper',
-          px: 1.75,
-          py: 1.5,
+          borderColor: active ? meta.border : 'rgba(15, 23, 42, 0.08)',
+          bgcolor: active
+            ? `linear-gradient(135deg, ${meta.tint} 0%, rgba(255,255,255,0.95) 100%)`
+            : 'rgba(255,255,255,0.82)',
+          px: 2,
+          py: 1.75,
           transition: 'all 0.2s ease',
+          boxShadow: active
+            ? '0 20px 48px rgba(15, 23, 42, 0.08)'
+            : '0 12px 28px rgba(15, 23, 42, 0.04)',
           '&.Mui-selected': {
             bgcolor: meta.tint,
           },
@@ -170,7 +186,7 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
           sx={{
             width: 44,
             height: 44,
-            bgcolor: meta.tint,
+            bgcolor: meta.color === 'success' ? 'rgba(46,125,50,0.14)' : meta.tint,
             color: meta.color === 'success' ? 'success.main' : `${meta.color}.main`,
             border: '1px solid',
             borderColor: meta.border,
@@ -195,7 +211,7 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
               alignItems={{ xs: 'flex-start', sm: 'center' }}
               justifyContent='space-between'
             >
-              <Typography variant='subtitle1' sx={{ fontWeight: 800 }}>
+              <Typography variant='subtitle1' sx={{ fontWeight: 850 }}>
                 {record.customer?.name || 'Unknown customer'}
               </Typography>
               <Chip
@@ -203,12 +219,12 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
                 label={meta.label}
                 color={meta.color}
                 size='small'
-                sx={{ fontWeight: 700 }}
+                sx={{ fontWeight: 800, borderRadius: 999 }}
               />
             </Stack>
           }
           secondary={
-            <Stack spacing={0.75} sx={{ mt: 0.75 }}>
+            <Stack spacing={1} sx={{ mt: 0.9 }}>
               <Typography variant='body2' color='text.secondary'>
                 <PhoneRoundedIcon
                   fontSize='inherit'
@@ -219,7 +235,7 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
               <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 spacing={1}
-                sx={{ flexWrap: 'wrap' }}
+                sx={{ flexWrap: 'wrap', pt: 0.25 }}
               >
                 <Chip
                   size='small'
@@ -298,14 +314,15 @@ const DebtTimeline = ({ debt, repayments }) => {
   }, [debt, repayments]);
 
   return (
-    <Stack spacing={1.5}>
+    <Stack spacing={1.5} sx={{ position: 'relative', pl: { xs: 0, sm: 0.5 } }}>
       <Paper
         variant='outlined'
         sx={{
-          p: 1.75,
-          borderRadius: 2.5,
+          p: 2,
+          borderRadius: 3,
           borderColor: meta.border,
-          bgcolor: meta.tint,
+          bgcolor: 'rgba(255,255,255,0.78)',
+          boxShadow: '0 14px 36px rgba(15, 23, 42, 0.06)',
         }}
       >
         <Stack spacing={1.25}>
@@ -349,7 +366,7 @@ const DebtTimeline = ({ debt, repayments }) => {
         </Stack>
       </Paper>
 
-      <Stack spacing={1}>
+    <Stack spacing={1}>
         {timeline.map((item) => {
           const itemMeta = statusMeta(item.status);
 
@@ -358,20 +375,52 @@ const DebtTimeline = ({ debt, repayments }) => {
               key={item.id}
               variant='outlined'
               sx={{
-                p: 1.5,
-                borderRadius: 2.25,
+                p: 1.75,
+                borderRadius: 2.75,
                 borderColor: itemMeta.border,
-                bgcolor: 'background.paper',
+                bgcolor: 'rgba(255,255,255,0.92)',
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 14,
+                  top: 18,
+                  bottom: item === timeline[timeline.length - 1] ? 18 : -18,
+                  width: 2,
+                  bgcolor: itemMeta.border,
+                  opacity: 0.7,
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 8,
+                  top: 20,
+                  width: 14,
+                  height: 14,
+                  borderRadius: '50%',
+                  bgcolor: itemMeta.color === 'success'
+                    ? 'success.main'
+                    : itemMeta.color === 'warning'
+                      ? 'warning.main'
+                      : 'error.main',
+                  boxShadow: `0 0 0 5px ${itemMeta.tint}`,
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              />
               <Stack spacing={1}>
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   justifyContent='space-between'
                   spacing={1}
+                  sx={{ pl: { xs: 0, sm: 3.25 } }}
                 >
                   <Box>
-                    <Typography variant='body2' sx={{ fontWeight: 800 }}>
+                    <Typography variant='body2' sx={{ fontWeight: 850 }}>
                       {item.title}
                     </Typography>
                     <Typography variant='caption' color='text.secondary'>
@@ -388,7 +437,7 @@ const DebtTimeline = ({ debt, repayments }) => {
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   spacing={1}
-                  sx={{ flexWrap: 'wrap' }}
+                  sx={{ flexWrap: 'wrap', pl: { xs: 0, sm: 3.25 } }}
                 >
                   <Chip
                     size='small'
@@ -408,12 +457,12 @@ const DebtTimeline = ({ debt, repayments }) => {
                   ) : null}
                 </Stack>
                 {item.note ? (
-                  <Typography variant='caption' color='text.secondary'>
+                  <Typography variant='caption' color='text.secondary' sx={{ pl: { xs: 0, sm: 3.25 } }}>
                     {item.note}
                   </Typography>
                 ) : null}
                 {item.linkedSaleNumber ? (
-                  <Typography variant='caption' color='text.secondary'>
+                  <Typography variant='caption' color='text.secondary' sx={{ pl: { xs: 0, sm: 3.25 } }}>
                     Linked sale: {item.linkedSaleNumber}
                   </Typography>
                 ) : null}
@@ -668,16 +717,17 @@ const KhataPage = () => {
   const selectedDebtMeta = activeDebt ? statusMeta(activeDebt.status) : null;
 
   const drawerContent = detailCustomer ? (
-    <Stack spacing={2.25} sx={{ p: 2.25 }}>
+    <Stack spacing={2.25} sx={{ p: 2.5 }}>
       <Box>
         <Stack direction='row' spacing={1.25} alignItems='center'>
           <Avatar
             sx={{
-              width: 54,
-              height: 54,
-              bgcolor: 'primary.light',
+              width: 58,
+              height: 58,
+              bgcolor: 'linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%)',
               color: 'primary.contrastText',
-              fontWeight: 800,
+              fontWeight: 900,
+              boxShadow: '0 14px 30px rgba(29, 78, 216, 0.22)',
             }}
           >
             {(detailCustomer?.name || '?')
@@ -689,7 +739,7 @@ const KhataPage = () => {
               .toUpperCase()}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant='h6' sx={{ fontWeight: 800 }}>
+            <Typography variant='h6' sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>
               {detailCustomer?.name || 'Unknown customer'}
             </Typography>
             <Typography variant='body2' color='text.secondary'>
@@ -777,7 +827,7 @@ const KhataPage = () => {
 
       <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
         <Stack spacing={1.5}>
-          <Typography variant='body2' sx={{ fontWeight: 700 }}>
+          <Typography variant='body2' sx={{ fontWeight: 800 }}>
             Record repayment
           </Typography>
 
@@ -828,22 +878,34 @@ const KhataPage = () => {
               />
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
-                <Button
-                  variant='contained'
-                  onClick={() => handleSubmitRepayment(false)}
-                  disabled={Number(repaymentAmount) <= 0}
-                  fullWidth
-                >
-                  Record payment
-                </Button>
-                <Button
-                  variant='outlined'
-                  onClick={() => handleSubmitRepayment(true)}
-                  fullWidth
-                >
-                  Settle balance
-                </Button>
-              </Stack>
+              <Button
+                variant='contained'
+                onClick={() => handleSubmitRepayment(false)}
+                disabled={Number(repaymentAmount) <= 0}
+                fullWidth
+                sx={{
+                  borderRadius: 999,
+                  py: 1.15,
+                  textTransform: 'none',
+                  fontWeight: 800,
+                }}
+              >
+                Record payment
+              </Button>
+              <Button
+                variant='outlined'
+                onClick={() => handleSubmitRepayment(true)}
+                fullWidth
+                sx={{
+                  borderRadius: 999,
+                  py: 1.15,
+                  textTransform: 'none',
+                  fontWeight: 800,
+                }}
+              >
+                Settle balance
+              </Button>
+            </Stack>
             </Stack>
           )}
         </Stack>
@@ -851,7 +913,7 @@ const KhataPage = () => {
 
       <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
         <Stack spacing={1}>
-          <Typography variant='body2' sx={{ fontWeight: 700 }}>
+          <Typography variant='body2' sx={{ fontWeight: 800 }}>
             Debt history timeline
           </Typography>
           <Typography variant='caption' color='text.secondary'>
@@ -877,7 +939,7 @@ const KhataPage = () => {
       {detailDebts.length > 1 ? (
         <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
           <Stack spacing={1}>
-            <Typography variant='body2' sx={{ fontWeight: 700 }}>
+            <Typography variant='body2' sx={{ fontWeight: 800 }}>
               Full customer history
             </Typography>
             <Typography variant='caption' color='text.secondary'>
@@ -943,41 +1005,129 @@ const KhataPage = () => {
   );
 
   return (
-    <Box sx={{ pb: 3 }}>
-      <PageHeader title='Khata Ledger' />
-
+    <Box
+      sx={{
+        position: 'relative',
+        pb: 3,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(circle at 0% 0%, rgba(25,118,210,0.12), transparent 25%), radial-gradient(circle at 100% 0%, rgba(46,125,50,0.10), transparent 22%), linear-gradient(180deg, rgba(248,250,253,0.95) 0%, rgba(244,248,252,1) 100%)',
+          zIndex: -1,
+        },
+      }}
+    >
       <Box
         sx={{
-          mb: 3,
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: {
-            xs: '1fr',
-            md: 'repeat(3, minmax(0, 1fr))',
-          },
+          mb: 2.5,
+          p: { xs: 2.5, md: 3.5 },
+          borderRadius: { xs: 4, md: 6 },
+          border: '1px solid',
+          borderColor: 'rgba(15, 23, 42, 0.08)',
+          bgcolor: 'rgba(255,255,255,0.78)',
+          boxShadow: '0 24px 60px rgba(15, 23, 42, 0.08)',
+          backdropFilter: 'blur(18px)',
+          overflow: 'hidden',
+          position: 'relative',
         }}
       >
-        <SummaryCard
-          label='Customers with debt history'
-          value={totalCustomers}
-          helper='Unique customer accounts'
-          icon={<PersonRoundedIcon sx={{ color: 'primary.main' }} />}
-          tint='rgba(25, 118, 210, 0.1)'
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 'auto -12% -45% auto',
+            width: 260,
+            height: 260,
+            borderRadius: '50%',
+            bgcolor: 'rgba(25,118,210,0.10)',
+            filter: 'blur(6px)',
+          }}
         />
-        <SummaryCard
-          label='Total outstanding balance'
-          value={moneyBreakdown(outstandingByCurrency)}
-          helper='Unpaid amount across all open balances'
-          icon={<TrendingDownRoundedIcon sx={{ color: 'error.main' }} />}
-          tint='rgba(211, 47, 47, 0.1)'
-        />
-        <SummaryCard
-          label='Total settled amount'
-          value={moneyBreakdown(settledByCurrency)}
-          helper='Amount already recovered through repayments'
-          icon={<CheckCircleRoundedIcon sx={{ color: 'success.main' }} />}
-          tint='rgba(46, 125, 50, 0.1)'
-        />
+        <Stack spacing={2.25} sx={{ position: 'relative' }}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={1.5}
+            alignItems={{ xs: 'flex-start', md: 'center' }}
+            justifyContent='space-between'
+          >
+            <Box>
+              <Chip
+                label='Khata Ledger'
+                sx={{
+                  mb: 1.2,
+                  fontWeight: 800,
+                  bgcolor: 'rgba(25,118,210,0.09)',
+                  color: 'primary.main',
+                  borderRadius: 999,
+                }}
+              />
+              <Typography
+                variant='h4'
+                sx={{
+                  fontWeight: 900,
+                  letterSpacing: '-0.04em',
+                  fontSize: { xs: '1.65rem', sm: '2.2rem', md: '2.6rem' },
+                  mb: 0.8,
+                }}
+              >
+                Customer debts, repayments, and settlements in one refined ledger
+              </Typography>
+              <Typography
+                variant='body1'
+                color='text.secondary'
+                sx={{ maxWidth: 760, lineHeight: 1.8 }}
+              >
+                Search, filter, record repayments, and inspect complete payment history
+                with a cleaner, more modern workspace designed for quick day-to-day use.
+              </Typography>
+            </Box>
+            <Stack
+              direction='row'
+              spacing={1}
+              sx={{
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'flex-start', md: 'flex-end' },
+              }}
+            >
+              <Chip label={`${totalCustomers} customers`} color='primary' />
+              <Chip label={`${filteredCustomers.length} visible`} variant='outlined' />
+            </Stack>
+          </Stack>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: {
+                xs: '1fr',
+                md: 'repeat(3, minmax(0, 1fr))',
+              },
+            }}
+          >
+            <SummaryCard
+              label='Customers with debt history'
+              value={totalCustomers}
+              helper='Unique customer accounts'
+              icon={<PersonRoundedIcon sx={{ color: 'primary.main' }} />}
+              tint='rgba(25, 118, 210, 0.1)'
+            />
+            <SummaryCard
+              label='Total outstanding balance'
+              value={moneyBreakdown(outstandingByCurrency)}
+              helper='Unpaid amount across all open balances'
+              icon={<TrendingDownRoundedIcon sx={{ color: 'error.main' }} />}
+              tint='rgba(211, 47, 47, 0.1)'
+            />
+            <SummaryCard
+              label='Total settled amount'
+              value={moneyBreakdown(settledByCurrency)}
+              helper='Amount already recovered through repayments'
+              icon={<CheckCircleRoundedIcon sx={{ color: 'success.main' }} />}
+              tint='rgba(46, 125, 50, 0.1)'
+            />
+          </Box>
+        </Stack>
       </Box>
 
       {!isReady ? (
