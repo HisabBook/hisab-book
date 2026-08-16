@@ -102,14 +102,12 @@ const SummaryCard = ({ label, value, helper, icon, tint }) => (
   <Paper
     elevation={0}
     sx={{
-      p: 2.5,
-      borderRadius: 4,
+      p: 2,
+      borderRadius: 2,
       border: '1px solid',
-      borderColor: 'rgba(15, 23, 42, 0.08)',
-      background:
-        'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,253,0.95))',
-      boxShadow: '0 18px 48px rgba(15, 23, 42, 0.06)',
-      minHeight: 144,
+      borderColor: 'divider',
+      bgcolor: 'background.paper',
+      minHeight: 132,
     }}
   >
     <Stack spacing={1.75}>
@@ -120,7 +118,7 @@ const SummaryCard = ({ label, value, helper, icon, tint }) => (
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: 2.5,
+          borderRadius: 1.5,
           bgcolor: tint ?? 'rgba(25, 118, 210, 0.1)',
           border: '1px solid',
           borderColor: 'rgba(255,255,255,0.7)',
@@ -162,7 +160,7 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
         sx={{
           alignItems: 'flex-start',
           gap: 1.5,
-          borderRadius: 4,
+          borderRadius: 2,
           border: '1px solid',
           borderColor: active ? meta.border : 'rgba(15, 23, 42, 0.08)',
           bgcolor: active
@@ -170,7 +168,7 @@ const CustomerLedgerRow = ({ record, active, onClick }) => {
             : 'rgba(255,255,255,0.82)',
           px: 2,
           py: 1.75,
-          transition: 'all 0.2s ease',
+          transition: 'background-color 0.2s ease, border-color 0.2s ease',
           boxShadow: active
             ? '0 20px 48px rgba(15, 23, 42, 0.08)'
             : '0 12px 28px rgba(15, 23, 42, 0.04)',
@@ -319,7 +317,7 @@ const DebtTimeline = ({ debt, repayments }) => {
         variant='outlined'
         sx={{
           p: 2,
-          borderRadius: 3,
+          borderRadius: 2,
           borderColor: meta.border,
           bgcolor: 'rgba(255,255,255,0.78)',
           boxShadow: '0 14px 36px rgba(15, 23, 42, 0.06)',
@@ -376,7 +374,7 @@ const DebtTimeline = ({ debt, repayments }) => {
               variant='outlined'
               sx={{
                 p: 1.75,
-                borderRadius: 2.75,
+                borderRadius: 2,
                 borderColor: itemMeta.border,
                 bgcolor: 'rgba(255,255,255,0.92)',
                 position: 'relative',
@@ -474,6 +472,62 @@ const DebtTimeline = ({ debt, repayments }) => {
     </Stack>
   );
 };
+
+const KhataPageSkeleton = () => (
+  <Stack spacing={2} sx={{ pb: 3 }}>
+    <Paper
+      variant='outlined'
+      sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, borderColor: 'divider' }}
+    >
+      <Stack spacing={1.25}>
+        <Skeleton variant='rounded' width={120} height={28} />
+        <Skeleton variant='text' width='70%' height={52} />
+        <Skeleton variant='text' width='55%' height={26} />
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+          }}
+        >
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} variant='rounded' height={132} />
+          ))}
+        </Box>
+      </Stack>
+    </Paper>
+
+    <Box
+      sx={{
+        display: 'grid',
+        gap: 2,
+        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.15fr) minmax(320px, 0.85fr)' },
+      }}
+    >
+      <Paper variant='outlined' sx={{ p: 2, borderRadius: 2, borderColor: 'divider' }}>
+        <Stack spacing={1.5}>
+          <Stack direction='row' justifyContent='space-between'>
+            <Skeleton variant='text' width={180} height={30} />
+            <Skeleton variant='rounded' width={90} height={28} />
+          </Stack>
+          <Skeleton variant='rounded' height={42} />
+          <Skeleton variant='rounded' height={42} />
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} variant='rounded' height={76} />
+          ))}
+        </Stack>
+      </Paper>
+      <Paper variant='outlined' sx={{ p: 2, borderRadius: 2, borderColor: 'divider' }}>
+        <Stack spacing={1.5}>
+          <Skeleton variant='text' width={170} height={30} />
+          <Skeleton variant='rounded' height={86} />
+          <Skeleton variant='rounded' height={116} />
+          <Skeleton variant='rounded' height={150} />
+        </Stack>
+      </Paper>
+    </Box>
+  </Stack>
+);
 
 const KhataPage = () => {
   const dispatch = useDispatch();
@@ -716,15 +770,27 @@ const KhataPage = () => {
 
   const selectedDebtMeta = activeDebt ? statusMeta(activeDebt.status) : null;
 
+  if (!isReady) {
+    return <KhataPageSkeleton />;
+  }
+
   const drawerContent = detailCustomer ? (
-    <Stack spacing={2.25} sx={{ p: 2.5 }}>
-      <Box>
+    <Stack spacing={2} sx={{ p: 2 }}>
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'action.hover',
+        }}
+      >
         <Stack direction='row' spacing={1.25} alignItems='center'>
           <Avatar
             sx={{
               width: 58,
               height: 58,
-              bgcolor: 'linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%)',
+              background: 'linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%)',
               color: 'primary.contrastText',
               fontWeight: 900,
               boxShadow: '0 14px 30px rgba(29, 78, 216, 0.22)',
@@ -739,17 +805,20 @@ const KhataPage = () => {
               .toUpperCase()}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant='h6' sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>
+            <Typography variant='h6' sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
               {detailCustomer?.name || 'Unknown customer'}
             </Typography>
-            <Typography variant='body2' color='text.secondary'>
+            <Stack direction='row' spacing={0.5} alignItems='center'>
+              <PhoneRoundedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant='body2' color='text.secondary'>
               {detailCustomer?.phone || 'No phone'}
-            </Typography>
+              </Typography>
+            </Stack>
           </Box>
         </Stack>
       </Box>
 
-      <Stack spacing={1.25}>
+      <Stack spacing={1}>
         <SummaryCard
           label='Total owed'
           value={formatMoney(
@@ -782,7 +851,7 @@ const KhataPage = () => {
         />
       </Stack>
 
-      <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
+      <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2 }}>
         <Stack spacing={1}>
           <Typography variant='body2' sx={{ fontWeight: 700 }}>
             Debt selection
@@ -825,7 +894,7 @@ const KhataPage = () => {
         </Stack>
       </Paper>
 
-      <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
+      <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2 }}>
         <Stack spacing={1.5}>
           <Typography variant='body2' sx={{ fontWeight: 800 }}>
             Record repayment
@@ -911,7 +980,7 @@ const KhataPage = () => {
         </Stack>
       </Paper>
 
-      <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
+      <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2 }}>
         <Stack spacing={1}>
           <Typography variant='body2' sx={{ fontWeight: 800 }}>
             Debt history timeline
@@ -928,7 +997,7 @@ const KhataPage = () => {
           repayments={selectedDebtRepayments}
         />
       ) : (
-        <Paper variant='outlined' sx={{ p: 2 }}>
+        <Paper variant='outlined' sx={{ p: 2, borderRadius: 2 }}>
           <EmptyState
             message='Select a debt'
             details='Choose a debt record to review history and repayments.'
@@ -937,7 +1006,7 @@ const KhataPage = () => {
       )}
 
       {detailDebts.length > 1 ? (
-        <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2.5 }}>
+        <Paper variant='outlined' sx={{ p: 1.75, borderRadius: 2 }}>
           <Stack spacing={1}>
             <Typography variant='body2' sx={{ fontWeight: 800 }}>
               Full customer history
@@ -1023,7 +1092,7 @@ const KhataPage = () => {
         sx={{
           mb: 2.5,
           p: { xs: 2.5, md: 3.5 },
-          borderRadius: { xs: 4, md: 6 },
+          borderRadius: 2,
           border: '1px solid',
           borderColor: 'rgba(15, 23, 42, 0.08)',
           bgcolor: 'rgba(255,255,255,0.78)',
@@ -1130,18 +1199,12 @@ const KhataPage = () => {
         </Stack>
       </Box>
 
-      {!isReady ? (
-        <Stack spacing={2}>
-          <Skeleton variant='rounded' height={56} />
-          <Skeleton variant='rounded' height={160} />
-          <Skeleton variant='rounded' height={160} />
-        </Stack>
-      ) : totalCustomers === 0 ? (
+      {totalCustomers === 0 ? (
         <Paper
           elevation={0}
           sx={{
             minHeight: 360,
-            borderRadius: 3,
+            borderRadius: 2,
             border: '1px solid',
             borderColor: 'divider',
           }}
@@ -1166,7 +1229,7 @@ const KhataPage = () => {
           <Paper
             elevation={0}
             sx={{
-              borderRadius: 3,
+              borderRadius: 2,
               border: '1px solid',
               borderColor: 'divider',
               overflow: 'hidden',
@@ -1266,7 +1329,7 @@ const KhataPage = () => {
               sx={{
                 position: 'sticky',
                 top: 24,
-                borderRadius: 3,
+                borderRadius: 2,
                 border: '1px solid',
                 borderColor: 'divider',
                 minHeight: 520,
@@ -1293,8 +1356,8 @@ const KhataPage = () => {
               onClose={() => setSelectedCustomerId('')}
               PaperProps={{
                 sx: {
-                  borderTopLeftRadius: 24,
-                  borderTopRightRadius: 24,
+                  borderTopLeftRadius: 16,
+                  borderTopRightRadius: 16,
                   maxHeight: '82vh',
                 },
               }}
