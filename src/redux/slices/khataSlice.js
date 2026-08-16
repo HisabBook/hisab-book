@@ -406,6 +406,7 @@ const khataSlice = createSlice({
 
       const amount = Math.max(0, asNumber(payload.amount));
       if (amount <= 0) return;
+      if (amount > asNumber(debt.remainingBalance)) return;
 
       const repaymentId = payload.id ?? createId('repayment');
       const repayment = createRepaymentEntity({
@@ -609,6 +610,16 @@ export const selectCustomerDebtRecord = createSelector(
     const repayments = Object.values(repaymentEntities).filter(
       (repayment) => repayment.customerId === customerId
     );
+    const lastActivityAt = [...debtRecords, ...repayments].reduce(
+      (latest, item) => {
+        const candidate =
+          item.updatedAt ?? item.createdAt ?? item.paidAt ?? null;
+        if (!candidate) return latest;
+        if (!latest) return candidate;
+        return new Date(candidate) > new Date(latest) ? candidate : latest;
+      },
+      customer.updatedAt ?? customer.createdAt ?? null
+    );
 
     return {
       customer,
@@ -624,6 +635,7 @@ export const selectCustomerDebtRecord = createSelector(
         0
       ),
       status: customer.status,
+      lastActivityAt,
     };
   }
 );

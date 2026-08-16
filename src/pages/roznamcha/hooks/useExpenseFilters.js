@@ -1,6 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useDebounce } from '../../../hooks/useDebounce';
-import isEqual from 'lodash/isEqual';
+
+const isEqual = (left, right) => {
+  if (left === right) return true;
+  if (!left || !right) return false;
+
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) return false;
+
+  return leftKeys.every((key) => left[key] === right[key]);
+};
 
 export const useExpenseFilters = (data) => {
   const [filters, setFilters] = useState({
